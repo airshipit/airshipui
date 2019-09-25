@@ -41,7 +41,7 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 // initRoutes routes for this plugin. In this example, there is a global catch all route
 // that will return the content for every single path.
 func initRoutes(router *service.Router) {
-    router.HandleFunc("*", func(request *service.Request) (component.ContentResponse, error) {
+    router.HandleFunc("", func(request *service.Request) (component.ContentResponse, error) {
         contentResponse := component.NewContentResponse(component.TitleFromString("Airship UI"))
 
         text := component.NewText("This is the Airship UI plugin.")
