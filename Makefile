@@ -19,8 +19,8 @@ else
 	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
 
-DIRS = internal pkg
-RECURSIVE_DIRS = $(addsuffix /...,$(DIRS))
+DIRS = internal
+RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
@@ -30,7 +30,11 @@ $(PLUGINS):
 
 .PHONY: test
 test: generate
-	go test -v $(RECURSIVE_DIRS)
+	go test $(RECURSIVE_DIRS) -v -coverprofile=coverage.out
+
+.PHONY: coverage-html
+coverage-html: test
+	go tool cover -html=coverage.out
 
 .PHONY: vet
 vet:
@@ -46,3 +50,6 @@ clean:
 
 .PHONY: ci
 ci: test vet
+
+# The golang-unit zuul job calls the env target, so create one
+.PHONY: env
