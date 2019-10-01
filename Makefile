@@ -18,8 +18,8 @@ else
 	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
 
-DIRS = internal pkg
-RECURSIVE_DIRS = $(addsuffix /...,$(DIRS))
+DIRS = internal
+RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: install-plugin
 install-plugin:
@@ -28,7 +28,11 @@ install-plugin:
 
 .PHONY: test
 test: generate
-	go test -v $(RECURSIVE_DIRS)
+	go test $(RECURSIVE_DIRS) -v -coverprofile=coverage.out
+
+.PHONY: coverage-html
+coverage-html: test
+	go tool cover -html=coverage.out
 
 .PHONY: vet
 vet:
