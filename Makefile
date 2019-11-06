@@ -8,6 +8,7 @@ GIT_VERSION=$(shell git describe --match 'v*' --always)
 # Override the value of the version variable in main.go
 LD_FLAGS= '-X main.version=$(GIT_VERSION)'
 GO_FLAGS= -ldflags=$(LD_FLAGS)
+PLUGINS:= $(shell ls cmd)
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
@@ -20,11 +21,16 @@ endif
 
 DIRS = internal pkg
 RECURSIVE_DIRS = $(addsuffix /...,$(DIRS))
+#.PHONY: install-plugin
+#install-plugin:
+#	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
+#	go build -o $(OCTANT_PLUGINSTUB_DIR)/airship-ui-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/airshipui
 
-.PHONY: install-plugin
-install-plugin:
+.PHONY: install-plugins
+install-plugins: $(PLUGINS)
+$(PLUGINS):
 	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	go build -o $(OCTANT_PLUGINSTUB_DIR)/airship-ui-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/airshipui
+	go build -o $(OCTANT_PLUGINSTUB_DIR)/$@-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/$@
 
 .PHONY: test
 test: generate
