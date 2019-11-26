@@ -21,10 +21,6 @@ endif
 
 DIRS = internal pkg
 RECURSIVE_DIRS = $(addsuffix /...,$(DIRS))
-#.PHONY: install-plugin
-#install-plugin:
-#	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-#	go build -o $(OCTANT_PLUGINSTUB_DIR)/airship-ui-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/airshipui
 
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
