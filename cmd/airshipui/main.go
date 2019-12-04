@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"opendev.org/airship/airshipui/internal/plugin/airshipui"
+	plugin "opendev.org/airship/airshipui/internal/plugin/airshipui"
 )
 
 var (
 	pluginName = "airship-ui"
-	// version will be overriden by ldflags supplied in Makefile
+	// version will be overridden by ldflags supplied in Makefile
 	version = "(dev-version)"
 )
 

@@ -14,7 +14,10 @@ func TestRegister(t *testing.T) {
 		t.Fatalf("Registering the plugin returned an error")
 	}
 
-	p.Validate()
+	err = p.Validate()
+	if err != nil {
+		t.Fatalf("Validating the plugin returned an error")
+	}
 }
 
 func TestRoutes(t *testing.T) {
@@ -37,6 +40,7 @@ func TestRoutes(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test // pin the value so that the following function literal binds to it
 		t.Run(fmt.Sprintf("Path='%s'", test.path), func(t *testing.T) {
 			_, found := router.Match(test.path)
 
@@ -66,6 +70,7 @@ func TestRouteHandles(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test // pin the value so that the following function literal binds to it
 		t.Run(fmt.Sprintf("Path='%s'", test.path), func(t *testing.T) {
 			handleFunc, found := router.Match(test.path)
 

@@ -5,6 +5,12 @@ SHELL=/bin/bash
 # Obtain the version and git commit info
 GIT_VERSION=$(shell git describe --match 'v*' --always)
 
+TOOLBINDIR    := tools/bin
+LINTER        := $(TOOLBINDIR)/golangci-lint
+LINTER_CONFIG := .golangci.yaml
+
+TESTFLAGS     ?=
+
 # Override the value of the version variable in main.go
 LD_FLAGS= '-X main.version=$(GIT_VERSION)'
 GO_FLAGS= -ldflags=$(LD_FLAGS)
@@ -29,27 +35,28 @@ $(PLUGINS):
 	go build -o $(OCTANT_PLUGINSTUB_DIR)/$@-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/$@
 
 .PHONY: test
-test: generate
-	go test $(RECURSIVE_DIRS) -v -coverprofile=coverage.out
+test:
+	go test $(RECURSIVE_DIRS) -v $(TESTFLAGS)
 
-.PHONY: coverage-html
-coverage-html: test
+.PHONY: cover
+cover: TESTFLAGS += -coverprofile=coverage.out
+cover: test
 	go tool cover -html=coverage.out
-
-.PHONY: vet
-vet:
-	go vet $(RECURSIVE_DIRS)
-
-.PHONY: generate
-generate:
-	go generate -v $(RECURSIVE_DIRS)
 
 .PHONY: clean
 clean:
 	git clean -dx $(DIRS)
 
 .PHONY: ci
-ci: test vet
+ci: test lint
 
 # The golang-unit zuul job calls the env target, so create one
 .PHONY: env
+
+.PHONY: lint
+lint: $(LINTER)
+	$(LINTER) run --config $(LINTER_CONFIG)
+
+$(LINTER):
+	mkdir -p $(TOOLBINDIR)
+	./tools/install_linter
