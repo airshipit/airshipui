@@ -13,13 +13,19 @@
 - project:
     check:
       jobs:
-        - noop
+        - airship-airshipui-lint-unit
     gate:
       jobs:
-        - noop
+        - airship-airshipui-lint-unit
     post:
       jobs:
         - airshipui-upload-git-mirror
+
+- job:
+    name: airship-airshipui-lint-unit
+    pre-run: playbooks/airship-airshipui-deploy-docker.yaml
+    run: playbooks/airship-airshipui-lint-unit.yaml
+    nodeset: airship-airshipui-single-node
 
 - job:
     name: airshipui-upload-git-mirror
@@ -79,3 +85,9 @@
           /tp/MjZpSzeWVBeshm3rFSEKUSIh6Ny09pT6//Cb0mhaitr+q7hHo0OdCiiovuoE/05Q9
           4zLKXC0a6/DRvnpq1jZL5cssNrf5sjrspIPe2yf/gy+NDG+eN/2zyAYhHgaA5rDOPwpjo
           bpCTetrKmxTJbwMjPML5oRLef5GJU1zGLOmNA68AOGlt5RFC1lSUPe+ZTW8QTM=
+
+- nodeset:
+    name: airship-airshipui-single-node
+    nodes:
+      - name: primary
+        label: ubuntu-bionic

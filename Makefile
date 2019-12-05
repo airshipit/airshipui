@@ -9,12 +9,25 @@ TOOLBINDIR    := tools/bin
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
 
+# build target when calling make in a docker container
+DOCKER_MAKE_TARGET  := build
+
+# docker image options
+DOCKER_REGISTRY     ?= quay.io
+DOCKER_IMAGE_NAME   ?= airshipui
+DOCKER_IMAGE_PREFIX ?= airshipit
+DOCKER_IMAGE_TAG    ?= dev
+DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+DOCKER_TARGET_STAGE ?= release
+
 TESTFLAGS     ?=
 
 # Override the value of the version variable in main.go
-LD_FLAGS= '-X main.version=$(GIT_VERSION)'
-GO_FLAGS= -ldflags=$(LD_FLAGS)
-PLUGINS:= $(shell ls cmd)
+LD_FLAGS  := '-X main.version=$(GIT_VERSION)'
+GO_FLAGS  := -ldflags=$(LD_FLAGS)
+
+BUILD_DIR := bin
+PLUGINS   := $(addprefix $(BUILD_DIR)/, $(shell ls cmd))
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
@@ -28,11 +41,15 @@ endif
 DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
+.PHONY: build
+build: $(PLUGINS)
+$(PLUGINS):
+	go build -o $@ $(GO_FLAGS) opendev.org/airship/airshipui/cmd/$(@F)
+
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
-$(PLUGINS):
 	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	go build -o $(OCTANT_PLUGINSTUB_DIR)/$@-plugin $(GO_FLAGS) opendev.org/airship/airshipui/cmd/$@
+	cp $? $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
 test:
@@ -47,9 +64,6 @@ cover: test
 clean:
 	git clean -dx $(DIRS)
 
-.PHONY: ci
-ci: test lint
-
 # The golang-unit zuul job calls the env target, so create one
 .PHONY: env
 
@@ -60,3 +74,20 @@ lint: $(LINTER)
 $(LINTER):
 	mkdir -p $(TOOLBINDIR)
 	./tools/install_linter
+
+# Configuration for building and testing in a docker image, which is necessary for
+# go-related projects in zuul
+.PHONY: docker-image
+docker-image:
+	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE) --target $(DOCKER_TARGET_STAGE)
+
+.PHONY: docker-image-lint
+docker-image-lint: DOCKER_MAKE_TARGET = lint
+docker-image-lint: DOCKER_TARGET_STAGE = builder
+docker-image-lint: docker-image
+
+.PHONY: docker-image-unit-tests
+docker-image-unit-tests: DOCKER_MAKE_TARGET = test
+docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
+docker-image-unit-tests: docker-image
+
