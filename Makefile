@@ -20,6 +20,8 @@ DOCKER_IMAGE_TAG    ?= dev
 DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 DOCKER_TARGET_STAGE ?= release
 
+COVERAGE_OUTPUT := coverage.out
+
 TESTFLAGS     ?=
 
 # Override the value of the version variable in main.go
@@ -56,13 +58,13 @@ test:
 	go test $(RECURSIVE_DIRS) -v $(TESTFLAGS)
 
 .PHONY: cover
-cover: TESTFLAGS += -coverprofile=coverage.out
+cover: TESTFLAGS += -coverprofile=$(COVERAGE_OUTPUT)
 cover: test
-	go tool cover -html=coverage.out
+	go tool cover -html=$(COVERAGE_OUTPUT)
 
 .PHONY: clean
 clean:
-	git clean -dx $(DIRS)
+	rm -rf $(BUILD_DIR) $(COVERAGE_OUTPUT)
 
 # The golang-unit zuul job calls the env target, so create one
 .PHONY: env

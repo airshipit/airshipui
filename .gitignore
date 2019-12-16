@@ -1,3 +1,6 @@
 # Coverage File
 coverage.out
 tools/bin
+
+# Generated binaries
+bin
