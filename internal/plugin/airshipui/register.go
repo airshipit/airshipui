@@ -74,9 +74,7 @@ func initRoutes(router *service.Router) {
 		if err != nil || !found {
 			contentResponse.Add(component.NewText(errMsg))
 		} else {
-			frame := component.NewIFrame(
-				"http://127.0.0.1:8001/workflows",
-				"Argo Workflows UI")
+			frame := component.NewIFrame("http://127.0.0.1:8001/workflows", "Argo Workflows UI")
 			contentResponse.Add(frame)
 		}
 

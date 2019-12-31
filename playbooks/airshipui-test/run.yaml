@@ -1,0 +1,10 @@
+---
+- hosts: all
+  name: Run tests
+  tasks:
+    - name: make test
+      make:
+        target: test
+        chdir: "{{ zuul.project.src_dir }}"
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"

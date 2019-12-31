@@ -9,17 +9,6 @@ TOOLBINDIR    := tools/bin
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
 
-# build target when calling make in a docker container
-DOCKER_MAKE_TARGET  := build
-
-# docker image options
-DOCKER_REGISTRY     ?= quay.io
-DOCKER_IMAGE_NAME   ?= airshipui
-DOCKER_IMAGE_PREFIX ?= airshipit
-DOCKER_IMAGE_TAG    ?= dev
-DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
-DOCKER_TARGET_STAGE ?= release
-
 COVERAGE_OUTPUT := coverage.out
 
 TESTFLAGS     ?=
@@ -76,20 +65,3 @@ lint: $(LINTER)
 $(LINTER):
 	mkdir -p $(TOOLBINDIR)
 	./tools/install_linter
-
-# Configuration for building and testing in a docker image, which is necessary for
-# go-related projects in zuul
-.PHONY: docker-image
-docker-image:
-	@docker build . --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) --tag $(DOCKER_IMAGE) --target $(DOCKER_TARGET_STAGE)
-
-.PHONY: docker-image-lint
-docker-image-lint: DOCKER_MAKE_TARGET = lint
-docker-image-lint: DOCKER_TARGET_STAGE = builder
-docker-image-lint: docker-image
-
-.PHONY: docker-image-unit-tests
-docker-image-unit-tests: DOCKER_MAKE_TARGET = test
-docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
-docker-image-unit-tests: docker-image
-
