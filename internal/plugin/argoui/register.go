@@ -56,8 +56,8 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 func initRoutes(router *service.Router) {
 	router.HandleFunc("", func(request *service.Request) (component.ContentResponse, error) {
 
-		contentResponse := component.NewContentResponse(component.TitleFromString("Airship UI"))
-		contentResponse.Add(component.NewText(fmt.Sprintf("This is the Airship UI plugin")))
+		contentResponse := component.NewContentResponse(component.TitleFromString("Argo UI"))
+		contentResponse.Add(component.NewText(fmt.Sprintf("This is the Argo UI plugin")))
 
 		return *contentResponse, nil
 	})

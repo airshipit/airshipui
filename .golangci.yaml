@@ -79,10 +79,6 @@ linters-settings:
   gofmt:
     # simplify code: gofmt with `-s` option, true by default
     simplify: true
-  goimports:
-    # put imports beginning with prefix after 3rd-party packages;
-    # it's a comma-separated list of prefixes
-    local-prefixes: opendev.org/airship/airshipui
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 15
@@ -140,7 +136,6 @@ linters:
     - gocritic             # The most opinionated Go source code linter
     - gocyclo              # Computes and checks the cyclomatic complexity of functions
     - gofmt                # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
-    - goimports            # Goimports does everything that gofmt does. Additionally it checks unused imports
     - gosec                # Inspects source code for security problems
     - interfacer           # Linter that suggests narrower interface types
     - lll                  # Reports long lines

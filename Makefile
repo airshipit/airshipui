@@ -14,11 +14,14 @@ COVERAGE_OUTPUT := coverage.out
 TESTFLAGS     ?=
 
 # Override the value of the version variable in main.go
-LD_FLAGS  := '-X main.version=$(GIT_VERSION)'
+LD_FLAGS= '-X opendev.org/airship/airshipui/internal/environment.version=$(GIT_VERSION)'
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
-
 BUILD_DIR := bin
-PLUGINS   := $(addprefix $(BUILD_DIR)/, $(shell ls cmd))
+
+# Find all main.go files under cmd, excluding airshipui itself (which is the octant wrapper)
+PLUGIN_NAMES := $(filter-out airshipui,$(notdir $(subst /main.go,,$(wildcard cmd/*/main.go))))
+PLUGINS   := $(addprefix $(BUILD_DIR)/, $(PLUGIN_NAMES))
+MAIN      := $(BUILD_DIR)/airshipui
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
@@ -33,13 +36,21 @@ DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build
-build: $(PLUGINS)
-$(PLUGINS):
-	go build -o $@ $(GO_FLAGS) opendev.org/airship/airshipui/cmd/$(@F)
+build: $(MAIN) $(PLUGINS)
+
+$(MAIN): FORCE
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(MAIN) $(GO_FLAGS) cmd/$(@F)/main.go
+
+$(PLUGINS): FORCE
+	@mkdir -p $(BUILD_DIR)
+	go build -o $@ $(GO_FLAGS) cmd/$(@F)/main.go
+
+FORCE:
 
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
-	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
+	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
 	cp $? $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
@@ -63,5 +74,5 @@ lint: $(LINTER)
 	$(LINTER) run --config $(LINTER_CONFIG)
 
 $(LINTER):
-	mkdir -p $(TOOLBINDIR)
+	@mkdir -p $(TOOLBINDIR)
 	./tools/install_linter

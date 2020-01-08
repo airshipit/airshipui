@@ -65,7 +65,7 @@ func TestRouteHandles(t *testing.T) {
 	}{
 		{
 			path:  "",
-			title: "Airship UI",
+			title: "Argo UI",
 		},
 	}
 
