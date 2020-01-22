@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/plugin/service"
@@ -67,13 +69,29 @@ func getArgoUIURL(request *service.Request) (u *url.URL, err error) {
 	ctx := request.Context()
 	client := request.DashboardClient()
 
-	data, found, err := client.Get(ctx, store.Key{
+	found := false
+
+	// client.Get is avoided here because when the plugin is first launched the
+	// key is usually not present, and octant will display an error message in the
+	// grpc library about marshaling nil.  client.List does not raise any such errors
+	// when the key is not yet present
+	ul, err := client.List(ctx, store.Key{
 		APIVersion: "v1",
 		Kind:       "Endpoints",
 		Namespace:  "argo",
-		Name:       "argo-ui",
 	})
-	if err != nil || !found {
+
+	var data unstructured.Unstructured
+	if err == nil {
+		for _, item := range ul.Items {
+			if item.GetName() == "argo-ui" {
+				found = true
+				data = item
+				break
+			}
+		}
+	}
+	if !found {
 		return u, err
 	}
 
