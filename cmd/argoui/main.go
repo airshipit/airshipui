@@ -5,10 +5,10 @@ import (
 	"log"
 
 	"opendev.org/airship/airshipui/internal/environment"
-	"opendev.org/airship/airshipui/internal/plugin/argoui"
+	plugin "opendev.org/airship/airshipui/internal/plugin/argoui"
 )
 
-var pluginName = "argoui"
+var pluginName = "argo-ui"
 
 func main() {
 	// Remove the prefix from the go logger since Octant will print logs with timestamps.

@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
-	github.com/vmware-tanzu/octant v0.9.2-0.20191125001025-78689a9c6779
+	github.com/vmware-tanzu/octant v0.9.2-0.20200122220320-86df9df1d659
 	go.uber.org/zap v1.10.0
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0

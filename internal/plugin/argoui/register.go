@@ -6,18 +6,19 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"encoding/json"
 	"fmt"
-
-	// corev1 "k8s.io/api/core/v1"
-	// "k8s.io/apimachinery/pkg/runtime"
+	"net/url"
 
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/plugin/service"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
+	v1 "k8s.io/api/core/v1"
 )
 
+// Register registers the plugin with Octant
 func Register(name string, description string) (*service.Plugin, error) {
 	capabilities := &plugin.Capabilities{
 		IsModule: true,
@@ -38,16 +39,9 @@ func Register(name string, description string) (*service.Plugin, error) {
 // the plugin.
 func handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
 	return navigation.Navigation{
-		Title:    "Airship UI",
+		Title:    "Argo UI",
 		Path:     request.GeneratePath(),
-		IconName: "folder",
-		Children: []navigation.Navigation{
-			{
-				Title:    "Argo",
-				Path:     request.GeneratePath("argo"),
-				IconName: "cloud",
-			},
-		},
+		IconName: "cloud",
 	}, nil
 }
 
@@ -55,29 +49,71 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 // that will return the content for every single path.
 func initRoutes(router *service.Router) {
 	router.HandleFunc("", func(request *service.Request) (component.ContentResponse, error) {
+		response := component.NewContentResponse(component.TitleFromString("Argo UI"))
 
-		contentResponse := component.NewContentResponse(component.TitleFromString("Argo UI"))
-		contentResponse.Add(component.NewText(fmt.Sprintf("This is the Argo UI plugin")))
-
-		return *contentResponse, nil
-	})
-
-	router.HandleFunc("/argo", func(request *service.Request) (component.ContentResponse, error) {
-		contentResponse := component.NewContentResponse(component.TitleFromString("Argo Workflows"))
-
-		// Verify that argo-ui is deployed before displaying its iframe.  Octant has visibility
-		// as to whether a port forward has been created, so it is possible that the iframe
-		// shows an empty frame in that situation
-		errMsg := "The Argo UI is not available for the currently selected context"
-		key := store.Key{APIVersion: "apps/v1", Kind: "Deployment", Namespace: "argo", Name: "argo-ui"}
-		_, found, err := request.DashboardClient().Get(request.Context(), key)
-		if err != nil || !found {
-			contentResponse.Add(component.NewText(errMsg))
+		u, err := getArgoUIURL(request)
+		if err != nil || u == nil {
+			errMsg := "The Argo UI is not available."
+			response.Add(component.NewText(errMsg))
 		} else {
-			frame := component.NewIFrame("http://127.0.0.1:8001/workflows", "Argo Workflows UI")
-			contentResponse.Add(frame)
+			response.Add(component.NewIFrame(u.String(), "Argo UI"))
 		}
 
-		return *contentResponse, nil
+		return *response, nil
 	})
+}
+
+func getArgoUIURL(request *service.Request) (u *url.URL, err error) {
+	ctx := request.Context()
+	client := request.DashboardClient()
+
+	data, found, err := client.Get(ctx, store.Key{
+		APIVersion: "v1",
+		Kind:       "Endpoints",
+		Namespace:  "argo",
+		Name:       "argo-ui",
+	})
+	if err != nil || !found {
+		return u, err
+	}
+
+	var endpoints v1.Endpoints
+	m, err := data.MarshalJSON()
+	err = json.Unmarshal(m, &endpoints)
+	if err != nil {
+		return u, err
+	}
+
+	var addr string
+	var port int32
+
+	/*	Move through the subsets, address, and port arrays to construct a url
+		More information on the structure can be found in the Kubernetes document below
+		https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#endpointsubset-v1-core
+	*/
+	for _, s := range endpoints.Subsets {
+		for _, a := range s.Addresses {
+			addr = a.IP
+			break
+		}
+
+		for _, p := range s.Ports {
+			port = p.Port
+			break
+		}
+
+		if addr != "" || port != 0 {
+			break
+		}
+	}
+	if addr == "" || port == 0 {
+		return u, err
+	}
+
+	u = &url.URL{
+		Scheme: "http",
+		Host:   fmt.Sprintf("%s:%d", addr, port),
+	}
+
+	return u, nil
 }

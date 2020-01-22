@@ -7,14 +7,6 @@
 3. Install [Octant](https://github.com/vmware-tanzu/octant)
 4. Install [Argo CLI](https://github.com/argoproj/argo/blob/master/docs/getting-started.md)
 5. Install [Argo UI](https://github.com/argoproj/argo/blob/master/README.md)
-5. Create a port forward so that argo is available.
-    ```
-    kubectl -n argo port-forward deployment/argo-ui 8001:8001
-    ```
-    **NOTE:** this command does not return, if you want it to stay running you'll have to manually background and disown it or issue a nohup command:
-    ```
-    nohup kubectl -n argo port-forward deployment/argo-ui 8001:8001 &
-    ```
 6. Clone the AirshipUI repository and build the Airship UI plugin
     ```
     git clone https://opendev.org/airship/airshipui
@@ -46,11 +38,10 @@
     ```
     ssh -L 7777:localhost:7777 -L 8001:localhost:8001 <id>@<remote_host>
     ```
-9. The Airship UI should be available at http://127.0.0.1:7777/ (you should see the Airship UI plugin on the left navigation pane)
-10. The argo ui should also be available at http://127.0.0.1:7777/#/argoui/argo
+9. The Argo UI should be available at http://127.0.0.1:7777/#/argo-ui
 
 ## Working with the Airship UI
-Airship UI utilizes the octant plugin to drive some of the functionality.  Octant has a [plugin sample](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go) which is the basis of these instructions.
+Airship UI utilizes the Octant plugin to drive some of the functionality.  Octant has a [plugin sample](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go) which is the basis of these instructions.
 
 ### Write a hello world plugin of your very own
 1. Clone the Airship UI repository (if not already done previously)
@@ -62,7 +53,7 @@ Airship UI utilizes the octant plugin to drive some of the functionality.  Octan
     ```
     mkdir cmd/hello-world
     ```
-4. Create / edit main.go under the cmd/hello-world directory.  This is modeled off the [octant sample plugin](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go)
+4. Create / edit main.go under the cmd/hello-world directory.  This is modeled off the [Octant sample plugin](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go)
     ```
 	package main
 
@@ -145,7 +136,7 @@ Airship UI utilizes the octant plugin to drive some of the functionality.  Octan
     2020-01-15T19:00:11.530Z        DEBUG   hello-world-plugin      plugin/logger.go:33     2020/01/15 19:00:11 Sample debugging message: Hello World just some text on the page
     ```
 7. You should be able to explore the basic plugin functionality by clicking on it in the navigation pane.
-8. You can add other components for fun from the [octant documentation](https://octant.dev/docs/master/plugins/reference/#component-text) for further enhancement to the page
+8. You can add other components for fun from the [Octant documentation](https://octant.dev/docs/master/plugins/reference/#component-text) for further enhancement to the page
 
 ## Appendix
 ### Minikube
