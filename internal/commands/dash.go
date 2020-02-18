@@ -102,6 +102,26 @@ func RunOctantWithOptions(cmd *cobra.Command, kubeConfigPath string, args []stri
 	}
 }
 
+// some day this may need to get refactored if the options become transportable from external sources
 func addDashboardFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
+	cmd.Flags().SortFlags = true
+
+	// octant specific flags
+	cmd.Flags().StringP("context", "", "", "initial context")
+	cmd.Flags().BoolP("disable-cluster-overview", "", false, "disable cluster overview")
+	cmd.Flags().BoolP("enable-feature-applications", "", false, "enable applications feature")
+	cmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
+	cmd.Flags().StringP("namespace", "n", "", "initial namespace")
+	cmd.Flags().StringP("plugin-path", "", "", "plugin path")
+	cmd.Flags().BoolP("verbose", "v", false, "turn on debug logging")
+	cmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list [DEV]")
+	cmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client [DEV]")
+	cmd.Flags().IntP("client-burst", "", 400, "maximum burst for client throttle [DEV]")
+	cmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser [DEV]")
+	cmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census [DEV]")
+	cmd.Flags().IntP("klog-verbosity", "", 0, "klog verbosity level [DEV]")
+	cmd.Flags().StringP("listener-addr", "", "", "listener address for the octant frontend [DEV]")
+	cmd.Flags().StringP("local-content", "", "", "local content path [DEV]")
+	cmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to [DEV]")
+	cmd.Flags().String("ui-url", "", "dashboard url [DEV]")
 }

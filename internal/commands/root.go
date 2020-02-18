@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	ctlenv "opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipui/internal/environment"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var (
@@ -41,6 +43,11 @@ func init() {
 }
 
 func launchOctant(cmd *cobra.Command, args []string) {
+	// only process args if there are any
+	if cmd.Flags().NFlag() > 0 {
+		args = append(args, getFlags(cmd)...)
+		fmt.Printf("Executing Octant with the following args: %v\n", args)
+	}
 
 	kubeConfig := ""
 	airshipKubeConfig := settings.KubeConfigPath()
@@ -71,4 +78,29 @@ func fileExists(filename string) bool {
 	}
 
 	return !f.IsDir()
+}
+
+// this function pulls the passed command line options and renders unto octant what is octant's
+func getFlags(cmd *cobra.Command) []string {
+	var args []string
+
+	// This will apply all command line arguments to the octant execution depending on its variance from the default values
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		if flag.Changed {
+			name := flag.Name
+			// only pass octant specific flags
+			// this will need to be refactored if any additional non octant flags are added
+			if (name != config.FlagConfigFilePath) && (name != "debug") {
+				value := flag.Value
+				switch value.Type() {
+				case "bool":
+					args = append(args, "--"+name)
+				default:
+					args = append(args, "--"+name, value.String())
+				}
+			}
+		}
+	})
+
+	return args
 }
