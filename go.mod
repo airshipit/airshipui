@@ -3,22 +3,13 @@ module opendev.org/airship/airshipui
 go 1.12
 
 require (
-	github.com/go-cmd/cmd v1.1.0
-	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/go-ps v0.0.0-20190716172923-621e5597135b
-	github.com/pkg/errors v0.8.1
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.3
-	github.com/spf13/viper v1.4.0
-	github.com/stretchr/testify v1.3.0
-	github.com/vmware-tanzu/octant v0.9.2-0.20200122220320-86df9df1d659
-	go.uber.org/zap v1.10.0
-	k8s.io/api v0.0.0
-	k8s.io/apimachinery v0.0.0
-	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/klog v1.0.0
-	opendev.org/airship/airshipctl v0.0.0-20200102173109-f0ed12153932
+	github.com/go-cmd/cmd v1.2.0
+	github.com/spf13/cobra v0.0.6
+	github.com/spf13/pflag v1.0.5
+	github.com/vmware-tanzu/octant v0.10.2
+	k8s.io/api v0.17.3
+	k8s.io/apimachinery v0.17.3
+	opendev.org/airship/airshipctl v0.0.0-20200224145032-d5e28362f271
 )
 
 replace (
