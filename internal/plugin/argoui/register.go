@@ -6,11 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
@@ -69,36 +68,25 @@ func getArgoUIURL(request service.Request) (u *url.URL, err error) {
 	ctx := request.Context()
 	client := request.DashboardClient()
 
-	found := false
-
-	// client.Get is avoided here because when the plugin is first launched the
-	// key is usually not present, and octant will display an error message in the
-	// grpc library about marshaling nil.  client.List does not raise any such errors
-	// when the key is not yet present
-	ul, err := client.List(ctx, store.Key{
+	key := store.Key{
 		APIVersion: "v1",
 		Kind:       "Endpoints",
+		Name:       "argo-ui",
 		Namespace:  "argo",
-	})
-
-	var data unstructured.Unstructured
-	if err == nil {
-		for _, item := range ul.Items {
-			if item.GetName() == "argo-ui" {
-				found = true
-				data = item
-				break
-			}
-		}
 	}
-	if !found {
+
+	o, err := client.Get(ctx, key)
+	if err != nil {
 		return u, err
 	}
 
-	var endpoints v1.Endpoints
-	m, err := data.MarshalJSON()
-	err = json.Unmarshal(m, &endpoints)
-	if err != nil {
+	end := &v1.Endpoints{}
+	if o != nil {
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(o.Object, end)
+		if err != nil {
+			return u, err
+		}
+	} else {
 		return u, err
 	}
 
@@ -109,7 +97,7 @@ func getArgoUIURL(request service.Request) (u *url.URL, err error) {
 		More information on the structure can be found in the Kubernetes document below
 		https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#endpointsubset-v1-core
 	*/
-	for _, s := range endpoints.Subsets {
+	for _, s := range end.Subsets {
 		for _, a := range s.Addresses {
 			addr = a.IP
 			break
