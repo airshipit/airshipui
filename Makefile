@@ -22,12 +22,14 @@ BUILD_DIR := bin
 PLUGIN_NAMES := $(filter-out airshipui,$(notdir $(subst /main.go,,$(wildcard cmd/*/main.go))))
 PLUGINS   := $(addprefix $(BUILD_DIR)/, $(PLUGIN_NAMES))
 MAIN      := $(BUILD_DIR)/airshipui
+EXTENSION :=
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
 # Determine in on windows
 else ifeq ($(OS),Windows_NT)
-	OCTANT_PLUGINSTUB_DIR ?= ${LOCALAPPDATA}/octant/plugins
+	OCTANT_PLUGINSTUB_DIR ?= $(subst \,/,${LOCALAPPDATA}/octant/plugins)
+	EXTENSION=.exe
 else
 	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
@@ -40,18 +42,17 @@ build: $(MAIN) $(PLUGINS)
 
 $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
-	go build -o $(MAIN) $(GO_FLAGS) cmd/$(@F)/main.go
+	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
 
 $(PLUGINS): FORCE
 	@mkdir -p $(BUILD_DIR)
-	go build -o $@ $(GO_FLAGS) cmd/$(@F)/main.go
-
+	go build -o $@$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
 FORCE:
 
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	cp $? $(OCTANT_PLUGINSTUB_DIR)
+	cp $?$(EXTENSION) $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
 test:
@@ -67,6 +68,9 @@ clean:
 	rm -rf $(BUILD_DIR) $(COVERAGE_OUTPUT)
 
 # The golang-unit zuul job calls the env target, so create one
+# Note: on windows if there is a WSL curl in c:\windows\system32
+#       it will cause problems installing the lint tools.
+#       The use of cygwin curl is working however
 .PHONY: env
 
 .PHONY: lint
