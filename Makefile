@@ -52,7 +52,7 @@ FORCE:
 .PHONY: install-plugins
 install-plugins: $(PLUGINS)
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	cp $?$(EXTENSION) $(OCTANT_PLUGINSTUB_DIR)
+	cp $^$(EXTENSION) $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
 test:
