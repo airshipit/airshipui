@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2020 AT&T. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
 package plugin
 
 import (
@@ -28,7 +32,7 @@ func (f *fakeRequest) Context() context.Context {
 }
 
 func TestRegister(t *testing.T) {
-	plugin, err := Register("argo-ui", "Argo UI test version")
+	plugin, err := Register("openstack", "OpenStack test version")
 	if err != nil {
 		t.Fatalf("Registering the plugin returned an error")
 	}
@@ -41,7 +45,7 @@ func TestRegister(t *testing.T) {
 
 func TestRoutes(t *testing.T) {
 	router := service.NewRouter()
-	NewArgoPlugin().initRoutes(router)
+	NewOpenstackPlugin().initRoutes(router)
 
 	tests := []struct {
 		path   string
