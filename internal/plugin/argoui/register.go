@@ -50,7 +50,7 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 // initRoutes routes for this plugin. In this example, there is a global catch all route
 // that will return the content for every single path.
 func initRoutes(router *service.Router) {
-	router.HandleFunc("", func(request *service.Request) (component.ContentResponse, error) {
+	router.HandleFunc("", func(request service.Request) (component.ContentResponse, error) {
 		response := component.NewContentResponse(component.TitleFromString("Argo UI"))
 
 		u, err := getArgoUIURL(request)
@@ -65,7 +65,7 @@ func initRoutes(router *service.Router) {
 	})
 }
 
-func getArgoUIURL(request *service.Request) (u *url.URL, err error) {
+func getArgoUIURL(request service.Request) (u *url.URL, err error) {
 	ctx := request.Context()
 	client := request.DashboardClient()
 
