@@ -24,13 +24,12 @@ import (
 func getFlavors(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	flavors.ListDetail(computeClientHelper(osp), flavors.ListOpts{AccessType: flavors.AllAccess}).EachPage(
+	err := flavors.ListDetail(computeClientHelper(osp), flavors.ListOpts{AccessType: flavors.AllAccess}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			flavorList, err := flavors.ExtractFlavors(page)
 
 			if err != nil {
-				log.Fatalf("compute flavor Error: %s\n", err)
+				log.Printf("compute flavor Error: %s\n", err)
 			}
 
 			for _, flavor := range flavorList {
@@ -52,6 +51,10 @@ func getFlavors(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("compute flavor list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Flavors",
 		"No flavors found",
@@ -65,13 +68,12 @@ func getFlavors(osp *OpenstackPlugin) component.Component {
 func getImages(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	images.ListDetail(computeClientHelper(osp), images.ListOpts{}).EachPage(
+	err := images.ListDetail(computeClientHelper(osp), images.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			list, err := images.ExtractImages(page)
 
 			if err != nil {
-				log.Fatalf("Image list error: %s\n", err)
+				log.Printf("Image list error: %s\n", err)
 				return false, err
 			}
 
@@ -89,6 +91,10 @@ func getImages(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("compute image list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Images",
 		"No images found",
@@ -100,8 +106,7 @@ func getImages(osp *OpenstackPlugin) component.Component {
 func getVMs(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	servers.List(computeClientHelper(osp), servers.ListOpts{AllTenants: true}).EachPage(
+	err := servers.List(computeClientHelper(osp), servers.ListOpts{AllTenants: true}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			list, err := servers.ExtractServers(page)
 
@@ -142,6 +147,10 @@ func getVMs(osp *OpenstackPlugin) component.Component {
 
 			return true, nil
 		})
+
+	if err != nil {
+		log.Printf("compute server list error: %s\n", err)
+	}
 
 	return component.NewTableWithRows(
 		"Servers",

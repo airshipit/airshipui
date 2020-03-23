@@ -23,13 +23,12 @@ import (
 func getNetworks(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	networks.List(networkClientHelper(osp), networks.ListOpts{}).EachPage(
+	err := networks.List(networkClientHelper(osp), networks.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			networkList, err := networks.ExtractNetworks(page)
 
 			if err != nil {
-				log.Fatalf("Network retrival error: %s\n", err)
+				log.Printf("Network retrival error: %s\n", err)
 				return false, err
 			}
 
@@ -63,6 +62,10 @@ func getNetworks(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("network list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Networks",
 		"No networks found",
@@ -76,13 +79,12 @@ func getNetworks(osp *OpenstackPlugin) component.Component {
 func getSubnets(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	subnets.List(networkClientHelper(osp), subnets.ListOpts{}).EachPage(
+	err := subnets.List(networkClientHelper(osp), subnets.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			networkList, err := subnets.ExtractSubnets(page)
 
 			if err != nil {
-				log.Fatalf("Subnet list error: %s\n", err)
+				log.Printf("Subnet list error: %s\n", err)
 				return false, err
 			}
 
@@ -102,6 +104,9 @@ func getSubnets(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("network subnet list error: %s\n", err)
+	}
 	return component.NewTableWithRows(
 		"Subnets",
 		"No subnets found",

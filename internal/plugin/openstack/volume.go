@@ -19,21 +19,14 @@ import (
 // gets OpenStack volumes viewable by the tenant
 // https://docs.openstack.org/cinder/latest/
 func getVolumes(osp *OpenstackPlugin) component.Component {
-	client, err := openstack.NewBlockStorageV2(osp.provider, gophercloud.EndpointOpts{})
-
-	if err != nil {
-		log.Fatalf("NewIdentityV3 error: %v", err)
-	}
-
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	volumes.List(client, volumes.ListOpts{}).EachPage(
+	err := volumes.List(volumeClientHelper(osp), volumes.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			volumeList, err := volumes.ExtractVolumes(page)
 
 			if err != nil {
-				log.Fatalf("Broken at volume list %v\n", err)
+				log.Printf("Broken at volume list %v\n", err)
 				return false, err
 			}
 
@@ -61,9 +54,24 @@ func getVolumes(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("volume list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Volumes",
 		"No volumes found",
 		component.NewTableCols("Name", "Description", "Size", "Status", "Group", "Type", "Attached To",
 			"Availability Zone", "Bootable", "Encrypted"), rows)
+}
+
+// helper function to create an volume specific gophercloud client
+func volumeClientHelper(osp *OpenstackPlugin) *gophercloud.ServiceClient {
+	client, err := openstack.NewBlockStorageV2(osp.provider, gophercloud.EndpointOpts{})
+
+	if err != nil {
+		log.Fatalf("NewIdentityV3 error: %v", err)
+	}
+
+	return client
 }

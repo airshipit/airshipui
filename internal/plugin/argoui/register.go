@@ -92,7 +92,7 @@ func getArgoUIURL(request service.Request) (u *url.URL, err error) {
 
 	end := &v1.Endpoints{}
 	if o != nil {
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(o.Object, end)
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(o.Object, end)
 		if err != nil {
 			return u, err
 		}

@@ -124,10 +124,18 @@ func getOptsFromFile() (gophercloud.AuthOptions, error) {
 		log.Printf("Error opening file %s\n", err)
 	}
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, err := ioutil.ReadAll(jsonFile)
+
+	if err != nil {
+		log.Printf("Error reading file %s\n", err)
+	}
 
 	var tmp optJSON
-	json.Unmarshal(byteValue, &tmp)
+	err = json.Unmarshal(byteValue, &tmp)
+
+	if err != nil {
+		log.Printf("Error unmarshalling file %s\n", err)
+	}
 
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: tmp.IdentityEndpoint,

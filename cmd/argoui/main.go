@@ -19,7 +19,7 @@ func main() {
 	// Use the plugin service helper to register this plugin.
 	p, err := plugin.Register(pluginName, description)
 	if err != nil {
-		log.Fatal("Unable to start %s", pluginName, err)
+		log.Fatal("Unable to start ", pluginName, err)
 	}
 
 	// The plugin can log and the log messages will show up in Octant.

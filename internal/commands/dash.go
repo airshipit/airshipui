@@ -19,7 +19,6 @@ import (
 var verboseLevel int
 
 func RunOctantWithOptions(kubeConfigPath string, args []string) {
-
 	// cobra command processing has already taken place and has processed and removed all flags and
 	// their options from args. Since this is a temporary workaround it is not worth the effort to
 	// extract all of these flags back out of cmd and reconstruct the original command line.  But
@@ -81,7 +80,10 @@ func RunOctantWithOptions(kubeConfigPath string, args []string) {
 		if stat.PID > 0 {
 			proc, err := os.FindProcess(stat.PID)
 			if err == nil {
-				proc.Kill()
+				err = proc.Kill()
+				if err != nil {
+					fmt.Printf("error trying to kill process: %s\n", err)
+				}
 			}
 		}
 	}()

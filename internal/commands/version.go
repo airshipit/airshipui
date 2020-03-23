@@ -13,7 +13,6 @@ import (
 )
 
 func newVersionCmd() *cobra.Command {
-
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show version",

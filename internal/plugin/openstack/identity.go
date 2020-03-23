@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 
@@ -22,13 +23,12 @@ import (
 func getDomains(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	domains.List(identityClientHelper(osp), domains.ListOpts{}).EachPage(
+	err := domains.List(identityClientHelper(osp), domains.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			domainList, err := domains.ExtractDomains(page)
 
 			if err != nil {
-				log.Fatalf("Broken at user list %v\n", err)
+				log.Printf("Broken at domain list %v\n", err)
 				return false, err
 			}
 
@@ -45,6 +45,10 @@ func getDomains(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("identity domain list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Domains",
 		"No domains found",
@@ -56,13 +60,12 @@ func getDomains(osp *OpenstackPlugin) component.Component {
 func getProjects(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	projects.List(identityClientHelper(osp), projects.ListOpts{}).EachPage(
+	err := projects.List(identityClientHelper(osp), projects.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			projectList, err := projects.ExtractProjects(page)
 
 			if err != nil {
-				log.Fatalf("Broken at project list %v\n", err)
+				log.Printf("Broken at project list %v\n", err)
 				return false, err
 			}
 
@@ -80,6 +83,10 @@ func getProjects(osp *OpenstackPlugin) component.Component {
 			return true, nil
 		})
 
+	if err != nil {
+		log.Printf("identity project list error: %s\n", err)
+	}
+
 	return component.NewTableWithRows(
 		"Projects",
 		"No projects found",
@@ -91,20 +98,24 @@ func getProjects(osp *OpenstackPlugin) component.Component {
 func getUsers(osp *OpenstackPlugin) component.Component {
 	rows := []component.TableRow{}
 
-	// TODO: Determine if the error needs to be handled from this function
-	users.List(identityClientHelper(osp), users.ListOpts{}).EachPage(
+	err := users.List(identityClientHelper(osp), users.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
 			networkList, err := users.ExtractUsers(page)
 
 			if err != nil {
-				log.Fatalf("Broken at user list %v\n", err)
+				log.Printf("Broken at user list %v\n", err)
 				return false, err
 			}
 
 			for _, user := range networkList {
-				email := ""
-				if user.Extra["email"] != nil {
-					email = user.Extra["email"].(string)
+				var email string
+				emailInterface, ok := user.Extra["email"]
+				if ok && emailInterface != nil {
+					b, err := json.Marshal(emailInterface)
+					if err != nil {
+						log.Printf("Error getting email %v\n", err)
+					}
+					email = string(b)
 				}
 
 				rows = append(rows, component.TableRow{
@@ -118,6 +129,10 @@ func getUsers(osp *OpenstackPlugin) component.Component {
 
 			return true, nil
 		})
+
+	if err != nil {
+		log.Printf("identity user list error: %s\n", err)
+	}
 
 	return component.NewTableWithRows(
 		"Users",

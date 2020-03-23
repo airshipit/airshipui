@@ -1,15 +1,19 @@
+/*
+Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
 package commands
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	"opendev.org/airship/airshipctl/pkg/config"
 	ctlenv "opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipui/internal/environment"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 var (

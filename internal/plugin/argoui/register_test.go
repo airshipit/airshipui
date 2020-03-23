@@ -1,31 +1,11 @@
 package plugin
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/vmware-tanzu/octant/pkg/plugin/service"
-	"github.com/vmware-tanzu/octant/pkg/plugin/service/fake"
 )
-
-type fakeRequest struct {
-	ctrl        *gomock.Controller
-	path, title string
-}
-
-func (f *fakeRequest) DashboardClient() service.Dashboard {
-	return fake.NewMockDashboard(f.ctrl)
-}
-
-func (f *fakeRequest) Path() string {
-	return ""
-}
-
-func (f *fakeRequest) Context() context.Context {
-	return context.TODO()
-}
 
 func TestRegister(t *testing.T) {
 	plugin, err := Register("argo-ui", "Argo UI test version")
