@@ -13,9 +13,7 @@ import (
 )
 
 var (
-	cfgFile     string
-	disableAuto bool
-	settings    *ctlenv.AirshipCTLSettings
+	settings *ctlenv.AirshipCTLSettings
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -60,7 +58,7 @@ func launchOctant(cmd *cobra.Command, args []string) {
 		kubeConfig = airshipKubeConfig
 	}
 
-	RunOctantWithOptions(cmd, kubeConfig, args)
+	RunOctantWithOptions(kubeConfig, args)
 }
 
 func Execute() {

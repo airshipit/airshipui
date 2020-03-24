@@ -18,7 +18,7 @@ import (
 
 var verboseLevel int
 
-func RunOctantWithOptions(cmd *cobra.Command, kubeConfigPath string, args []string) {
+func RunOctantWithOptions(kubeConfigPath string, args []string) {
 
 	// cobra command processing has already taken place and has processed and removed all flags and
 	// their options from args. Since this is a temporary workaround it is not worth the effort to
