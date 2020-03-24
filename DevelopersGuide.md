@@ -1,49 +1,64 @@
-# Octant Airship UI Plugin Developer's Guide
+# Airship UI Developer's Guide
 
-## Step by step installation of the Airship UI
+## Prerequisites
 
-1. This installation requires a working kubernetes or minikube (single node) installation including the kubectl command.
+1. Airship UI needs to be pointed to a Kubernetes Cluster. For development we recommending [setting up Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
 2. Install [Go](https://golang.org/dl/) v1.13 or newer
 3. Install [Octant](https://github.com/vmware-tanzu/octant)
-4. Install [Argo CLI](https://github.com/argoproj/argo/blob/master/docs/getting-started.md)
-5. Install [Argo UI](https://github.com/argoproj/argo/blob/master/README.md)
-6. Clone the AirshipUI repository and build the Airship UI plugin
-    ```
+
+## Getting Started
+
+Let's clone the Airship UI repository and build
+
     git clone https://opendev.org/airship/airshipui
     cd airshipui
     make build install-plugins
-    ```
-    Example output:
-    ```
-    $ make build install-plugins
-    go build -o bin/airshipui -ldflags='-X opendev.org/airship/airshipui/internal/environment.version=7274339' cmd/airshipui/main.go
-    go build -o bin/argoui -ldflags='-X opendev.org/airship/airshipui/internal/environment.version=7274339' cmd/argoui/main.go
-    cp bin/argoui ~/.config/octant/plugins
-    ```
-7. Start Airship UI with the airship/bin/airshipui command
-    ```
-    $ bin/airshipui
-    2020-01-09T13:52:14.260-0800    INFO    module/manager.go:79    registering action      {"component": "module-manager", "actionPath": "deployment/configuration", "module-name": "overview"}
-    2020-01-09T13:52:14.261-0800    INFO    module/manager.go:79    registering action      {"component": "module-manager", "actionPath": "overview/containerEditor", "module-name": "overview"}
-    2020-01-09T13:52:14.261-0800    INFO    module/manager.go:79    registering action      {"component": "module-manager", "actionPath": "overview/serviceEditor", "module-name": "overview"}
-    2020-01-09T13:52:14.261-0800    INFO    module/manager.go:79    registering action      {"component": "module-manager", "actionPath": "octant/deleteObject", "module-name": "configuration"}
-    2020-01-09T13:52:14.282-0800    INFO    plugin/manager.go:397   registered plugin "argoui"      {"plugin-name": "argoui", "cmd": "/home/gary/.config/octant/plugins/argoui", "metadata": {"Name":"argoui","Description":"Argo UI version 7274339","Capabilities":{"IsModule":true}}}
-    2020-01-09T13:52:14.282-0800    INFO    plugin/manager.go:405   plugin supports navigation      {"plugin-name": "argoui"}
-    2020-01-09T13:52:14.308-0800    INFO    plugin/manager.go:397   registered plugin "plugin-name" {"plugin-name": "octant-sample-plugin", "cmd": "/home/gary/.config/octant/plugins/octant-sample-plugin", "metadata": {"Name":"plugin-name","Description":"a description","Capabilities":{"SupportsPrinterConfig":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsTab":[{"Group":"","Version":"v1","Kind":"Pod"}],"IsModule":true}}}
-    2020-01-09T13:52:14.308-0800    INFO    plugin/manager.go:405   plugin supports navigation      {"plugin-name": "octant-sample-plugin"}
-    2020-01-09T13:52:14.309-0800    INFO    dash/dash.go:381        Using embedded Octant frontend
-    2020-01-09T13:52:14.315-0800    INFO    dash/dash.go:360        Dashboard is available at http://127.0.0.1:7777
-    ```
-8. If you're unable to open a browser on the machine running the Airship UI you can tunnel the connection over ssh and use a browser on your local machine
-    ```
+
+Now that Airship is built and we have a binary we can run it
+
+    ./bin/airshipui
+
+## Airship UI Plugins
+
+- [Argo UI](./cmd/argoui/README.md)
+
+## Developing Airship UI alongside Octant
+
+### Running a local Octant binary
+
+Instead of running your installed version of Octant you may want to run your development version that you built.
+To do so you can append the build directory to your path.
+
+Example (Adjust based on where your Octant repository is located):
+
+    PATH=$PATH:/home/jordan/go/src/github.com/vmware-tanzu/octant/build ./bin/airshipui
+
+### Using local Octant development
+
+You may also want your Go code to depend on your local development version of Octant. To do that you can replace the Go dependency with your local version.
+
+Example (Adjust based on where your Octant repository is located):
+
+    go mod edit -replace github.com/vmware-tanzu/octant=/home/jordan/go/src/github.com/vmware-tanzu/octant
+
+Don't forget to remove the replace before doing a `git review`
+
+## Running on a remote host
+
+If you're running Airship UI on a remote host and unable to open a browser on the machine you can tunnel the connection over ssh and use a browser on your local machine
+
     ssh -L 7777:localhost:7777 -L 8001:localhost:8001 <id>@<remote_host>
-    ```
-9. The Argo UI should be available at http://127.0.0.1:7777/#/argo-ui
+
+To avoid Airship UI from attempting to open the browser on startup run
+
+    airshipui --disable-open-browser
 
 ## Working with the Airship UI
+
 Airship UI utilizes the Octant plugin to drive some of the functionality.  Octant has a [plugin sample](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go) which is the basis of these instructions.
 
 ### Write a hello world plugin of your very own
+
 1. Clone the Airship UI repository (if not already done previously)
     ```
     git clone https://opendev.org/airship/airshipui
@@ -149,11 +164,15 @@ Airship UI utilizes the Octant plugin to drive some of the functionality.  Octan
 8. You can add other components for fun from the [Octant documentation](https://octant.dev/docs/master/plugins/reference/#component-text) for further enhancement to the page
 
 ## Appendix
+
 ### Minikube
+
 [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/) runs a single-node Kubernetes cluster for users looking to try out Kubernetes or develop with it day-to-day.  Installation instructions are available on the kubernetes website: https://kubernetes.io/docs/tasks/tools/install-minikube/).  If you are running behind a proxy it may be necessary to follow the steps outlined in the [How to use an HTTP/HTTPS proxy with minikube](https://minikube.sigs.k8s.io/docs/reference/networking/proxy/) website.
 
 ### Optional proxy settings
+
 #### Environment settings for wget or curl
+
 If your network has a proxy that prevents successful curls or wgets you may need to set the proxy environment variables.  The local ip is included in the no_proxy setting to prevent any local running process that may attempt api calls against it from being sent through the proxy for the request:
 
     ```

@@ -42,4 +42,4 @@ This repository also contains airship plugins that will be generated as standard
 
 ## Developer's Guide
 
-Step by step sample installation and more details can be found in the [Developer's Guide](DevelopersGuide.md).
+Instructions on setting up a development environment and more details can be found in the [Developer's Guide](DevelopersGuide.md)
