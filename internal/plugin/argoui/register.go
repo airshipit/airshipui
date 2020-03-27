@@ -19,15 +19,25 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// ArgoPlugin is an example of a plugin that registers navigation and action handlers
+type ArgoPlugin struct{}
+
+// NewArgoPlugin returns the basic argo plugin struct as required by octant
+func NewArgoPlugin() *ArgoPlugin {
+	return &ArgoPlugin{}
+}
+
 // Register registers the plugin with Octant
 func Register(name string, description string) (*service.Plugin, error) {
+	a := NewArgoPlugin()
+
 	capabilities := &plugin.Capabilities{
 		IsModule: true,
 	}
 
 	// Set up what should happen when Octant calls this plugin.
 	options := []service.PluginOption{
-		service.WithNavigation(handleNavigation, initRoutes),
+		service.WithNavigation(a.handleNavigation, a.initRoutes),
 	}
 
 	// Use the plugin service helper to register this plugin.
@@ -38,7 +48,7 @@ func Register(name string, description string) (*service.Plugin, error) {
 // be called frequently from Octant. Navigation is a tree of `Navigation` structs.
 // The plugin can use whatever paths it likes since these paths can be namespaced to the
 // the plugin.
-func handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
+func (a *ArgoPlugin) handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
 	return navigation.Navigation{
 		Title:    "Argo UI",
 		Path:     request.GeneratePath(),
@@ -48,7 +58,7 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 
 // initRoutes routes for this plugin. In this example, there is a global catch all route
 // that will return the content for every single path.
-func initRoutes(router *service.Router) {
+func (a *ArgoPlugin) initRoutes(router *service.Router) {
 	router.HandleFunc("", func(request service.Request) (component.ContentResponse, error) {
 		response := component.NewContentResponse(component.TitleFromString("Argo UI"))
 

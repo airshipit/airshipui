@@ -36,6 +36,10 @@ airshipui is an executable that wraps Octant.  When it is launched, it processes
 necessary custom startup tasks such as reading the airshipctl config file, then normally calls the function to instantiate Octant.
 This repository also contains airship plugins that will be generated as standard octant plugins, which are separate binaries.
 
+## Plugins
+
+[OpenStack Plugin documentation](./cmd/openstack/README.md)
+
 ## Developer's Guide
 
 Step by step sample installation and more details can be found in the [Developer's Guide](DevelopersGuide.md).

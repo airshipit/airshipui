@@ -68,6 +68,14 @@ Airship UI utilizes the Octant plugin to drive some of the functionality.  Octan
 
 	var pluginName = "hello-world"
 
+	// HelloWorldPlugin is a required struct to be an octant compliant plugin
+	type HelloWorldPlugin struct{}
+
+	// return a new hello world struct
+	func newHelloWorldPlugin() *HelloWorldPlugin {
+		return &HelloWorldPlugin{}
+	}
+
 	// This is a sample plugin showing the features of Octant's plugin API.
 	func main() {
 		// Remove the prefix from the go logger since Octant will print logs with timestamps.
@@ -78,9 +86,11 @@ Airship UI utilizes the Octant plugin to drive some of the functionality.  Octan
 			IsModule: true,
 		}
 
+		hwp := newHelloWorldPlugin()
+
 		// Set up what should happen when Octant calls this plugin.
 		options := []service.PluginOption{
-			service.WithNavigation(handleNavigation, initRoutes),
+			service.WithNavigation(hwp.handleNavigation, hwp.initRoutes),
 		}
 
 		// Use the plugin service helper to register this plugin.
@@ -94,8 +104,8 @@ Airship UI utilizes the Octant plugin to drive some of the functionality.  Octan
 		p.Serve()
 	}
 
-    // handleNavigation controls what is displayed on the navigation pane
-	func handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
+	// handles the navigation pane interation
+	func (hwp *HelloWorldPlugin) handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
 		return navigation.Navigation{
 			Title:    "Hello World Plugin",
 			Path:     request.GeneratePath(),
@@ -105,15 +115,15 @@ Airship UI utilizes the Octant plugin to drive some of the functionality.  Octan
 
 	// initRoutes routes for this plugin. In this example, there is a global catch all route
 	// that will return the content for every single path.
-	func initRoutes(router *service.Router) {
-		router.HandleFunc("*", func(request *service.Request) (component.ContentResponse, error) {
-			contentResponse := component.NewContentResponse(component.TitleFromString("Hello World Title"))
-			helloWorld := component.NewText("Hello World just some text on the page")
-			contentResponse.Add(helloWorld)
-            // NOTE: this will print out messages only if the -v is added to the start of octent or airship
-            log.Printf("Sample debugging message: %v\n", helloWorld)
-			return *contentResponse, nil
-		})
+	func (hwp *HelloWorldPlugin) initRoutes(router *service.Router) {
+		router.HandleFunc("*", hwp.routeHandler)
+	}
+
+	func (hwp *HelloWorldPlugin) routeHandler(request service.Request) (component.ContentResponse, error) {
+		contentResponse := component.NewContentResponse(component.TitleFromString("Hello World Title"))
+		helloWorld := component.NewText("Hello World just some text on the page")
+		contentResponse.Add(helloWorld)
+		return *contentResponse, nil
 	}
     ```
 5. Build the hello-world plugin
