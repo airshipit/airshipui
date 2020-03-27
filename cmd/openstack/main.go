@@ -17,8 +17,12 @@ func main() {
 	description := fmt.Sprintf("%s version %s", pluginName, environment.Version())
 
 	// Use the plugin service helper to register this plugin.
-	plugin.Register(pluginName, description)
+	p, err := plugin.Register(pluginName, description)
+	if err != nil {
+		log.Fatal("Unable to start %s", pluginName, err)
+	}
 
 	// The plugin can log and the log messages will show up in Octant.
 	log.Printf("%s is starting", pluginName)
+	p.Serve()
 }
