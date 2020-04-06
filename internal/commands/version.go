@@ -9,7 +9,11 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	env "opendev.org/airship/airshipui/internal/environment"
+)
+
+var (
+	// version will be overridden by ldflags supplied in Makefile
+	version = "(dev-version)"
 )
 
 func newVersionCmd() *cobra.Command {
@@ -20,8 +24,12 @@ func newVersionCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
 
-			fmt.Fprintln(out, "airshipui version", env.Version())
+			fmt.Fprintln(out, "airshipui version", Version())
 		},
 	}
 	return versionCmd
+}
+
+func Version() string {
+	return version
 }

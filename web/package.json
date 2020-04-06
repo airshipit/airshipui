@@ -1,0 +1,17 @@
+{
+  "name": "electron-poc",
+  "version": "0.0.1",
+  "main": "js/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "description": "An attempt to create a small electron app for eventual usage with airship-ui",
+  "author": "Andrew J. Schiefelbein, andrew.schiefelbein@att.com",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^8.2.2"
+  },
+  "dependencies": {
+    "xmlhttprequest": "^1.8.0"
+  }
+}

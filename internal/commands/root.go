@@ -5,31 +5,32 @@ SPDX-License-Identifier: Apache-2.0
 package commands
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"opendev.org/airship/airshipctl/pkg/config"
-	ctlenv "opendev.org/airship/airshipctl/pkg/environment"
-	"opendev.org/airship/airshipui/internal/environment"
+	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipui/internal/electron"
+	"opendev.org/airship/airshipui/internal/webservice"
 )
 
 var (
-	settings *ctlenv.AirshipCTLSettings
+	settings *environment.AirshipCTLSettings
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "airshipui",
 	Short:   "airshipui is a graphical user interface for airship",
-	Run:     launchOctant,
-	Version: environment.Version(),
+	Run:     launch,
+	Version: Version(),
 }
 
 func init() {
-	settings = &ctlenv.AirshipCTLSettings{}
+	settings = &environment.AirshipCTLSettings{}
 
 	// Add options to rootCmd for configuration of airshipctl and kube config
 	settings.InitFlags(rootCmd)
@@ -44,42 +45,25 @@ func init() {
 	addDashboardFlags(rootCmd)
 }
 
-func launchOctant(cmd *cobra.Command, args []string) {
+func launch(cmd *cobra.Command, args []string) {
 	// only process args if there are any
 	if cmd.Flags().NFlag() > 0 {
 		args = append(args, getFlags(cmd)...)
-		fmt.Printf("Executing Octant with the following args: %v\n", args)
+		log.Printf("Executing AirshipUI with the following args: %v\n", args)
 	}
 
-	kubeConfig := ""
-	airshipKubeConfig := settings.KubeConfigPath()
+	// start the webservice
+	go webservice.WebServer()
 
-	// If the kubeconfig specified on the command line (or defaulted to) does not exist,
-	// then do not pass specify a kubeconfig.  This will permit the underlying octant
-	// to use its own default, which can be either ~/.kube/config or grabbed from the
-	// environment
-	if fileExists(airshipKubeConfig) {
-		kubeConfig = airshipKubeConfig
-	}
-
-	RunOctantWithOptions(kubeConfig, args)
+	// start the electron app
+	electron.RunElectron()
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
-}
-
-// Determine whether the given filename exists and is accessible
-func fileExists(filename string) bool {
-	f, err := os.Stat(filename)
-	if err != nil {
-		return false
-	}
-
-	return !f.IsDir()
 }
 
 // this function pulls the passed command line options and renders unto octant what is octant's
@@ -105,4 +89,16 @@ func getFlags(cmd *cobra.Command) []string {
 	})
 
 	return args
+}
+
+// some day this may need to get refactored if the options become transportable from external sources
+func addDashboardFlags(cmd *cobra.Command) {
+	cmd.Flags().SortFlags = true
+
+	// octant specific flags
+	cmd.Flags().StringP("context", "", "", "initial context")
+	cmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
+	cmd.Flags().StringP("namespace", "n", "", "initial namespace")
+	cmd.Flags().StringP("plugin-path", "", "", "plugin path")
+	cmd.Flags().BoolP("verbose", "v", false, "turn on debug logging")
 }

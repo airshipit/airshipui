@@ -2,7 +2,7 @@
 Copyright (c) 2020 AT&T. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
-package plugin
+package airshipopenstack
 
 import (
 	"encoding/json"
@@ -15,13 +15,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // gets OpenStack domains that are viewable by the tenant
 // https://docs.openstack.org/security-guide/identity/domains.html
-func getDomains(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetDomains() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := domains.List(identityClientHelper(osp), domains.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -35,10 +35,10 @@ func getDomains(osp *OpenstackPlugin) component.Component {
 			for _, domain := range domainList {
 				name := domain.Name
 				domainCache[domain.ID] = name
-				rows = append(rows, component.TableRow{
-					"Name":        component.NewText(name),
-					"Description": component.NewText(domain.Description),
-					"Enabled":     component.NewText(strconv.FormatBool(domain.Enabled)),
+				m = append(m, map[string]string{
+					"Name":        name,
+					"Description": domain.Description,
+					"Enabled":     strconv.FormatBool(domain.Enabled),
 				})
 			}
 
@@ -49,16 +49,14 @@ func getDomains(osp *OpenstackPlugin) component.Component {
 		log.Printf("identity domain list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Domains",
-		"No domains found",
-		component.NewTableCols("Name", "Description", "Enabled"), rows)
+	return m
 }
 
 // gets OpenStack projects that are viewable by the tenant
 // https://docs.openstack.org/keystone/latest/admin/cli-manage-projects-users-and-roles.html
-func getProjects(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetProjects() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := projects.List(identityClientHelper(osp), projects.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -73,10 +71,10 @@ func getProjects(osp *OpenstackPlugin) component.Component {
 				name := project.Name
 				projectCache[project.ID] = name
 
-				rows = append(rows, component.TableRow{
-					"Enabled":     component.NewText(strconv.FormatBool(project.Enabled)),
-					"Description": component.NewText(project.Description),
-					"Name":        component.NewText(name),
+				m = append(m, map[string]string{
+					"Enabled":     strconv.FormatBool(project.Enabled),
+					"Description": project.Description,
+					"Name":        name,
 				})
 			}
 
@@ -87,16 +85,14 @@ func getProjects(osp *OpenstackPlugin) component.Component {
 		log.Printf("identity project list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Projects",
-		"No projects found",
-		component.NewTableCols("Name", "Enabled", "Description"), rows)
+	return m
 }
 
 // gets OpenStack uesrs that are viewable by the tenant
 // https://docs.openstack.org/keystone/latest/user/index.html
-func getUsers(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetUsers() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := users.List(identityClientHelper(osp), users.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -118,12 +114,15 @@ func getUsers(osp *OpenstackPlugin) component.Component {
 					email = string(b)
 				}
 
-				rows = append(rows, component.TableRow{
-					"Name":        component.NewText(user.Name),
-					"Email":       component.NewText(email),
-					"Description": component.NewText(user.Description),
-					"Enabled":     component.NewText(strconv.FormatBool(user.Enabled)),
-					"Domain Name": component.NewText(domainCache[user.DomainID]),
+				if len(domainCache) == 0 {
+					GetDomains()
+				}
+				m = append(m, map[string]string{
+					"Name":        user.Name,
+					"Email":       email,
+					"Description": user.Description,
+					"Enabled":     strconv.FormatBool(user.Enabled),
+					"Domain Name": domainCache[user.DomainID],
 				})
 			}
 
@@ -134,10 +133,7 @@ func getUsers(osp *OpenstackPlugin) component.Component {
 		log.Printf("identity user list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Users",
-		"No users found",
-		component.NewTableCols("Name", "Email", "Description", "Enabled", "Domain Name"), rows)
+	return m
 }
 
 // helper function to create an identity specific gophercloud client

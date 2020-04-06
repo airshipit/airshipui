@@ -14,7 +14,7 @@ COVERAGE_OUTPUT := coverage.out
 TESTFLAGS     ?=
 
 # Override the value of the version variable in main.go
-LD_FLAGS= '-X opendev.org/airship/airshipui/internal/environment.version=$(GIT_VERSION)'
+LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERSION)'
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
 BUILD_DIR := bin
 
@@ -34,7 +34,7 @@ else
 	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
 
-DIRS = internal
+DIRS = internal/plugin
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build

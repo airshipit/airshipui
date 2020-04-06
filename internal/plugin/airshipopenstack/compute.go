@@ -3,7 +3,7 @@ Copyright (c) 2020 AT&T. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package plugin
+package airshipopenstack
 
 import (
 	"log"
@@ -16,13 +16,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // gets OpenStack flavors that are available for the tenant
 // https://docs.openstack.org/nova/latest/user/flavors.html
-func getFlavors(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetFlavors() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := flavors.ListDetail(computeClientHelper(osp), flavors.ListOpts{AccessType: flavors.AllAccess}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -36,15 +36,15 @@ func getFlavors(osp *OpenstackPlugin) component.Component {
 				name := flavor.Name
 				flavorCache[flavor.ID] = name
 
-				rows = append(rows, component.TableRow{
-					"Name":           component.NewText(name),
-					"VCPUs":          component.NewText(strconv.Itoa(flavor.VCPUs)),
-					"RAM":            component.NewText(strconv.Itoa(flavor.RAM)),
-					"Root Disk":      component.NewText(strconv.Itoa(flavor.Disk)),
-					"Ephemeral Disk": component.NewText(strconv.Itoa(flavor.Ephemeral)),
-					"Swap Disk":      component.NewText(strconv.Itoa(flavor.Swap)),
-					"RX/TX factor":   component.NewText(strconv.FormatFloat(flavor.RxTxFactor, 'f', 1, 64)),
-					"Public":         component.NewText(strconv.FormatBool(flavor.IsPublic)),
+				m = append(m, map[string]string{
+					"Name":           name,
+					"VCPUs":          strconv.Itoa(flavor.VCPUs),
+					"RAM":            strconv.Itoa(flavor.RAM),
+					"Root Disk":      strconv.Itoa(flavor.Disk),
+					"Ephemeral Disk": strconv.Itoa(flavor.Ephemeral),
+					"Swap Disk":      strconv.Itoa(flavor.Swap),
+					"RX/TX factor":   strconv.FormatFloat(flavor.RxTxFactor, 'f', 1, 64),
+					"Public":         strconv.FormatBool(flavor.IsPublic),
 				})
 			}
 
@@ -55,18 +55,14 @@ func getFlavors(osp *OpenstackPlugin) component.Component {
 		log.Printf("compute flavor list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Flavors",
-		"No flavors found",
-		component.NewTableCols("Name", "VCPUs", "RAM", "Root Disk", "Ephemeral Disk",
-			"Swap Disk", "RX/TX factor", "Public"),
-		rows)
+	return m
 }
 
 // gets OpenStack images that are available for the tenant
 // https://docs.openstack.org/image-guide/
-func getImages(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetImages() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := images.ListDetail(computeClientHelper(osp), images.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -81,10 +77,10 @@ func getImages(osp *OpenstackPlugin) component.Component {
 				name := image.Name
 				imageCache[image.ID] = name
 
-				rows = append(rows, component.TableRow{
-					"Name":   component.NewText(name),
-					"Type":   component.NewText(strconv.Itoa(image.Progress)),
-					"Status": component.NewText(image.Status),
+				m = append(m, map[string]string{
+					"Name":   name,
+					"Type":   strconv.Itoa(image.Progress),
+					"Status": image.Status,
 				})
 			}
 
@@ -95,16 +91,14 @@ func getImages(osp *OpenstackPlugin) component.Component {
 		log.Printf("compute image list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Images",
-		"No images found",
-		component.NewTableCols("Name", "Type", "Status"), rows)
+	return m
 }
 
 // gets OpenStack vms that are configured for the tenant
 // https://docs.openstack.org/python-openstackclient/latest/cli/command-objects/server.html
-func getVMs(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetVMs() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := servers.List(computeClientHelper(osp), servers.ListOpts{AllTenants: true}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -134,14 +128,20 @@ func getVMs(osp *OpenstackPlugin) component.Component {
 					addresses = tmp[0]
 				}
 
-				rows = append(rows, component.TableRow{
-					"Instance Name": component.NewText(name),
-					"Image Name":    component.NewText(imageCache[server.Image["id"].(string)]),
-					"IP Address":    component.NewText(addresses),
-					"Flavor":        component.NewText(flavorCache[server.Flavor["id"].(string)]),
-					"Key Pair":      component.NewText(server.KeyName),
-					"Status":        component.NewText(server.Status),
-					"Created":       component.NewText(server.Created.Local().String()),
+				if len(imageCache) == 0 {
+					GetImages()
+				}
+				if len(flavorCache) == 0 {
+					GetFlavors()
+				}
+				m = append(m, map[string]string{
+					"Instance Name": name,
+					"Image Name":    imageCache[server.Image["id"].(string)],
+					"IP Address":    addresses,
+					"Flavor":        flavorCache[server.Flavor["id"].(string)],
+					"Key Pair":      server.KeyName,
+					"Status":        server.Status,
+					"Created":       server.Created.Local().String(),
 				})
 			}
 
@@ -152,10 +152,7 @@ func getVMs(osp *OpenstackPlugin) component.Component {
 		log.Printf("compute server list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Servers",
-		"No servers found",
-		component.NewTableCols("Instance Name", "Image Name", "IP Address", "Flavor", "Key Pair", "Status", "Created"), rows)
+	return m
 }
 
 // helper function to create a compute specific gophercloud client

@@ -3,7 +3,7 @@ Copyright (c) 2020 AT&T. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package plugin
+package airshipopenstack
 
 import (
 	"log"
@@ -15,13 +15,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // gets OpenStack networks available for the tenant
 // https://docs.openstack.org/api-ref/network/v2/#networks
-func getNetworks(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetNetworks() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := networks.List(networkClientHelper(osp), networks.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -48,14 +48,17 @@ func getNetworks(osp *OpenstackPlugin) component.Component {
 					subnetString = subnetCache[n.Subnets[0]]
 				}
 
-				rows = append(rows, component.TableRow{
-					"Name":               component.NewText(n.Name),
-					"Project":            component.NewText(projectCache[n.ProjectID]),
-					"Subnets":            component.NewText(subnetString),
-					"Shared":             component.NewText(strconv.FormatBool(n.Shared)),
-					"Status":             component.NewText(n.Status),
-					"Admin State":        component.NewText(strconv.FormatBool(n.AdminStateUp)),
-					"Availability Zones": component.NewText(strings.Join(n.AvailabilityZoneHints, ", ")),
+				if len(projectCache) == 0 {
+					GetProjects()
+				}
+				m = append(m, map[string]string{
+					"Name":               n.Name,
+					"Project":            projectCache[n.ProjectID],
+					"Subnets":            subnetString,
+					"Shared":             strconv.FormatBool(n.Shared),
+					"Status":             n.Status,
+					"Admin State":        strconv.FormatBool(n.AdminStateUp),
+					"Availability Zones": strings.Join(n.AvailabilityZoneHints, ", "),
 				})
 			}
 
@@ -66,18 +69,14 @@ func getNetworks(osp *OpenstackPlugin) component.Component {
 		log.Printf("network list error: %s\n", err)
 	}
 
-	return component.NewTableWithRows(
-		"Networks",
-		"No networks found",
-		component.NewTableCols("Name", "Project", "Subnets", "Shared", "Status",
-			"Admin State", "Availability Zones"),
-		rows)
+	return m
 }
 
 // gets OpenStack subnets available for the tenant
 // https://docs.openstack.org/api-ref/network/v2/#subnets
-func getSubnets(osp *OpenstackPlugin) component.Component {
-	rows := []component.TableRow{}
+func GetSubnets() []map[string]string {
+	osp := NewOpenstackPlugin()
+	m := make([]map[string]string, 0)
 
 	err := subnets.List(networkClientHelper(osp), subnets.ListOpts{}).EachPage(
 		func(page pagination.Page) (bool, error) {
@@ -93,11 +92,11 @@ func getSubnets(osp *OpenstackPlugin) component.Component {
 				name := subnet.Name
 				subnetCache[subnet.ID] = name + ": " + cidr
 
-				rows = append(rows, component.TableRow{
-					"Name":            component.NewText(name),
-					"Network Address": component.NewText(cidr),
-					"IP Version":      component.NewText("IPv" + strconv.Itoa(subnet.IPVersion)),
-					"Gateway IP":      component.NewText(subnet.GatewayIP),
+				m = append(m, map[string]string{
+					"Name":            name,
+					"Network Address": cidr,
+					"IP Version":      "IPv" + strconv.Itoa(subnet.IPVersion),
+					"Gateway IP":      subnet.GatewayIP,
 				})
 			}
 
@@ -107,10 +106,7 @@ func getSubnets(osp *OpenstackPlugin) component.Component {
 	if err != nil {
 		log.Printf("network subnet list error: %s\n", err)
 	}
-	return component.NewTableWithRows(
-		"Subnets",
-		"No subnets found",
-		component.NewTableCols("Name", "Network Address", "IP Version", "Gateway IP"), rows)
+	return m
 }
 
 // helper function to create a network specific gophercloud client
