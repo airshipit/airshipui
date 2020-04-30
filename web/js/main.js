@@ -19,7 +19,8 @@ function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webviewTag: true
     },
     show: false
   })
@@ -58,4 +59,12 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
+})
+
+// SSL/TSL: not a great idea, but this will allow linking to external dashboards
+// that use self-signed certs for dev purposes. Electron will simply show a blank
+// page with no errors in the console log if it encounters a self-signed cert
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+  event.preventDefault();
+  callback(true);
 })

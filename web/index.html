@@ -10,23 +10,30 @@
   <script src="js/websocket.js"></script>
   <script src="js/common.js"></script>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
   <div id="HeaderDiv" class="topnav">
-    <div id="HeaderNameDiv" class="topnavsuite">Airship UI</div>
-    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="HomeLink">Home</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="PluginsLink">Plugins</a>
+    <div id="HeaderNameDiv" class="topnavsuite"></div>
+    <a href="index.html" id="AirshipUIHome">Airship UI</a>
+    <div class="dropdown">
+      <button class="dropbtn">Plugins
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div id="plugins" class="dropdown-content">
+      </div>
+  </div>
     <div id="NameDiv" class="topnavname"></div>
   </div>
   <div class="container" id="MainDiv" style="width:98%">
-    <h1>TODO: Airship integration</h1>
   </div>
   <div id="FooterDiv">
     </br>
     <center><img src="images/airship-color.png" width="100px" height="67px"></center>
     <center>
-      <p><div class="tooltip">&copy; The Airship Authors.<span class="tooltiptext">https://wiki.openstack.org/wiki/Airship</span></div> All Rights Reserved.</p>
+      <p>&copy; <a href="http://www.att.com/" title="www.att.com">The Airship Authors.</a> All Rights
+        Reserved.</p>
     </center>
   </div>
 </body>

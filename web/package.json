@@ -9,9 +9,10 @@
   "author": "Andrew J. Schiefelbein, andrew.schiefelbein@att.com",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^8.2.2"
+    "electron": "^8.2.4"
   },
   "dependencies": {
+    "electron-json-config": "^1.5.3",
     "xmlhttprequest": "^1.8.0"
   }
 }

@@ -14,26 +14,58 @@
  limitations under the License.
 */
 
+const remote = require('electron').remote;
+const app = remote.app;
+const fs = require('fs')
+const config = require('electron-json-config')
+
+
 // add the footer and header when the page loads
 if (document.addEventListener) {
-	document.addEventListener("DOMContentLoaded", function() { 
+	document.addEventListener("DOMContentLoaded", function() {
         window.onscroll = function() {
             let header = document.getElementById("HeaderDiv");
             let sticky = header.offsetTop;
-            
+
             if (window.pageYOffset > sticky) {
                 header.classList.add("sticky");
             } else {
                 header.classList.remove("sticky");
             }
         };
+        addPlugins()
     }, false);
+}
+
+// add dashboard links to Plugins if present in $HOME/.airshipui/plugins.json
+function addPlugins() {
+    try {
+        var f = fs.readFileSync(app.getPath('home') + '/.airshipui/plugins.json')
+
+        var dashboards = JSON.parse(f)
+
+        for (var i = 0; i < dashboards.external_dashboards.length; i++) {
+            var path = app.getAppPath()
+            var p = document.getElementById("plugins")
+            var a = document.createElement("a")
+
+            var dash = dashboards.external_dashboards[i]
+            config.set(i.toString(), dash.url)
+            a.setAttribute('href', `${path}/plugins/dashboards/index.html`)
+            a.setAttribute('onclick', `config.set('dashboard', ${i.toString()})`)
+            a.innerText = dash.name
+            p.appendChild(a)
+        }
+
+    } catch (e) {
+        console.log("Plugins file not found")
+    }
 }
 
 function removeElement(id) {
     if (document.contains(document.getElementById(id))) {
         document.getElementById(id).remove();
-    }   
+    }
 }
 
 // based on w3school: https://www.w3schools.com/howto/howto_js_sort_table.asp

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Airship UI</title>
+  <meta name="description"
+    content="Airship User Interface.  Copyright (c) 2020 AT&T. All Rights Reserved.  SPDX-License-Identifier: Apache-2.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="../../js/common.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', _ => {
+            var view = document.getElementById("dashview")
+            var dash = config.get('dashboard')
+            var url = config.get(dash.toString())
+            view.src = url
+        })
+    </script>
+</head>
+
+<body>
+  <div id="HeaderDiv" class="topnav">
+    <div id="HeaderNameDiv" class="topnavsuite"></div>
+    <a href="../../index.html" id="AirshipUIHome">Airship UI</a>
+    <div class="dropdown">
+      <button class="dropbtn">Plugins
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div id="plugins" class="dropdown-content">
+      </div>
+    </div>
+  </div>
+  <div id="dashboard">
+    <webview class="webview" id="dashview" src="" autosize="on" style="height:92vh"></webview>
+  </div>
+</body>
+
+</html>
