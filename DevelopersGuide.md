@@ -12,6 +12,10 @@ Let's clone the Airship UI repository and build
     git clone https://opendev.org/airship/airshipui
     cd airshipui
     make
+    cd web
+    npm install
+    npm install --save-dev electron
+    npm install electron-json-config
 
 Now that Airship is built and we have a binary we can run it
 
