@@ -21,7 +21,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"opendev.org/airship/airshipui/internal/plugin/airshipopenstack"
 )
 
 // just a base structure to return from the web service
@@ -49,17 +48,6 @@ var upgrader = websocket.Upgrader{
 // most likely we will need to have sub components register with the system
 // TODO: make this a dynamic registration of components
 var functionMap = map[string]map[string]func() []map[string]string{
-	"openstack": {
-		"getFlavors":  airshipopenstack.GetFlavors,
-		"getImages":   airshipopenstack.GetImages,
-		"getVMs":      airshipopenstack.GetVMs,
-		"getDomains":  airshipopenstack.GetDomains,
-		"getProjects": airshipopenstack.GetProjects,
-		"getUsers":    airshipopenstack.GetUsers,
-		"getNetworks": airshipopenstack.GetNetworks,
-		"getSubnets":  airshipopenstack.GetSubnets,
-		"getVolumes":  airshipopenstack.GetVolumes,
-	},
 	"electron": {
 		"keepalive": basicReply,
 		"getID":     basicReply,

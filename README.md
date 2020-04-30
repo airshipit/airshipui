@@ -1,44 +1,19 @@
-# Octant Airship UI Plugin
+# Airship UI
 
-Airship UI is a wrapper around [Octant](https://github.com/vmware/octant) together with Octant plugin(s) that allows you to view your kubernetes cluster.  The airshipui command uses airshipctl's configuration in order to find and connect to the kubernetes cluster, launches the Octant server process, and directs your browser to the user interface.
-
-Several plugins will be delivered with airshipui. The first, argoui, is a plugin that embeds the [Argo UI](https://github.com/argoproj/argo-ui) interface within octant, and it requires that argo be installed on your kubernetes cluster (this should be the case by default with Airship 2.0, which uses argo as its workflow engine)
-
+Airship UI is an [electron](https://www.electronjs.org/) that is designed to allow you to interact with Airship components, find and connect to the kubernetes cluster and use plugins to tie together a singular dashboard to view addons without the need to go to a separate url or application for each. 
 
 ## Prerequisites
 
 - A working [kubernetes](https://kubernetes.io/) or [airship](https://wiki.openstack.org/wiki/Airship) installation
-- [Go 1.12+](https://golang.org/dl/)
-- [Octant](https://github.com/vmware-tanzu/octant)
-- [Argo](https://github.com/argoproj/argo/blob/master/README.md)
-
+- [Go 1.13+](https://golang.org/dl/)
 
 ## Getting Started
 
 ```
 git clone https://opendev.org/airship/airshipui
 cd airshipui
-make build install-plugins
+make build
 ```
-
-`make install-plugins` builds and installs the plugin to
-`$HOME/.config/octant/plugin/`.
-
-The next time Octant is run it will include plugins in the above directory.
-Further information for running Octant can be found in the
-[Octant Repo](https://github.com/vmware/octant).
-
-If you would like to just build the plugin use `make`.
-
-## Architecture
-
-airshipui is an executable that wraps Octant.  When it is launched, it processes its own set of command-line options, performs any
-necessary custom startup tasks such as reading the airshipctl config file, then normally calls the function to instantiate Octant.
-This repository also contains airship plugins that will be generated as standard octant plugins, which are separate binaries.
-
-## Plugins
-
-[OpenStack Plugin documentation](./cmd/openstack/README.md)
 
 ## Developer's Guide
 
