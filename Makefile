@@ -17,28 +17,42 @@ TESTFLAGS     ?=
 LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERSION)'
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
 BUILD_DIR := bin
+
+# Find all main.go files under cmd, excluding airshipui itself (which is the octant wrapper)
+EXAMPLE_PLUGIN_NAMES := $(shell basename $(subst /main.go,,$(shell find examples/plugins -name "main.go")))
+EXAMPLE_PLUGINS   := $(addprefix $(BUILD_DIR)/, $(EXAMPLE_PLUGIN_NAMES))
 MAIN      := $(BUILD_DIR)/airshipui
 EXTENSION :=
 
+ifdef XDG_CONFIG_HOME
+	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
 # Determine if on windows
-ifeq ($(OS),Windows_NT)
+else ifeq ($(OS),Windows_NT)
+	OCTANT_PLUGINSTUB_DIR ?= $(subst \,/,${LOCALAPPDATA}/octant/plugins)
 	EXTENSION=.exe
+else
+	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
 
 DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build
-build: $(MAIN) $(PLUGINS)
+build: $(MAIN) $(EXAMPLE_PLUGINS)
 
 $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
 
-$(PLUGINS): FORCE
+$(EXAMPLE_PLUGINS): FORCE
 	@mkdir -p $(BUILD_DIR)
-	go build -o $@$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
+	go build -o $@$(EXTENSION) $(GO_FLAGS) examples/plugins/$(@F)/main.go
 FORCE:
+
+.PHONY: install-octant-plugins
+install-octant-plugins: $(EXAMPLE_PLUGINS)
+	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
+	cp $(addsuffix $(EXTENSION), $^) $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
 test:

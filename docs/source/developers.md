@@ -1,25 +1,41 @@
 # Airship UI Developer's Guide
 
 ## Prerequisites
-
-1. Airship UI needs to be pointed to a Kubernetes Cluster. For development we recommending [setting up Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
-2. Install [Go](https://golang.org/dl/) v1.13 or newer
+1. [Go](https://golang.org/dl/) v1.13 or newer
+2. [Nodejs](https://nodejs.org/en/download/) v12 or newer
 
 ## Getting Started
 
-Let's clone the Airship UI repository and build
+Clone the Airship UI repository and build
 
     git clone https://opendev.org/airship/airshipui
     cd airshipui
     make
+    make install-octant-plugins # (if running with octant)
     cd web
     npm install
     npm install --save-dev electron
     npm install electron-json-config
 
-Now that Airship is built and we have a binary we can run it
+Run the airshipui binary
 
     ./bin/airshipui
+
+# Plugins
+## Octant
+[Octant](https://github.com/vmware-tanzu/octant) is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
+
+Octant needs to be pointed to a Kubernetes Cluster. For development we recommend [setting up Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+
+### How to get and build Octant
+If you are going to do serious Octant development you will need to adhere to [Octant's Hacking Guide](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md) which includes information on how to build Octant and the steps to push changes to them.
+
+### Running the example
+Build the octant plugin executable
+```
+make install-octant-plugins
+```
+Run the octant binary and the plugin should show "Hello World just some text on the page" under the http://127.0.0.1:7777/#/airshipui-example-plugin url.
 
 ## Appendix
 
