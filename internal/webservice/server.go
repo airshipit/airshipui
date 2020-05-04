@@ -19,23 +19,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 // just a base structure to return from the web service
-type Message struct {
-	ID      int    `json:"id,omitempty"`
-	Sender  string `json:"sender"`
-	Message string `json:"message"`
-}
-
 type wsRequest struct {
-	ID        string              `json:"id,omitempty"`
-	Type      string              `json:"type,omitempty"`
-	Component string              `json:"component,omitempty"`
-	Error     string              `json:"error"`
-	Data      []map[string]string `json:"data"`
+	Type      string                 `json:"type,omitempty"`
+	Component string                 `json:"component,omitempty"`
+	Error     string                 `json:"error"`
+	Data      map[string]interface{} `json:"data"`
 }
 
 // gorilla ws specific HTTP upgrade to WebSockets
@@ -47,10 +41,13 @@ var upgrader = websocket.Upgrader{
 // this is a way to allow for arbitrary messages to be processed by the backend
 // most likely we will need to have sub components register with the system
 // TODO: make this a dynamic registration of components
-var functionMap = map[string]map[string]func() []map[string]string{
+var functionMap = map[string]map[string]func() map[string]interface{}{
 	"electron": {
-		"keepalive": basicReply,
-		"getID":     basicReply,
+		"keepalive": keepaliveReply,
+		"getID":     keepaliveReply,
+	},
+	"initialize": {
+		"getAll": getPlugins,
 	},
 }
 
@@ -92,8 +89,7 @@ func onMessage() {
 		if reqType, ok := functionMap[request.Type]; ok {
 			// the function map may have a component (function) to process the request
 			if component, ok := reqType[request.Component]; ok {
-				request.Data = component()
-				if err = ws.WriteJSON(request); err != nil {
+				if err = ws.WriteJSON(component()); err != nil {
 					onError(err)
 					break
 				}
@@ -116,14 +112,14 @@ func onMessage() {
 	}
 }
 
-func basicReply() []map[string]string {
-	m := make([]map[string]string, 0)
-	m = append(m, map[string]string{
-		"ID":        "foo",
-		"type":      "bar",
-		"component": "glitch",
-	})
-	return m
+// The keepalive response including a timestamp from the server
+// The electron / web app will occasionally ping the server due to the websocket default timeout
+func keepaliveReply() map[string]interface{} {
+	return map[string]interface{}{
+		"type":      "electron",
+		"component": "keepalive",
+		"timestamp": time.Now().UnixNano() / 1000000,
+	}
 }
 
 // common websocket close with logging

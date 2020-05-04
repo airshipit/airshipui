@@ -59,20 +59,24 @@ function register() {
 
 function handleMessages(message) {
     var json = JSON.parse(message.data);
-    // keepalives aren't interesting to other pages
-    if (json["type"] === "electron") {
-        document.getElementById("OutputDiv").innerHTML = JSON.stringify(json);
+    if (json["type"] === "plugins" && json["component"] === "dropdown") {
+        addPlugins(json["plugins"]);
     } else {
         // events based on the type are interesting to other pages
         // create and dispatch an event based on the data received
-        document.dispatchEvent(new CustomEvent(json["type"], {detail: json}));
+        // keepalives aren't interesting so suppressing normal actions for it
+        if (json["electron"] !== "plugins" && json["component"] !== "keepalive") {
+            document.dispatchEvent(new CustomEvent(json["type"], {detail: json}));
+        }
     }
+
+    // TODO: Determine if these should be suppressed or only allowed in specific cases
     console.log("Received message: " + message.data);
 }
 
 function open() {
     console.log("Websocket established");
-    var json = {"id":"poc","type":"electron","component":"getID"};
+    var json = {"type":"initialize","component":"getAll"};
     ws.send(JSON.stringify(json));
     // start up the keepalive so the websocket stays open
     keepAlive();

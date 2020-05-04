@@ -10,7 +10,6 @@
   <script src="js/websocket.js"></script>
   <script src="js/common.js"></script>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -18,15 +17,14 @@
     <div id="HeaderNameDiv" class="topnavsuite"></div>
     <a href="index.html" id="AirshipUIHome">Airship UI</a>
     <div class="dropdown">
-      <button class="dropbtn">Plugins
-        <i class="fa fa-caret-down"></i>
-      </button>
-      <div id="plugins" class="dropdown-content">
+      <button class="dropbtn">Dropdown</button>
+      <div id="PluginDropdown" class="dropdown-content">
       </div>
+    </div>
   </div>
-    <div id="NameDiv" class="topnavname"></div>
-  </div>
-  <div class="container" id="MainDiv" style="width:98%">
+  <div class="container" id="MainDiv" style="width:98%"></div>
+  <div id="dashboard">
+    <webview class="webview" id="DashView" autosize="on" style="height:92vh;display:none"></webview>
   </div>
   <div id="FooterDiv">
     </br>

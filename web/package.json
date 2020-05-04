@@ -5,14 +5,15 @@
   "scripts": {
     "start": "electron ."
   },
-  "description": "An attempt to create a small electron app for eventual usage with airship-ui",
-  "author": "Andrew J. Schiefelbein, andrew.schiefelbein@att.com",
+  "description": "Airship UI",
+  "author": "The Airship Authors",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^8.2.4"
+    "electron": "^8.2.5"
   },
   "dependencies": {
     "electron-json-config": "^1.5.3",
+    "node-sass": "^4.14.0",
     "xmlhttprequest": "^1.8.0"
   }
 }
