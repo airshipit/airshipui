@@ -18,9 +18,9 @@ var timeout = null;
 
 // establish a session when browser is open
 if (document.addEventListener) {
-	document.addEventListener("DOMContentLoaded", function() { 
+    document.addEventListener("DOMContentLoaded", function () {
         // register the webservice so it's available the entire time of the process
-        register(); 
+        register();
     }, false);
 }
 
@@ -59,15 +59,24 @@ function register() {
 
 function handleMessages(message) {
     var json = JSON.parse(message.data);
-    if (json["type"] === "plugins" && json["component"] === "dropdown") {
-        addPlugins(json["plugins"]);
+    // keepalives and inits aren't interesting to other pages
+    if (json["type"] === "electron") {
+        console.log(json);
+        if (json["component"] === "initialize") {
+            if (!json["isAuthenticated"]) {
+                authenticate(json["authentication"]);
+            } else {
+                authComplete();
+            }
+            addPlugins(json["plugins"]);
+        } else if (json["component"] === "authcomplete") {
+            authComplete();
+        }
     } else {
+        // TODO: determine if we're dispatching events or just doing function calls
         // events based on the type are interesting to other pages
         // create and dispatch an event based on the data received
-        // keepalives aren't interesting so suppressing normal actions for it
-        if (json["electron"] !== "plugins" && json["component"] !== "keepalive") {
-            document.dispatchEvent(new CustomEvent(json["type"], {detail: json}));
-        }
+        document.dispatchEvent(new CustomEvent(json["type"], { detail: json }));
     }
 
     // TODO: Determine if these should be suppressed or only allowed in specific cases
@@ -76,7 +85,7 @@ function handleMessages(message) {
 
 function open() {
     console.log("Websocket established");
-    var json = {"type":"initialize","component":"getAll"};
+    var json = { "type": "electron", "component": "initialize" };
     ws.send(JSON.stringify(json));
     // start up the keepalive so the websocket stays open
     keepAlive();
@@ -99,8 +108,15 @@ function close(code) {
         case 1015: console.log("Web Socket Closed: closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified): ", code); break;
         default: console.log("Web Socket Closed: unknown error code: ", code); break;
     }
-    
+
     ws = null;
+}
+
+function authComplete() {
+    document.getElementById("HeaderDiv").style.display = '';
+    document.getElementById("MainDiv").style.display = '';
+    document.getElementById("DashView").style.display = 'none';
+    document.getElementById("FooterDiv").style.display = '';
 }
 
 function keepAlive() {
@@ -109,9 +125,9 @@ function keepAlive() {
             // clear the previously set timeout
             window.clearTimeout(timeout);
             window.clearInterval(timeout);
-            var json = {"id":"poc","type":"electron","component":"keepalive"};
+            var json = { "id": "poc", "type": "electron", "component": "keepalive" };
             ws.send(JSON.stringify(json));
-            timeout = window.setTimeout(keepAlive,60000);
+            timeout = window.setTimeout(keepAlive, 60000);
         }
     }
 }

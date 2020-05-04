@@ -21,11 +21,37 @@ Run the airshipui binary
 
     ./bin/airshipui
 
+# Authentication
+## Pluggable authentication methods
+The AirshipUI is not designed to create authentication credentials but to have them supplied to it either by a configuration or by an external entity.  The expectation is that there will be an external URL that will handle authentication for the system which may need to be modified or created.  The endpoint will need to be able to forward a [bearer token](https://oauth.net/2/bearer-tokens/), [basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication) or cookie data to the Airship UI backend service.
+
+To configure the pluggable authentication the following must be added to the $HOME/.airshipui/airshipui.json file:
+```
+"authMethod": {
+	"url": "<protocol>://<host:port>/<path>/<method>"
+}
+```
+Note: By default the system will start correctly without any authentication urls supplied to the configuration.  The expectation is that AirshipUI will be running in a minimal least authorized configuration.
+
+## Example Auth Server
+There is an example authentication server in examples/authentication/main.go.  These endpoints can be added to the $HOME/.airshipui/airshipui.json and will allow the system to show a basic authentication test.
+1. Basic auth on http://127.0.0.1:12321/basic-auth
+2. Cookie based auth on http://127.0.0.1:12321/cookie
+3. OAuth JWT (JSON Web Token) on http://127.0.0.1:12321/oauth
+
+To start the system cd to the root of the AirshipUI repository and execute:
+```
+go run examples/authentication/main.go
+```
+### Example Auth Server Credentials
++ The example auth server id is: airshipui
++ The example auth server password is: Open Sesame!
+
 # Plugins
 ## Octant
 [Octant](https://github.com/vmware-tanzu/octant) is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
 
-Octant needs to be pointed to a Kubernetes Cluster. For development we recommend [setting up Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+Octant needs to be pointed to a Kubernetes Cluster. For development it is recommended to use [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
 
 ### How to get and build Octant
 If you are going to do serious Octant development you will need to adhere to [Octant's Hacking Guide](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md) which includes information on how to build Octant and the steps to push changes to them.

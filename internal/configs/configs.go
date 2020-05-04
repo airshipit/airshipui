@@ -13,47 +13,42 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-package webservice
+package configs
 
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
-// basic structure for a given external dashboard
+// AirshipuiProps basic structure for a given external dashboard
 // TODO: solidify the struct requirements for the input
-type extPlugins struct {
+// TODO: maybe move where props gathering and parsing lives
+type AirshipuiProps struct {
+	AuthMethod struct {
+		Type  string   `json:"type,omitempty"`
+		Value []string `json:"values,omitempty"`
+		URL   string   `json:"url,omitempty"`
+	} `json:"authMethod"`
 	ExtDashboard []interface{} `json:"external_dashboards"`
 }
 
-// cache the file so we don't have to reread every execution
-var pluginCache map[string]interface{}
-
-// getPlugins updates the pluginCache from file if needed
-func getPlugins() map[string]interface{} {
-	if pluginCache == nil {
-		err := getPluginsFromFile()
-		if err != nil {
-			log.Printf("Error attempting to get plugins from file: %s\n", err)
-		}
-	}
-	return pluginCache
-}
+// AirshipuiPropsCache the file so we don't have to reread every execution
+// TODO: maybe move where props gathering and parsing lives
+var AirshipuiPropsCache AirshipuiProps
 
 // TODO: add watcher to the json file to reload conf on change
-// Get dashboard links for Plugins if present in $HOME/.airshipui/plugins.json
-func getPluginsFromFile() error {
+// TODO: maybe move where props gathering and parsing lives
+// Get dashboard info if present in $HOME/.airshipui/airshipui.json
+func GetConfsFromFile() error {
 	var fileName string
 	home, err := os.UserHomeDir()
 	if err != nil {
-		log.Printf("Error determining the home directory %s\n", err)
+		return err
 	}
 
-	fileName = filepath.FromSlash(home + "/.airship/plugins.json")
+	fileName = filepath.FromSlash(home + "/.airship/airshipui.json")
 
 	jsonFile, err := os.Open(fileName)
 	if err != nil {
@@ -68,20 +63,10 @@ func getPluginsFromFile() error {
 		return err
 	}
 
-	var plugins extPlugins
-	err = json.Unmarshal(byteValue, &plugins)
+	err = json.Unmarshal(byteValue, &AirshipuiPropsCache)
 
 	if err != nil {
 		return err
-	}
-
-	log.Printf("Plugins found: %v\n", plugins)
-
-	pluginCache = map[string]interface{}{
-		"type":      "plugins",
-		"component": "dropdown",
-		"timestamp": time.Now().UnixNano() / 1000000,
-		"plugins":   plugins,
 	}
 	return err
 }

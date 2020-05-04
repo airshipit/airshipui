@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"opendev.org/airship/airshipui/internal/configs"
 )
 
 // just a base structure to return from the web service
@@ -43,15 +44,16 @@ var upgrader = websocket.Upgrader{
 // TODO: make this a dynamic registration of components
 var functionMap = map[string]map[string]func() map[string]interface{}{
 	"electron": {
-		"keepalive": keepaliveReply,
-		"getID":     keepaliveReply,
-	},
-	"initialize": {
-		"getAll": getPlugins,
+		"keepalive":  keepaliveReply,
+		"initialize": clientInit,
 	},
 }
 
+// websocket that'll be reused by several places
 var ws *websocket.Conn
+
+// semaphore to signal the UI to authenticate
+var isAuthenticated bool
 
 // handle the origin request & upgrade to websocket
 func onOpen(w http.ResponseWriter, r *http.Request) {
@@ -133,8 +135,36 @@ func onError(err error) {
 	log.Printf("Error receiving / sending message: %s\n", err)
 }
 
-// WebServer will run the handler functions for both normal REST requests and WebSockets
+// handle an auth complete attempt
+func handleAuth(w http.ResponseWriter, r *http.Request) {
+	// TODO: handle the response body to capture the credentials
+	err := ws.WriteJSON(map[string]interface{}{
+		"type":      "electron",
+		"component": "authcomplete",
+		"timestamp": time.Now().UnixNano() / 1000000,
+	})
+
+	// error sending the websocket request
+	if err != nil {
+		onError(err)
+	} else {
+		isAuthenticated = true
+	}
+}
+
+// WebServer will run the handler functions for WebSockets
+// TODO: potentially add in the ability to serve static content
 func WebServer() {
+	// TODO: maybe move where props gathering and parsing lives
+	err := configs.GetConfsFromFile()
+	if err != nil {
+		log.Fatalf("Error getting data from the config file: %s\n", err)
+	}
+
+	// some things may need a redirect so we'll give them a url to do that with
+	http.HandleFunc("/auth", handleAuth)
+
+	// hand off the websocket upgrade over http
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		onOpen(w, r)
 	})
@@ -142,5 +172,21 @@ func WebServer() {
 	log.Println("Attempting to start webservice on localhost:8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
+	}
+}
+
+func clientInit() map[string]interface{} {
+	// if no auth method is supplied start with minimal functionality
+	if len(configs.AirshipuiPropsCache.AuthMethod.URL) == 0 {
+		isAuthenticated = true
+	}
+
+	return map[string]interface{}{
+		"type":            "electron",
+		"component":       "initialize",
+		"timestamp":       time.Now().UnixNano() / 1000000,
+		"isAuthenticated": isAuthenticated,
+		"plugins":         configs.AirshipuiPropsCache.ExtDashboard,
+		"authentication":  configs.AirshipuiPropsCache.AuthMethod,
 	}
 }
