@@ -1,6 +1,7 @@
 # Coverage File
 coverage.out
 tools/bin
+tools/*node*
 
 # Generated binaries
 bin

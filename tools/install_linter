@@ -4,8 +4,50 @@ set -x
 tools_bin_dir="${BASH_SOURCE%/*}"
 download_url=https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
 version=v1.24.0
+node_version=v12.16.3
 
 if ! curl -sfL "$download_url" | sh -s -- -b "$tools_bin_dir/bin" "$version"; then
   printf "Something went wrong while installing golangci-lint\n" 1>&2
   exit 1
 fi
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  # Linux
+  if ! curl -sfL "https://nodejs.org/dist/$node_version/node-$node_version-linux-x64.tar.gz" | tar zxf - --directory "$tools_bin_dir"; then
+    printf "Something went wrong while installing linux-gnu nodejs\n" 1>&2
+    exit 1
+  else
+    mv $tools_bin_dir/node-$node_version-linux-x64 $tools_bin_dir/node-$node_version
+  fi
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  # Mac OSX        
+  if ! curl -sfL "https://nodejs.org/dist/$node_version/node-$node_version-darwin-x64.tar.gz" | tar zxf - --directory "$tools_bin_dir"; then
+    printf "Something went wrong while installing Mac OSX nodejs\n" 1>&2
+    exit 1
+  else
+    mv $tools_bin_dir/node-$node_version-darwin-x64 $tools_bin_dir/node-$node_version
+  fi
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+  # Windows
+  if ! wget -qO- https://nodejs.org/dist/$node_version/node-$node_version-win-x64.zip | bsdtar -xf- -C tools; then
+    printf "Something went wrong while installing Windows nodejs\n" 1>&2
+    exit 1
+  else
+    mv $tools_bin_dir/node-$node_version-win-x64 $tools_bin_dir/node-$node_version
+    # the windows install doesn't conform to the same directory structure so making it conform
+    mkdir $tools_bin_dir/node-$node_version/bin
+    mv $tools_bin_dir/node-$node_version/n* $tools_bin_dir/node-$node_version/bin
+    chmod -R a+x $tools_bin_dir/node-$node_version/bin
+  fi
+fi
+
+# npm requires node to also be on the path
+export PATH=$(realpath $tools_bin_dir)/node-$node_version/bin:$PATH
+
+# npm will write to a node_modules even with the --directory flag it's better to be in the root of where you want this to live
+cd web
+if ! npm install eslint-plugin-html@latest --save-dev; then
+  printf "Something went wrong while installing eslint-plugin-html\n" 1>&2
+  exit 1
+fi
+cd ..

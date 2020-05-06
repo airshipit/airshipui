@@ -31,7 +31,7 @@ if (document.addEventListener) {
 }
 
 // add dashboard links to Plugins if present in $HOME/.airshipui/plugins.json
-function addPlugins(json) {
+function addPlugins(json) { // eslint-disable-line no-unused-vars
     let dropdown = document.getElementById("PluginDropdown");
     for (let i = 0; i < json.length; i++) {
         let dash = json[i];
@@ -44,24 +44,24 @@ function addPlugins(json) {
             let view = document.getElementById("DashView");
             view.src = dash["url"];
 
-            document.getElementById("MainDiv").style.display = 'none';
-            document.getElementById("DashView").style.display = '';
+            document.getElementById("MainDiv").style.display = "none";
+            document.getElementById("DashView").style.display = "";
         }
 
         dropdown.appendChild(a);
     }
 }
 
-function authenticate(json) {
+function authenticate(json) { // eslint-disable-line no-unused-vars
     // use webview to display the auth page
     let view = document.getElementById("DashView");
     view.src = json["url"];
 
-    document.getElementById("MainDiv").style.display = 'none';
-    document.getElementById("DashView").style.display = '';
+    document.getElementById("MainDiv").style.display = "none";
+    document.getElementById("DashView").style.display = "";
 }
 
-function removeElement(id) {
+function removeElement(id) { // eslint-disable-line no-unused-vars
     if (document.contains(document.getElementById(id))) {
         document.getElementById(id).remove();
     }

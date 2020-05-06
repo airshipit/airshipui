@@ -1,13 +1,18 @@
 # Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+# Export path so that the JS linting tools can get access to npm & node
+# this has to be done before the shell invocation
 SHELL=/bin/bash
+
 # Obtain the version and git commit info
 GIT_VERSION=$(shell git describe --match 'v*' --always)
 
 TOOLBINDIR    := tools/bin
+WEBDIR        := web
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
+JSLINTER_BIN  := $(realpath tools)/node-v12.16.3/bin
 
 COVERAGE_OUTPUT := coverage.out
 
@@ -80,6 +85,8 @@ docs:
 .PHONY: lint
 lint: $(LINTER)
 	$(LINTER) run --config $(LINTER_CONFIG)
+	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint js) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint --ext .html .) && cd ..
 
 $(LINTER):
 	@mkdir -p $(TOOLBINDIR)

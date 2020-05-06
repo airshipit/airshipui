@@ -1,0 +1,34 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "plugins": [
+        "eslint-plugin-html",
+        "html"
+    ],
+    "rules": {
+        "array-bracket-newline": "error",
+        "curly": "error",
+        "eqeqeq": "error",
+        "no-redeclare": "error",
+        "no-unused-expressions": "error",
+        "no-unused-vars": "error",
+        "no-useless-escape": "error",
+        "quotes": [
+            "error",
+            "double"
+        ],
+        "semi-style": [
+            "error",
+            "last"
+        ]
+    }
+}

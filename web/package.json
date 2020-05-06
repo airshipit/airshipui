@@ -9,7 +9,9 @@
   "author": "The Airship Authors",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^8.2.5"
+    "electron": "^8.2.5",
+    "eslint": "^6.8.0",
+    "eslint-plugin-html": "^6.0.2"
   },
   "dependencies": {
     "electron-json-config": "^1.5.3",

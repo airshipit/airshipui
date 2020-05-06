@@ -25,14 +25,14 @@ if (document.addEventListener) {
 }
 
 // listen for the unload event and close the web socket if open
-document.addEventListener('unload', function () {
+document.addEventListener("unload", function () {
     if (ws !== null) {
         if (ws.readyState !== ws.CLOSED) { ws.close(); }
     }
 });
 
 function register() {
-    if (ws != null) {
+    if (ws !== null) {
         ws.close();
         ws = null;
     }
@@ -48,7 +48,7 @@ function register() {
         close(event.code);
     }
 
-    ws.onopen = function (event) {
+    ws.onopen = function () {
         open();
     }
 
@@ -113,10 +113,10 @@ function close(code) {
 }
 
 function authComplete() {
-    document.getElementById("HeaderDiv").style.display = '';
-    document.getElementById("MainDiv").style.display = '';
-    document.getElementById("DashView").style.display = 'none';
-    document.getElementById("FooterDiv").style.display = '';
+    document.getElementById("HeaderDiv").style.display = "";
+    document.getElementById("MainDiv").style.display = "";
+    document.getElementById("DashView").style.display = "none";
+    document.getElementById("FooterDiv").style.display = "";
 }
 
 function keepAlive() {
@@ -132,7 +132,7 @@ function keepAlive() {
     }
 }
 
-function sendMessage(json) {
+function sendMessage(json) { // eslint-disable-line no-unused-vars
     if (ws.readyState === WebSocket.CLOSED) {
         register();
     }
