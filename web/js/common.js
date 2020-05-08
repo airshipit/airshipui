@@ -30,26 +30,48 @@ if (document.addEventListener) {
     }, false);
 }
 
-// add dashboard links to Plugins if present in $HOME/.airshipui/plugins.json
-function addPlugins(json) { // eslint-disable-line no-unused-vars
-    let dropdown = document.getElementById("PluginDropdown");
+// add dashboard links to Dropdown if present in $HOME/.airship/airshipui.json
+function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
     for (let i = 0; i < json.length; i++) {
-        let dash = json[i];
-
-        let a = document.createElement("a");
-        a.innerText = dash["name"];
-
-        // created as a lambda in order to prevent auto firing the onclick event
-        a.onclick = () => {
-            let view = document.getElementById("DashView");
-            view.src = dash["url"];
-
-            document.getElementById("MainDiv").style.display = "none";
-            document.getElementById("DashView").style.display = "";
+        let cluster = json[i];
+        for (let j = 0; j < cluster.namespaces.length; j++) {
+            let namespace = cluster.namespaces[j];
+            for (let k = 0; k < namespace.dashboards.length; k++) {
+                let dash = namespace.dashboards[k];
+                let fqdn = dash.fqdn;
+                if (fqdn === undefined || fqdn === "") {
+                    fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`
+                }
+                let url =  `${dash.protocol}://${fqdn}:${dash.port}/${dash.path}`;
+                addDashboard("PluginDropdown", dash.name, url)
+            }
         }
-
-        dropdown.appendChild(a);
     }
+}
+
+// if any plugins (external executables) have a corresponding web dashboard defined,
+// add them to the dropdown
+function addPluginDashboards(json) { // eslint-disable-line no-unused-vars
+    for (let i = 0; i < json.length; i++) {
+        if (json[i].executable.autoStart && json[i].dashboard !== undefined) {
+            let dash = json[i].dashboard;
+            let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path}`;
+            addDashboard("PluginDropdown", json[i].name, url)
+        }
+    }
+}
+
+function addDashboard(navElement, name, url) {
+    let nav = document.getElementById(navElement);
+    let a = document.createElement("a");
+    a.innerText = name;
+    a.onclick = () => {
+        let view = document.getElementById("DashView");
+        view.src = url;
+        document.getElementById("MainDiv").style.display = "none";
+        document.getElementById("DashView").style.display = "";
+    }
+    nav.appendChild(a);
 }
 
 function authenticate(json) { // eslint-disable-line no-unused-vars

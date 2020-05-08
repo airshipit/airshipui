@@ -68,7 +68,9 @@ function handleMessages(message) {
             } else {
                 authComplete();
             }
-            addPlugins(json["plugins"]);
+            addPluginDashboards(json["plugins"]);
+            addServiceDashboards(json["dashboards"]);
+            authenticate(json["authentication"]);
         } else if (json["component"] === "authcomplete") {
             authComplete();
         }

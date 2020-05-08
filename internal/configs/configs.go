@@ -1,6 +1,4 @@
 /*
- Copyright (c) 2020 AT&T. All Rights Reserved.
-
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -22,26 +20,61 @@ import (
 	"path/filepath"
 )
 
-// AirshipuiProps basic structure for a given external dashboard
-// TODO: solidify the struct requirements for the input
-// TODO: maybe move where props gathering and parsing lives
-type AirshipuiProps struct {
+var (
+	UiConfig Config
+)
+
+// Config basic structure to hold configuration params for Airship UI
+type Config struct {
 	AuthMethod struct {
 		Type  string   `json:"type,omitempty"`
 		Value []string `json:"values,omitempty"`
 		URL   string   `json:"url,omitempty"`
 	} `json:"authMethod"`
-	ExtDashboard []interface{} `json:"external_dashboards"`
+	Plugins  []Plugin  `json:"plugins"`
+	Clusters []Cluster `json:"clusters"`
 }
 
-// AirshipuiPropsCache the file so we don't have to reread every execution
-// TODO: maybe move where props gathering and parsing lives
-var AirshipuiPropsCache AirshipuiProps
+type Plugin struct {
+	Name      string `json:"name"`
+	Dashboard struct {
+		Protocol string `json:"protocol"`
+		FQDN     string `json:"fqdn"`
+		Port     uint16 `json:"port"`
+		Path     string `json:"path"`
+	} `json:"dashboard"`
+	Executable struct {
+		AutoStart bool     `json:"autoStart"`
+		Filepath  string   `json:"filepath"`
+		Args      []string `json:"args"`
+	} `json:"executable"`
+}
+
+// Dashboard structure
+type Dashboard struct {
+	Name     string `json:"name"`
+	Protocol string `json:"protocol"`
+	Hostname string `json:"hostname,omitempty"`
+	FQDN     string `json:"fqdn,omitempty"`
+	Port     uint16 `json:"port"`
+	Path     string `json:"path"`
+}
+
+// Namespace structure
+type Namespace struct {
+	Name       string      `json:"name"`
+	Dashboards []Dashboard `json:"dashboards"`
+}
+
+// Cluster basic structure describing a cluster
+type Cluster struct {
+	Name       string      `json:"name"`
+	BaseFqdn   string      `json:"baseFqdn"`
+	Namespaces []Namespace `json:"namespaces"`
+}
 
 // TODO: add watcher to the json file to reload conf on change
-// TODO: maybe move where props gathering and parsing lives
-// Get dashboard info if present in $HOME/.airshipui/airshipui.json
-func GetConfsFromFile() error {
+func GetConfigFromFile() error {
 	var fileName string
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -63,10 +96,11 @@ func GetConfsFromFile() error {
 		return err
 	}
 
-	err = json.Unmarshal(byteValue, &AirshipuiPropsCache)
+	err = json.Unmarshal(byteValue, &UiConfig)
 
 	if err != nil {
 		return err
 	}
+
 	return err
 }
