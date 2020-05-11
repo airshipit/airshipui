@@ -11,17 +11,24 @@
 # limitations under the License.
 
 - project:
+    vars:
+      sphinx_build_dir: docs/build
     check:
       jobs:
+        - openstack-tox-docs
         - airshipui-test
         - airshipui-lint
     gate:
       jobs:
+        - openstack-tox-docs
         - airshipui-test
         - airshipui-lint
     post:
       jobs:
         - airshipui-upload-git-mirror
+    promote:
+      jobs:
+        - promote-airship-project-docs
 
 - job:
     name: airshipui-test

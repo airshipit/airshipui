@@ -10,3 +10,6 @@ bin
 
 # Node modules
 web/node_modules
+
+# Sphinx build venv
+.tox/

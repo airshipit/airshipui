@@ -53,6 +53,10 @@ cover: test
 clean:
 	rm -rf $(BUILD_DIR) $(COVERAGE_OUTPUT)
 
+.PHONY: docs
+docs:
+	tox
+
 # The golang-unit zuul job calls the env target, so create one
 # Note: on windows if there is a WSL curl in c:\windows\system32
 #       it will cause problems installing the lint tools.
