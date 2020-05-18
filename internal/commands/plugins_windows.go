@@ -24,6 +24,7 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
+	"opendev.org/airship/airshipui/internal/configs"
 	"opendev.org/airship/airshipui/internal/webservice"
 )
 
@@ -144,7 +145,7 @@ func RunBinaryWithOptions(ctx context.Context, cmd string, args []string, wg *sy
 
 		// send error to UI
 		webservice.SendAlert(
-			webservice.Error,
+			configs.Error,
 			fmt.Sprintf("Plugin '%s' failed to start: %v", cmd, err),
 			true,
 		)

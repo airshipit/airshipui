@@ -19,18 +19,10 @@ import (
 	"net/http"
 	"time"
 
-	"opendev.org/airship/airshipui/internal/configs"
-
 	"github.com/gorilla/websocket"
+	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/internal/integrations/ctl"
 )
-
-// just a base structure to return from the web service
-type wsRequest struct {
-	Type      string                 `json:"type,omitempty"`
-	Component string                 `json:"component,omitempty"`
-	Error     string                 `json:"error"`
-	Data      map[string]interface{} `json:"data"`
-}
 
 // gorilla ws specific HTTP upgrade to WebSockets
 var upgrader = websocket.Upgrader{
@@ -41,10 +33,14 @@ var upgrader = websocket.Upgrader{
 // this is a way to allow for arbitrary messages to be processed by the backend
 // most likely we will need to have sub components register with the system
 // TODO: make this a dynamic registration of components
-var functionMap = map[string]map[string]func() map[string]interface{}{
-	"electron": {
-		"keepalive":  keepaliveReply,
-		"initialize": clientInit,
+var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
+	configs.Electron: {
+		configs.Keepalive:  keepaliveReply,
+		configs.Initialize: clientInit,
+	},
+	configs.AirshipCTL: {
+		configs.Info:      ctl.GetDefaults,
+		configs.SetConfig: ctl.SetConfig,
 	},
 }
 
@@ -74,7 +70,7 @@ func onOpen(w http.ResponseWriter, r *http.Request) {
 	// send any initialization alerts to UI and clear the queue
 	for len(Alerts) > 0 {
 		sendAlertMessage(Alerts[0])
-		Alerts[0] = Alert{}
+		Alerts[0] = configs.WsMessage{}
 		Alerts = Alerts[1:]
 	}
 
@@ -87,7 +83,7 @@ func onMessage() {
 	defer onClose()
 
 	for {
-		var request wsRequest
+		var request configs.WsMessage
 		err := ws.ReadJSON(&request)
 		if err != nil {
 			onError(err)
@@ -98,21 +94,24 @@ func onMessage() {
 		if reqType, ok := functionMap[request.Type]; ok {
 			// the function map may have a component (function) to process the request
 			if component, ok := reqType[request.Component]; ok {
-				if err = ws.WriteJSON(component()); err != nil {
+				// get the response and tag the timestamp so it's not repeated across all functions
+				response := component(request)
+				response.Timestamp = time.Now().UnixNano() / 1000000
+				if err = ws.WriteJSON(response); err != nil {
 					onError(err)
 					break
 				}
 			} else {
-				request.Error = fmt.Sprintf("Requested component: %s, not found", request.Component)
-				if err = ws.WriteJSON(request); err != nil {
+				if err = ws.WriteJSON(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
+					request.Component), request)); err != nil {
 					onError(err)
 					break
 				}
 				log.Printf("Requested component: %s, not found\n", request.Component)
 			}
 		} else {
-			request.Error = fmt.Sprintf("Requested type: %s, not found", request.Type)
-			if err = ws.WriteJSON(request); err != nil {
+			if err = ws.WriteJSON(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
+				request.Type), request)); err != nil {
 				onError(err)
 				break
 			}
@@ -121,13 +120,21 @@ func onMessage() {
 	}
 }
 
+func requestErrorHelper(err string, request configs.WsMessage) configs.WsMessage {
+	return configs.WsMessage{
+		Type:      request.Type,
+		Component: request.Component,
+		Timestamp: time.Now().UnixNano() / 1000000,
+		Error:     err,
+	}
+}
+
 // The keepalive response including a timestamp from the server
 // The electron / web app will occasionally ping the server due to the websocket default timeout
-func keepaliveReply() map[string]interface{} {
-	return map[string]interface{}{
-		"type":      "electron",
-		"component": "keepalive",
-		"timestamp": time.Now().UnixNano() / 1000000,
+func keepaliveReply(configs.WsMessage) configs.WsMessage {
+	return configs.WsMessage{
+		Type:      configs.Electron,
+		Component: configs.Keepalive,
 	}
 }
 
@@ -145,10 +152,10 @@ func onError(err error) {
 // handle an auth complete attempt
 func handleAuth(w http.ResponseWriter, r *http.Request) {
 	// TODO: handle the response body to capture the credentials
-	err := ws.WriteJSON(map[string]interface{}{
-		"type":      "electron",
-		"component": "authcomplete",
-		"timestamp": time.Now().UnixNano() / 1000000,
+	err := ws.WriteJSON(configs.WsMessage{
+		Type:      configs.Electron,
+		Component: configs.Authcomplete,
+		Timestamp: time.Now().UnixNano() / 1000000,
 	})
 
 	// error sending the websocket request
@@ -176,19 +183,18 @@ func WebServer() {
 	}
 }
 
-func clientInit() map[string]interface{} {
+func clientInit(configs.WsMessage) configs.WsMessage {
 	// if no auth method is supplied start with minimal functionality
 	if len(configs.UiConfig.AuthMethod.URL) == 0 {
 		isAuthenticated = true
 	}
 
-	return map[string]interface{}{
-		"type":            "electron",
-		"component":       "initialize",
-		"timestamp":       time.Now().UnixNano() / 1000000,
-		"isAuthenticated": isAuthenticated,
-		"dashboards":      configs.UiConfig.Clusters,
-		"plugins":         configs.UiConfig.Plugins,
-		"authentication":  configs.UiConfig.AuthMethod,
+	return configs.WsMessage{
+		Type:            configs.Electron,
+		Component:       configs.Initialize,
+		IsAuthenticated: isAuthenticated,
+		Dashboards:      configs.UiConfig.Clusters,
+		Plugins:         configs.UiConfig.Plugins,
+		Authentication:  configs.UiConfig.AuthMethod,
 	}
 }

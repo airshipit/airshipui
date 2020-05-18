@@ -1,81 +1,81 @@
 /* loading spinner CSS taken from SpinKit, http://tobiasahlin.com/spinkit/ */
 
 .spinner {
-  margin: 100px auto 0;
-  width: 70px;
-  text-align: center;
+    margin: 100px auto 0;
+    width: 70px;
+    text-align: center;
 }
 
 .spinner > div {
-width: 18px;
-height: 18px;
-background-color: #141f47;
+  width: 18px;
+  height: 18px;
+  background-color: #333;
 
-border-radius: 100%;
-display: inline-block;
--webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
 }
 
 .spinner .bounce1 {
--webkit-animation-delay: -0.32s;
-animation-delay: -0.32s;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
 }
 
 .spinner .bounce2 {
--webkit-animation-delay: -0.16s;
-animation-delay: -0.16s;
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
 }
 
 @-webkit-keyframes sk-bouncedelay {
-0%, 80%, 100% { -webkit-transform: scale(0) }
-40% { -webkit-transform: scale(1.0) }
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
 }
 
 @keyframes sk-bouncedelay {
-0%, 80%, 100% {
-  -webkit-transform: scale(0);
-  transform: scale(0);
-} 40% {
-  -webkit-transform: scale(1.0);
-  transform: scale(1.0);
-}
+  0%, 80%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
 }
 
 /* accordion taken from w3schools, https://www.w3schools.com/howto/howto_js_accordion.asp */
 .accordion {
-background-color: #eee;
-color: #444;
-cursor: pointer;
-padding: 18px;
-width: 100%;
-border: none;
-text-align: left;
-outline: none;
-font-size: 15px;
-transition: 0.4s;
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
 }
 
 .active, .accordion:hover {
-background-color: #ccc;
+  background-color: #ccc;
 }
 
 .accordion:after {
-content: '\002B';
-color: #777;
-font-weight: bold;
-float: right;
-margin-left: 5px;
+  content: '\002B';
+  color: #777;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
 }
 
 .active:after {
-content: "\2212";
+  content: "\2212";
 }
 
 .panel {
-padding: 0 18px;
-background-color: white;
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.2s ease-out;
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
 }

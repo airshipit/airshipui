@@ -1,6 +1,4 @@
 /*
- Copyright (c) 2020 AT&T. All Rights Reserved.
- 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -17,16 +15,20 @@
 // add the footer and header when the page loads
 if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", function () {
-        window.onscroll = function () {
-            let header = document.getElementById("HeaderDiv");
-            let sticky = header.offsetTop;
-
-            if (window.pageYOffset > sticky) {
-                header.classList.add("sticky");
-            } else {
-                header.classList.remove("sticky");
-            }
-        };
+        const webview = document.querySelector("webview");
+        const spinner = document.querySelector(".spinner");
+        const loadStart = () => {
+            spinner.style.display = "block";
+        }
+        const loadStop = () => {
+            spinner.style.display = "none";
+        }
+        const loadFail = (err) => {
+            showDismissableAlert("danger", `Error loading '${err.validatedURL}': ${err.errorDescription} (${err.errorCode})`, true);
+        }
+        webview.addEventListener("did-start-loading", loadStart);
+        webview.addEventListener("did-stop-loading", loadStop);
+        webview.addEventListener("did-fail-load", loadFail);
     }, false);
 }
 
@@ -44,7 +46,7 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
                 } else {
                     ({ fqdn } = dash.fqdn);
                 }
-                let url =  `${dash.protocol}://${fqdn}:${dash.port}/${dash.path}`;
+                let url = `${dash.protocol}://${fqdn}:${dash.port}/${dash.path || ""}`;
                 addDashboard("DashDropdown", dash.name, url)
             }
         }
@@ -55,10 +57,10 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
 // add them to the dropdown
 function addPluginDashboards(json) { // eslint-disable-line no-unused-vars
     for (let i = 0; i < json.length; i++) {
-        if (json[i].executable.autoStart && json[i].dashboard.fqdn !== "") {
+        if (json[i].executable.autoStart && json[i].dashboard.fqdn !== undefined) {
             let dash = json[i].dashboard;
-            let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path}`;
-            addDashboard("PluginDropdown", json[i].name, url)
+            let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path || ""}`;
+            addDashboard("PluginDropdown", json[i].name, url);
         }
     }
 }
@@ -75,6 +77,7 @@ function addDashboard(navElement, name, url) {
     a.onclick = () => {
         let view = document.getElementById("DashView");
         view.src = url;
+        document.getElementById("ContentDiv").style.display = "none";
         document.getElementById("DashView").style.display = "";
     }
     a.appendChild(span);
@@ -84,11 +87,8 @@ function addDashboard(navElement, name, url) {
 
 function authenticate(json) { // eslint-disable-line no-unused-vars
     // use webview to display the auth page
-    let view = document.getElementById("DashView");
+    let view = document.getElementById("AuthView");
     view.src = json["url"];
-
-    document.getElementById("MainDiv").style.display = "none";
-    document.getElementById("DashView").style.display = "";
 }
 
 function removeElement(id) { // eslint-disable-line no-unused-vars
@@ -156,4 +156,21 @@ function alertFadeOut(id) { // eslint-disable-line no-unused-vars
     element.addEventListener("transitionend", function() {
         element.parentNode.removeChild(element);
     });
+}
+
+function enableAccordion() { // eslint-disable-line no-unused-vars
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
 }

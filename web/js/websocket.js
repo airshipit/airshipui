@@ -1,6 +1,4 @@
 /*
- Copyright (c) 2020 AT&T. All Rights Reserved.
- 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -59,35 +57,34 @@ function register() {
 
 function handleMessages(message) {
     var json = JSON.parse(message.data);
-    // keepalives and inits aren't interesting to other pages
-    if (json["type"] === "electron") {
-        console.log(json);
-        if (json["component"] === "initialize") {
-            if (!json["isAuthenticated"]) {
-                authenticate(json["authentication"]);
-            } else {
-                authComplete();
-            }
-            if (json["plugins"] !== null) {
-                addPluginDashboards(json["plugins"]);
-            }
-            if (json["dashboards"] !== null) {
-                addServiceDashboards(json["dashboards"]);
-            }
-        } else if (json["component"] === "authcomplete") {
-            authComplete();
-        } else if (json["component"] === "alert") {
-            showDismissableAlert(json["level"], json["message"], json["fade"]);
-        }
-    } else {
-        // TODO: determine if we're dispatching events or just doing function calls
-        // events based on the type are interesting to other pages
-        // create and dispatch an event based on the data received
-        document.dispatchEvent(new CustomEvent(json["type"], { detail: json }));
+    // TODO: determine if we're dispatching events or just doing function calls
+    // events based on the type are interesting to other pages
+    // create and dispatch an event based on the data received
+    switch(json["type"]) {
+        case "alert":   showDismissableAlert(json["component"], json["message"], json["fade"]); break;
+        case "airshipctl": ctlParseConfig(json); break;
+        case "electron":   hanldleElectronMessages(json); break;
+        default:  console.log("Received message: " + json["type"]); break;
     }
+}
 
-    // TODO: Determine if these should be suppressed or only allowed in specific cases
-    console.log("Received message: " + message.data);
+// this is a helper function for electron / base app specific messages
+function hanldleElectronMessages(json) {
+    if (json["component"] === "initialize") {
+        if (!json["isAuthenticated"]) {
+            authenticate(json["authentication"]);
+        } else {
+            authComplete();
+        } 
+        if (json["plugins"] !== null) {
+            addPluginDashboards(json["plugins"]);
+        }
+        if (json["dashboards"] !== null) {
+            addServiceDashboards(json["dashboards"]);
+        }
+    } else if (json["component"] === "authcomplete") {
+        authComplete();
+    }
 }
 
 function open() {
@@ -120,6 +117,7 @@ function close(code) {
 }
 
 function authComplete() {
+    document.getElementById("AuthView").style.display = "none";
     document.getElementById("MainDiv").style.display = "";
 }
 
@@ -129,7 +127,7 @@ function keepAlive() {
             // clear the previously set timeout
             window.clearTimeout(timeout);
             window.clearInterval(timeout);
-            var json = { "id": "poc", "type": "electron", "component": "keepalive" };
+            var json = { "type": "electron", "component": "keepalive" };
             ws.send(JSON.stringify(json));
             timeout = window.setTimeout(keepAlive, 60000);
         }

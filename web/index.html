@@ -1,111 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-      <base href="./">
-      <meta charset="utf-8">
-      <title>Airship UI</title>
-      <meta name="description"
-        content="Airship User Interface.  SPDX-License-Identifier: Apache-2.0">
-      <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-      <link rel="manifest" href="js/coreui-3.2.0/assets/favicon/manifest.json">
-      <meta name="theme-color" content="#ffffff">
-      <script src="js/websocket.js"></script>
-      <script src="js/common.js"></script>
-      <script src="js/coreui-3.2.0/vendors/@coreui/coreui/js/coreui.bundle.min.js"></script>
-      <link href="js/coreui-3.2.0/css/style.css" rel="stylesheet">
-      <link href="style.css" rel="stylesheet">
-      <script>
-          onload = () => {
-              const webview = document.querySelector("webview")
-              const spinner = document.querySelector(".spinner")
-              const loadStart = () => {
-                  spinner.style.display = "block";
-              }
-              const loadStop = () => {
-                  spinner.style.display = "none";
-              }
-              const loadFail = (err) => {
-                  showDismissableAlert("danger", `Error loading '${err.validatedURL}': ${err.errorDescription} (${err.errorCode})`, true);
-              }
-              webview.addEventListener("did-start-loading", loadStart)
-              webview.addEventListener("did-stop-loading", loadStop)
-              webview.addEventListener("did-fail-load", loadFail)
-          }
-      </script>
-  </head>
-  <body class="c-app">
-    <div id="MainDiv">
-      <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
-        <div class="c-sidebar-brand d-lg-down-none">
-          <svg class="c-sidebar-brand-full" width="118" height="46" alt="Airship Logo">
+
+<head>
+  <base href="./">
+  <meta charset="utf-8">
+  <title>Airship UI</title>
+  <meta name="description" content="Airship User Interface.  SPDX-License-Identifier: Apache-2.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link rel="manifest" href="js/coreui-3.2.0/assets/favicon/manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  <script src="js/websocket.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/airshipctl.js"></script>
+  <script src="js/coreui-3.2.0/vendors/@coreui/coreui/js/coreui.bundle.min.js"></script>
+  <link href="js/coreui-3.2.0/css/style.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="c-app">
+  <div id="MainDiv" style="display:none">
+    <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
+      <div class="c-sidebar-brand d-lg-down-none">
+        <svg class="c-sidebar-brand-full" width="118" height="46" alt="Airship Logo">
+          <use xlink:href="images/Airship_Logo_Horizontal_2Color_RGB.svg#Layer_1"></use>
+        </svg>
+        <svg class="c-sidebar-brand-minimized" width="46" height="46" alt="Airship Logo">
+          <use xlink:href="images/Airship_Icon_2Color_RGB.svg#Layer_1"></use>
+        </svg>
+      </div>
+      <ul class="c-sidebar-nav">
+        <li class="c-sidebar-nav-title">Components</li>
+        <li class="c-sidebar-nav-item c-sidebar-nav-dropdown"><a
+            class="c-sidebar-nav-link c-sidebar-nav-dropdown-toggle" href="#">
+            <svg class="c-sidebar-nav-icon">
+              <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-airplane-mode"></use>
+            </svg> Airship</a>
+          <ul id="AirshipDropdown" class="c-sidebar-nav-dropdown-items">
+            <li><a class="c-sidebar-nav-link" onclick="ctlGetConfig()">Config</a></span></li>
+          </ul>
+        </li>
+        <li class="c-sidebar-nav-item c-sidebar-nav-dropdown"><a
+            class="c-sidebar-nav-link c-sidebar-nav-dropdown-toggle" href="#">
+            <svg class="c-sidebar-nav-icon">
+              <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-puzzle"></use>
+            </svg> Plugins</a>
+          <ul id="PluginDropdown" class="c-sidebar-nav-dropdown-items">
+          </ul>
+        </li>
+        <li class="c-sidebar-nav-item c-sidebar-nav-dropdown"><a
+            class="c-sidebar-nav-link c-sidebar-nav-dropdown-toggle" href="#">
+            <svg class="c-sidebar-nav-icon">
+              <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-speedometer"></use>
+            </svg> Dashboards</a>
+          <ul id="DashDropdown" class="c-sidebar-nav-dropdown-items">
+          </ul>
+        </li>
+      </ul>
+      <button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent"
+        data-class="c-sidebar-minimized"></button>
+    </div>
+    <div class="c-wrapper c-fixed-components">
+      <header class="c-header c-header-light c-header-fixed c-header-with-subheader">
+        <button class="c-header-toggler c-class-toggler d-lg-none mfe-auto" type="button" data-target="#sidebar"
+          data-class="c-sidebar-show">
+          <svg class="c-icon c-icon-lg">
+            <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-menu"></use>
+          </svg>
+        </button><a class="c-header-brand d-lg-none" href="#">
+          <svg width="118" height="46" alt="Airship Logo">
             <use xlink:href="images/Airship_Logo_Horizontal_2Color_RGB.svg#Layer_1"></use>
+          </svg></a>
+        <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button" data-target="#sidebar"
+          data-class="c-sidebar-lg-show" responsive="true">
+          <svg class="c-icon c-icon-lg">
+            <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-menu"></use>
           </svg>
-          <svg class="c-sidebar-brand-minimized" width="46" height="46" alt="Airship Logo">
-            <use xlink:href="images/Airship_Icon_2Color_RGB.svg#Layer_1"></use>
-          </svg>
-        </div>
-        <ul class="c-sidebar-nav">
-          <li class="c-sidebar-nav-title">Components</li>
-          <li class="c-sidebar-nav-item c-sidebar-nav-dropdown"><a class="c-sidebar-nav-link c-sidebar-nav-dropdown-toggle" href="#">
-              <svg class="c-sidebar-nav-icon">
-                <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-puzzle"></use>
-              </svg> Plugins</a>
-            <ul id="PluginDropdown" class="c-sidebar-nav-dropdown-items">
-            </ul>
-          </li>
-          <li class="c-sidebar-nav-item c-sidebar-nav-dropdown"><a class="c-sidebar-nav-link c-sidebar-nav-dropdown-toggle" href="#">
-              <svg class="c-sidebar-nav-icon">
-                <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-speedometer"></use>
-              </svg> Dashboards</a>
-            <ul id="DashDropdown" class="c-sidebar-nav-dropdown-items">
-            </ul>
+        </button>
+        <ul class="c-header-nav ml-auto mr-4">
+          <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown" href="#"
+              role="button" aria-haspopup="true" aria-expanded="false">
+              <div class="c-avatar"><img class="c-avatar-img" src="images/avatar.jpg" alt="user@email.com"></div>
+            </a>
           </li>
         </ul>
-        <button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent" data-class="c-sidebar-minimized"></button>
-      </div>
-      <div class="c-wrapper c-fixed-components">
-        <header class="c-header c-header-light c-header-fixed c-header-with-subheader">
-          <button class="c-header-toggler c-class-toggler d-lg-none mfe-auto" type="button" data-target="#sidebar" data-class="c-sidebar-show">
-            <svg class="c-icon c-icon-lg">
-              <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-menu"></use>
-            </svg>
-          </button><a class="c-header-brand d-lg-none" href="#">
-            <svg width="118" height="46" alt="Airship Logo">
-              <use xlink:href="images/Airship_Logo_Horizontal_2Color_RGB.svg#Layer_1"></use>
-            </svg></a>
-          <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button" data-target="#sidebar" data-class="c-sidebar-lg-show" responsive="true">
-            <svg class="c-icon c-icon-lg">
-              <use xlink:href="js/coreui-3.2.0/vendors/@coreui/icons/svg/free.svg#cil-menu"></use>
-            </svg>
-          </button>
-          <ul class="c-header-nav ml-auto mr-4">
-            <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                <div class="c-avatar"><img class="c-avatar-img" src="images/avatar.jpg" alt="user@email.com"></div>
-              </a>
-            </li>
-          </ul>
-        </header>
-        <div class="c-body">
+      </header>
+      <div class="c-body">
         <div id="alert-div"></div>
-          <main class="c-main">
-            <div class="container-fluid">
-              <div class="fade-in"></div>
-            </div>
-            <div class="spinner" style="position:flex;top:0;left:0;width:100%;height:100%;display:none">
-                <div class="bounce1"></div>
-                <div class="bounce2"></div>
-                <div class="bounce3"></div>
-            </div>
-            <div id="embedded-dashboard">
-              <webview class="webview" id="DashView" autosize="on" style="height:92vh;display:none"></webview>
+        <main class="c-main">
+          <div class="container-fluid">
+            <div class="fade-in"></div>
           </div>
-          </main>
-          <footer class="c-footer">
-            <div>Airship UI © 2020</div>
-          </footer>
-        </div>
+          <div class="spinner" style="position:flex;top:0;left:0;width:100%;height:100%;display:none">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+          </div>
+          <div id="embedded-dashboard">
+            <webview class="webview" id="DashView" autosize="on" style="height:92vh;display:none"></webview>
+          </div>
+          <div id="ContentDiv" style="padding-left:15px"></div>
+        </main>
+        <footer class="c-footer">
+          <div>Airship UI &copy; <script>document.write(new Date().getFullYear())</script></div>
+        </footer>
       </div>
     </div>
-  </body>
+  </div>
+  <webview class="webview" id="AuthView" autosize="on" style="height:92vh;"></webview>
+</body>
+
 </html>

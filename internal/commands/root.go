@@ -75,7 +75,7 @@ func launch(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		log.Printf("config %s", err)
-		webservice.SendAlert(webservice.Info, fmt.Sprintf("%s", err), true)
+		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err), true)
 	}
 
 	// just a little ditty to see if we should open the ui or the webservice or both
