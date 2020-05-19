@@ -46,4 +46,4 @@ be added or removed while the application is running, and changes will take effe
 
 ## Developer's Guide
 
-Instructions on setting up a development environment and more details can be found in the [Developer's Guide](DevelopersGuide.md)
+Instructions on setting up a development environment and more details can be found in the [Developer's Guide](docs/source/developers.md)
