@@ -24,7 +24,7 @@ GO_FLAGS  := -ldflags=$(LD_FLAGS)
 BUILD_DIR := bin
 
 # Find all main.go files under cmd, excluding airshipui itself (which is the octant wrapper)
-EXAMPLE_NAMES := $(shell basename $(subst /main.go,,$(shell find examples -name "main.go")))
+EXAMPLE_NAMES := $(notdir $(subst /main.go,,$(wildcard examples/*/main.go)))
 EXAMPLES   := $(addprefix $(BUILD_DIR)/, $(EXAMPLE_NAMES))
 MAIN      := $(BUILD_DIR)/airshipui
 EXTENSION :=
@@ -55,9 +55,9 @@ $(EXAMPLES): FORCE
 FORCE:
 
 .PHONY: install-octant-plugins
-install-octant-plugins: $(EXAMPLES)
+install-octant-plugins:
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	cp $(addsuffix $(EXTENSION), $^) $(OCTANT_PLUGINSTUB_DIR)
+	cp $(addsuffix $(EXTENSION), $(BUILD_DIR)/octant) $(OCTANT_PLUGINSTUB_DIR)
 
 .PHONY: test
 test:
