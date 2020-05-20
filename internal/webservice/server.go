@@ -1,6 +1,4 @@
 /*
- Copyright (c) 2020 AT&T. All Rights Reserved.
-
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -21,8 +19,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"opendev.org/airship/airshipui/internal/configs"
+
+	"github.com/gorilla/websocket"
 )
 
 // just a base structure to return from the web service
@@ -155,12 +154,6 @@ func handleAuth(w http.ResponseWriter, r *http.Request) {
 // WebServer will run the handler functions for WebSockets
 // TODO: potentially add in the ability to serve static content
 func WebServer() {
-	// TODO: maybe move where props gathering and parsing lives
-	err := configs.GetConfsFromFile()
-	if err != nil {
-		log.Fatalf("Error getting data from the config file: %s\n", err)
-	}
-
 	// some things may need a redirect so we'll give them a url to do that with
 	http.HandleFunc("/auth", handleAuth)
 
@@ -177,7 +170,7 @@ func WebServer() {
 
 func clientInit() map[string]interface{} {
 	// if no auth method is supplied start with minimal functionality
-	if len(configs.AirshipuiPropsCache.AuthMethod.URL) == 0 {
+	if len(configs.UiConfig.AuthMethod.URL) == 0 {
 		isAuthenticated = true
 	}
 
@@ -186,7 +179,8 @@ func clientInit() map[string]interface{} {
 		"component":       "initialize",
 		"timestamp":       time.Now().UnixNano() / 1000000,
 		"isAuthenticated": isAuthenticated,
-		"plugins":         configs.AirshipuiPropsCache.ExtDashboard,
-		"authentication":  configs.AirshipuiPropsCache.AuthMethod,
+		"dashboards":      configs.UiConfig.Clusters,
+		"plugins":         configs.UiConfig.Plugins,
+		"authentication":  configs.UiConfig.AuthMethod,
 	}
 }
