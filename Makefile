@@ -152,7 +152,7 @@ docs:
 .PHONY: env
 
 .PHONY: lint
-lint: $(LINTER) $(NPX)
+lint: tidy $(LINTER) $(NPX)
 	$(LINTER) run --config $(LINTER_CONFIG)
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint js) && cd ..
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint --ext .html .) && cd ..
