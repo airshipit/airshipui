@@ -88,6 +88,12 @@ lint: $(LINTER)
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint js) && cd ..
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint --ext .html .) && cd ..
 
+.PHONY: tidy
+tidy:
+	@echo "Checking that go.mod is up to date..."
+	@./tools/gomod_check
+	@echo "go.mod is up to date"
+
 $(LINTER):
 	@mkdir -p $(TOOLBINDIR)
 	./tools/install_linter
