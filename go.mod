@@ -10,6 +10,7 @@ require (
 	github.com/vmware-tanzu/octant v0.12.0
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	k8s.io/api v0.17.4 // indirect
 	opendev.org/airship/airshipctl v0.0.0-20200324160507-db6217f011b9

@@ -38,7 +38,7 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
             let namespace = cluster.namespaces[j];
             for (let k = 0; k < namespace.dashboards.length; k++) {
                 let dash = namespace.dashboards[k];
-                let fqdn = dash.fqdn;
+                let { fqdn } = dash.fqdn;
                 if (fqdn === undefined || fqdn === "") {
                     fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`
                 }

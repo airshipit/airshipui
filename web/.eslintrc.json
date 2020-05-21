@@ -18,10 +18,35 @@
         "array-bracket-newline": "error",
         "curly": "error",
         "eqeqeq": "error",
+        "indent": [
+            "error",
+            4,
+            {
+                "MemberExpression": "off",
+                "SwitchCase": 1
+            }
+        ],
+        "multiline-ternary": [
+            "error",
+            "always-multiline"
+        ],
+        "new-cap": "off",
+        "no-mixed-operators": "off",
         "no-redeclare": "error",
         "no-unused-expressions": "error",
         "no-unused-vars": "error",
         "no-useless-escape": "error",
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "prefer-destructuring": [
+            "error",
+            {
+                "object": true,
+                "array": false
+            }
+        ],
         "quotes": [
             "error",
             "double"
@@ -29,6 +54,15 @@
         "semi-style": [
             "error",
             "last"
-        ]
+        ],
+        "unicorn/explicit-length-check": "off",
+        "unicorn/filename-case": "off",
+        "unicorn/import-index": "off",
+        "unicorn/prefer-includes": "off",
+        "unicorn/prefer-node-append": "off",
+        "unicorn/prefer-node-remove": "off",
+        "unicorn/prefer-query-selector": "off",
+        "unicorn/prefer-text-content": "off",
+        "unicorn/prevent-abbreviations": "off"
     }
 }
