@@ -9802,7 +9802,7 @@ html:not([dir="rtl"]) .c-sidebar.c-sidebar-show.c-sidebar-right, html:not([dir="
 }
 
 .c-sidebar .c-sidebar-brand,.c-sidebar .c-sidebar-header {
-  background: rgba(0, 0, 21, 0.2);
+  background: rgb(226, 226, 241);
 }
 
 .c-sidebar .c-sidebar-form .c-form-control {
@@ -11879,7 +11879,6 @@ html:not([dir="rtl"]) .list-inline {
   -ms-flex-positive: 1;
   flex-grow: 1;
   min-width: 0;
-  padding-top: 2rem;
 }
 
 @media (min-width: 768px) {

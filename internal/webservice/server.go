@@ -32,6 +32,14 @@ type wsRequest struct {
 	Data      map[string]interface{} `json:"data"`
 }
 
+// Alert basic structure to hold alert messages to pass to the UI
+type Alert struct {
+	Level   string
+	Message string
+}
+
+var Alerts []Alert
+
 // gorilla ws specific HTTP upgrade to WebSockets
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -70,6 +78,14 @@ func onOpen(w http.ResponseWriter, r *http.Request) {
 
 	ws = wsConn
 	log.Printf("WebSocket established with %s\n", ws.RemoteAddr().String())
+
+	// send any initialization alerts to UI and clear the queue
+	for len(Alerts) > 0 {
+		sendAlert(Alerts[0].Level, Alerts[0].Message)
+		Alerts[0] = Alert{}
+		Alerts = Alerts[1:]
+	}
+
 	go onMessage()
 }
 
@@ -148,6 +164,20 @@ func handleAuth(w http.ResponseWriter, r *http.Request) {
 		onError(err)
 	} else {
 		isAuthenticated = true
+	}
+}
+
+// SendAlert sends an alert message to the frontend handler
+// to display alerts in the UI itself
+func sendAlert(alertLvl string, msg string) {
+	if err := ws.WriteJSON(map[string]interface{}{
+		"type":      "electron",
+		"component": "alert",
+		"level":     alertLvl,
+		"message":   msg,
+		"timestamp": time.Now().UnixNano() / 1000000,
+	}); err != nil {
+		onError(err)
 	}
 }
 
