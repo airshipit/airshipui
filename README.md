@@ -13,11 +13,8 @@ Airship UI is an [electron](https://www.electronjs.org/) that is designed to all
 ```
 git clone https://opendev.org/airship/airshipui
 cd airshipui
-make build
-cd web
-npm install
-npm install --save-dev electron
-npm install electron-json-config
+make
+make install-npm-modules # Note running behind a proxy can cause issues, notes on solving is in the Appendix of the Developer's Guide
 ```
 
 ## Adding Additional Functionality

@@ -11,11 +11,11 @@ Clone the Airship UI repository and build
     git clone https://opendev.org/airship/airshipui
     cd airshipui
     make
+    make install-npm-modules # Note running behind a proxy can cause issues, notes on solving is in the Appendix
+    make examples # (optional)
     make install-octant-plugins # (if running with octant)
-    cd web
-    npm install
-    npm install --save-dev electron
-    npm install electron-json-config
+
+
 
 Run the airshipui binary
 
@@ -68,6 +68,82 @@ Run the octant binary and the plugin should show "Hello World just some text on 
 ### Minikube
 
 [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/) runs a single-node Kubernetes cluster for users looking to try out Kubernetes or develop with it day-to-day.  Installation instructions are available on the kubernetes website: https://kubernetes.io/docs/tasks/tools/install-minikube/).  If you are running behind a proxy it may be necessary to follow the steps outlined in the [How to use an HTTP/HTTPS proxy with minikube](https://minikube.sigs.k8s.io/docs/reference/networking/proxy/) website.
+
+### Issues with npm / npx and the electron go module
+It is possible that the airship ui will exit with an error code 1 when attempting to start the first time:
+
+    $ bin/airshipui
+    2020/05/28 14:54:16 Attempting to start webservice on localhost:8080
+    2020/05/28 14:54:16 Exit electron 1
+
+You can attempt a manual start of electron from the root of the airshipui tree to see a more verbose log
+
+    $ npm start --prefix web
+
+    > electron-poc@0.0.1 start /home/ubuntu/airshipui/web
+    > electron .
+
+    /home/ubuntu/airshipui/web/node_modules/electron/index.js:14
+        throw new Error('Electron failed to install correctly, please delete node_modules/electron and try installing again')
+        ^
+
+    Error: Electron failed to install correctly, please delete node_modules/electron and try installing again
+        at getElectronPath (/home/ubuntu/airshipui/web/node_modules/electron/index.js:14:11)
+        at Object.<anonymous> (/home/ubuntu/airshipui/web/node_modules/electron/index.js:18:18)
+        at Module._compile (internal/modules/cjs/loader.js:1133:30)
+        at Object.Module._extensions..js (internal/modules/cjs/loader.js:1153:10)
+        at Module.load (internal/modules/cjs/loader.js:977:32)
+        at Function.Module._load (internal/modules/cjs/loader.js:877:14)
+        at Module.require (internal/modules/cjs/loader.js:1019:19)
+        at require (internal/modules/cjs/helpers.js:77:18)
+        at Object.<anonymous> (/home/ubuntu/airshipui/web/node_modules/electron/cli.js:3:16)
+        at Module._compile (internal/modules/cjs/loader.js:1133:30)
+    npm ERR! code ELIFECYCLE
+    npm ERR! errno 1
+    npm ERR! electron-poc@0.0.1 start: `electron .`
+    npm ERR! Exit status 1
+    npm ERR!
+    npm ERR! Failed at the electron-poc@0.0.1 start script.
+    npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+    npm ERR! A complete log of this run can be found in:
+    npm ERR!     /home/ubuntu/.npm/_logs/2020-05-28T14_55_52_327Z-debug.log
+    $
+
+This is likely due to a problem with the electron install.  If you cd to the web directory and attempt to install you may see an error:
+
+    npm install electron
+
+    > electron@8.3.0 postinstall /home/ubuntu/airshipui/web/node_modules/electron
+    > node install.js
+
+    (node:19823) UnhandledPromiseRejectionWarning: RequestError: connect ETIMEDOUT 192.30.255.113:443
+        at ClientRequest.<anonymous> (/home/ubuntu/airshipui/web/node_modules/got/source/request-as-event-emitter.js:178:14)
+        at Object.onceWrapper (events.js:417:26)
+        at ClientRequest.emit (events.js:322:22)
+        at ClientRequest.EventEmitter.emit (domain.js:482:12)
+        at ClientRequest.origin.emit (/home/ubuntu/airshipui/web/node_modules/@szmarczak/http-timer/source/index.js:37:11)
+        at TLSSocket.socketErrorListener (_http_client.js:426:9)
+        at TLSSocket.emit (events.js:310:20)
+        at TLSSocket.EventEmitter.emit (domain.js:482:12)
+        at emitErrorNT (internal/streams/destroy.js:92:8)
+        at emitErrorAndCloseNT (internal/streams/destroy.js:60:3)
+    (node:19823) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). To terminate the node process on unhandled promise rejection, use the CLI flag `--unhandled-rejections=strict` (see https://nodejs.org/api/cli.html#cli_unhandled_rejections_mode). (rejection id: 1)
+    (node:19823) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+    npm WARN electron-poc@0.0.1 No repository field.
+
+    + electron@8.3.0
+    updated 1 package and audited 361 packages in 143.19s
+
+    9 packages are looking for funding
+    run `npm fund` for details
+
+    found 1 low severity vulnerability
+    run `npm audit fix` to fix them, or `npm audit` for details
+
+If you're running behind a corporate proxy this is the workaround:
+
+    npx cross-env ELECTRON_GET_USE_PROXY=true GLOBAL_AGENT_HTTPS_PROXY=http://<proxy_host>:<proxy_port> npm install electron
 
 ### Optional proxy settings
 

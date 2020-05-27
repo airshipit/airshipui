@@ -13,6 +13,8 @@ WEBDIR        := web
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
 JSLINTER_BIN  := $(realpath tools)/node-v12.16.3/bin
+NPM  		  := $(JSLINTER_BIN)/npm
+NPX  		  := $(JSLINTER_BIN)/npx
 
 COVERAGE_OUTPUT := coverage.out
 
@@ -43,21 +45,27 @@ DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build
-build: $(MAIN) $(EXAMPLES)
-
+build: $(MAIN) $(NPX)
 $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
 
+FORCE:
+
+.PHONY: examples
+examples: $(EXAMPLES)
 $(EXAMPLES): FORCE
 	@mkdir -p $(BUILD_DIR)
 	go build -o $@$(EXTENSION) $(GO_FLAGS) examples/$(@F)/main.go
-FORCE:
 
 .PHONY: install-octant-plugins
 install-octant-plugins:
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
 	cp $(addsuffix $(EXTENSION), $(BUILD_DIR)/octant) $(OCTANT_PLUGINSTUB_DIR)
+
+.PHONY: install-npm-modules
+install-npm-modules: $(NPX)
+	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPM) install) && cd ..
 
 .PHONY: test
 test:
@@ -83,10 +91,10 @@ docs:
 .PHONY: env
 
 .PHONY: lint
-lint: $(LINTER)
+lint: $(LINTER) $(NPX)
 	$(LINTER) run --config $(LINTER_CONFIG)
-	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint js) && cd ..
-	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(JSLINTER_BIN)/npx --no-install eslint --ext .html .) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint js) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint --ext .html .) && cd ..
 
 .PHONY: tidy
 tidy:
@@ -96,4 +104,8 @@ tidy:
 
 $(LINTER):
 	@mkdir -p $(TOOLBINDIR)
-	./tools/install_linter
+	./tools/install_go_linter
+
+$(NPX):
+	@mkdir -p $(TOOLBINDIR)
+	./tools/install_js_linter
