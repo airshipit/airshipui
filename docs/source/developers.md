@@ -21,6 +21,25 @@ Run the airshipui binary
 
     ./bin/airshipui
 
+# Running on a separate client & server
+For development purposes it could be advantageous to split the webservice and the UI across 2 machines.
+
+## To start the webservice on a remote system without starting the ui
+
+    bin/airshipui --headless
+
+This will require you to tunnel the connection to the remote machine:
+
+    ssh -L 8080:localhost:8080 <id>@<remote_host>
+
+## To start the UI to attach to a remote machine
+
+    bin/airshipui --remote
+
+## Running the webservice on a remote machine with plugins
+The plugins can run on the remote system but you will need to add additional SSH tunnels to the machine in order for it to work.
+The plugins can also run locally but the remote server will still need the definition on the remote system to notify the UI that the plugins are available.
+
 # Authentication
 ## Pluggable authentication methods
 The AirshipUI is not designed to create authentication credentials but to have them supplied to it either by a configuration or by an external entity.  The expectation is that there will be an external URL that will handle authentication for the system which may need to be modified or created.  The endpoint will need to be able to forward a [bearer token](https://oauth.net/2/bearer-tokens/), [basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication) or cookie data to the Airship UI backend service.
