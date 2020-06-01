@@ -68,11 +68,16 @@ function handleMessages(message) {
             } else {
                 authComplete();
             }
-            addPluginDashboards(json["plugins"]);
-            addServiceDashboards(json["dashboards"]);
-            authenticate(json["authentication"]);
+            if (json["plugins"] !== null) {
+                addPluginDashboards(json["plugins"]);
+            }
+            if (json["dashboards"] !== null) {
+                addServiceDashboards(json["dashboards"]);
+            }
         } else if (json["component"] === "authcomplete") {
             authComplete();
+        } else if (json["component"] === "alert") {
+            showDismissableAlert(json["level"], json["message"]);
         }
     } else {
         // TODO: determine if we're dispatching events or just doing function calls
@@ -115,10 +120,7 @@ function close(code) {
 }
 
 function authComplete() {
-    document.getElementById("HeaderDiv").style.display = "";
     document.getElementById("MainDiv").style.display = "";
-    document.getElementById("DashView").style.display = "none";
-    document.getElementById("FooterDiv").style.display = "";
 }
 
 function keepAlive() {
