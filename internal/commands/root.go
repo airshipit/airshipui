@@ -77,13 +77,7 @@ func launch(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		log.Printf("config %s", err)
-		webservice.Alerts = append(
-			webservice.Alerts,
-			webservice.Alert{
-				Level:   "info",
-				Message: fmt.Sprintf("%s", err),
-			},
-		)
+		webservice.SendAlert(webservice.Info, fmt.Sprintf("%s", err))
 	}
 
 	// start the electron app

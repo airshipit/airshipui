@@ -16,6 +16,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -23,6 +24,7 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
+	"opendev.org/airship/airshipui/internal/webservice"
 )
 
 // struct to store PID and process handle
@@ -139,5 +141,11 @@ func RunBinaryWithOptions(ctx context.Context, cmd string, args []string, wg *sy
 
 	if err := prGrp.Run(); err != nil {
 		log.Printf("'%s' exited with error: %v", cmd, err)
+
+		// send error to UI
+		webservice.SendAlert(
+			webservice.Error,
+			fmt.Sprintf("Plugin '%s' failed to start: %v", cmd, err),
+		)
 	}
 }
