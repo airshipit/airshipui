@@ -26,7 +26,7 @@
                   spinner.style.display = "none";
               }
               const loadFail = (err) => {
-                  showDismissableAlert("danger", `Error loading '${err.validatedURL}': ${err.errorDescription} (${err.errorCode})`);
+                  showDismissableAlert("danger", `Error loading '${err.validatedURL}': ${err.errorDescription} (${err.errorCode})`, true);
               }
               webview.addEventListener("did-start-loading", loadStart)
               webview.addEventListener("did-stop-loading", loadStop)

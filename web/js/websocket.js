@@ -77,7 +77,7 @@ function handleMessages(message) {
         } else if (json["component"] === "authcomplete") {
             authComplete();
         } else if (json["component"] === "alert") {
-            showDismissableAlert(json["level"], json["message"]);
+            showDismissableAlert(json["level"], json["message"], json["fade"]);
         }
     } else {
         // TODO: determine if we're dispatching events or just doing function calls

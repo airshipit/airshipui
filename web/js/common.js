@@ -97,8 +97,11 @@ function removeElement(id) { // eslint-disable-line no-unused-vars
     }
 }
 
-function showDismissableAlert(alertLevel, msg) { // eslint-disable-line no-unused-vars
+// show a dismissable alert in the UI
+// if 'fade' is set to true, the alert will fade out and disappear after 5s
+function showDismissableAlert(alertLevel, msg, fade) { // eslint-disable-line no-unused-vars
     let e = document.getElementById("alert-div");
+    let alertId = `alert-${Math.floor(Math.random() * 1000)}`;
     let alertHeading = "";
 
     switch (alertLevel) {
@@ -113,9 +116,11 @@ function showDismissableAlert(alertLevel, msg) { // eslint-disable-line no-unuse
     }
 
     let div = document.createElement("div");
+    div.id = alertId;
     div.className = `alert alert-${alertLevel} alert-dismissable fade show`;
     div.setAttribute("role", "alert");
     div.innerHTML = `<strong>${alertHeading}: </strong>${msg}`;
+    div.style.opacity = "1";
 
     // dismissable button
     let btn = document.createElement("button");
@@ -131,5 +136,24 @@ function showDismissableAlert(alertLevel, msg) { // eslint-disable-line no-unuse
     btn.appendChild(span);
     div.appendChild(btn);
 
+    // add auto-hide if fade is true
+    if (fade === true) {
+        let script = document.createElement("script");
+        let inline = `alertFadeOut("${alertId}")`;
+        script.innerText = inline;
+        div.appendChild(script);
+    }
+
     e.appendChild(div);
+}
+
+function alertFadeOut(id) { // eslint-disable-line no-unused-vars
+    let element = document.getElementById(id);
+    setTimeout(function() {
+        element.style.transition = "opacity 2s ease";
+        element.style.opacity = "0";
+    }, 5000);
+    element.addEventListener("transitionend", function() {
+        element.parentNode.removeChild(element);
+    });
 }

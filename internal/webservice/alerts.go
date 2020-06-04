@@ -34,6 +34,7 @@ const (
 type Alert struct {
 	Level   AlertLevel
 	Message string
+	Fade    bool
 }
 
 // Alerts serves as a queue to hold alerts to be sent to the UI,
@@ -44,10 +45,11 @@ var Alerts []Alert
 // SendAlert tests for the existence of an established websocket
 // and either sends the message over the websocket, or adds it
 // to the Alerts queue to be sent later
-func SendAlert(lvl AlertLevel, msg string) {
+func SendAlert(lvl AlertLevel, msg string, fade bool) {
 	alert := Alert{
 		Level:   lvl,
 		Message: msg,
+		Fade:    fade,
 	}
 
 	if ws == nil {
@@ -63,6 +65,7 @@ func sendAlertMessage(a Alert) {
 		"component": "alert",
 		"level":     a.Level,
 		"message":   a.Message,
+		"fade":      a.Fade,
 		"timestamp": time.Now().UnixNano() / 1000000,
 	}); err != nil {
 		onError(err)
