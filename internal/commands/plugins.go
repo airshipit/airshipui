@@ -18,11 +18,14 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"sync"
 	"syscall"
+
+	"opendev.org/airship/airshipui/internal/webservice"
 )
 
 // ProcessGrpCmd wraps an exec.Cmd and a signal chan
@@ -79,6 +82,12 @@ func RunBinaryWithOptions(ctx context.Context, cmd string, args []string, wg *sy
 
 	if err := monitoredCmd.Run(); err != nil {
 		log.Printf("'%s' exited with error: %v", cmd, err)
+
+		// send error to UI
+		webservice.SendAlert(
+			webservice.Error,
+			fmt.Sprintf("Plugin '%s' failed to start: %v", cmd, err),
+		)
 	}
 }
 
