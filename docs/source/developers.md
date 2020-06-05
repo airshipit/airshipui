@@ -2,11 +2,10 @@
 
 ## Prerequisites
 1. [Go](https://golang.org/dl/) v1.13 or newer
-2. [Nodejs](https://nodejs.org/en/download/) v12 or newer
 
 ## Getting Started
 
-Clone the Airship UI repository and build
+Clone the Airship UI repository and build.
 
     git clone https://opendev.org/airship/airshipui
     cd airshipui
@@ -15,6 +14,8 @@ Clone the Airship UI repository and build
     make examples # (optional)
     make install-octant-plugins # (if running with octant)
 
+**NOTE**
+Make will install node.js v12 into your tools directory and will use that as the node binary for the UI testing and launching.
 
 
 Run the airshipui binary
@@ -81,6 +82,16 @@ Build the octant plugin executable
 make install-octant-plugins
 ```
 Run the octant binary and the plugin should show "Hello World just some text on the page" under the http://127.0.0.1:7777/#/airshipui-example-plugin url.
+
+## Behind the scenes
+
+### Communication with the backend
+The UI and the Go backend use a [websocket](https://en.wikipedia.org/wiki/WebSocket) to stream JSON between the ui and the backend.  The use of a websocket instead of a more conventional HTTP REST invocation allows the backend to notify the UI of any updates, alerts and information in real time without the need to set a poll based timer on the UI.  Once the data is observed it can be transformed and moved to the UI asynchronously.
+
+The UI will initiate the websocket and request data.  The backend uses a function map to determine which subsystem is responsible for the request and responds with configuration information, alerts, data and [pagelets](https://encyclopedia2.thefreedictionary.com/pagelet).  The pagelets are rendered [templated](https://golang.org/pkg/text/template/) HTML documents that the Go backend amends with the data requested from the UI.  What the user sees is a combination of the base index.html with data enhanced pagelets placed in the appropriate [HTML Content Division](https://www.w3schools.com/tags/tag_div.ASP) with the onclick functions either predefined with existing functions or bound post insertion into the [HTML Document Object Model](https://www.w3schools.com/js/js_htmldom.asp).
+
+### AirshipUI interaction
+![AirshipUI Interactions](../img/sequence.jpg "AirshipUI Interactions")
 
 ## Appendix
 
