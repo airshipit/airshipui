@@ -99,10 +99,16 @@ const (
 	SetConfig    WsComponentType = "setConfig"
 	Initialize   WsComponentType = "initialize"
 	Keepalive    WsComponentType = "keepalive"
+	CTLConfig    WsComponentType = "config"
+	Baremetal    WsComponentType = "baremetal"
+	Document     WsComponentType = "document"
 
+	GetDefaults   WsSubComponentType = "getDefaults"
 	SetContext    WsSubComponentType = "context"
 	SetCluster    WsSubComponentType = "cluster"
 	SetCredential WsSubComponentType = "credential"
+	GenerateISO   WsSubComponentType = "generateISO"
+	DocPull       WsSubComponentType = "docPull"
 )
 
 // WsMessage is a request / return structure used for websockets

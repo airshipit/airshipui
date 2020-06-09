@@ -1019,6 +1019,7 @@ opendev.org/airship/airshipctl v0.0.0-20200501183051-71b06db81924/go.mod h1:ste8
 opendev.org/airship/airshipctl v0.0.0-20200518155418-7276dd68d8d0 h1:gMM7Jcb0r9bEa4kYBm9mhDNIjdtLKy3WuA4z/PabpLY=
 opendev.org/airship/airshipctl v0.0.0-20200518155418-7276dd68d8d0/go.mod h1:0ywoz1IC0yXQ0XDfcBV/BVeEubkTPPjN7dra8sUrsHs=
 opendev.org/airship/airshipctl v0.0.0-20200519134509-98f14aaa9327 h1:wPnsodiekVe1lq/oxbHmk8ZCcJa1xuzPEY+yJG1lMuI=
+opendev.org/airship/airshipctl v0.0.0-20200608220007-d31f4f982869 h1:JVshDs4fIvy0Fr8aN3H1xwP9NHedLBEjY+pT9AlHGbw=
 opendev.org/airship/go-redfish v0.0.0-20200110185254-3ab47e28bae8/go.mod h1:FEjYcb3bYBWGpQIqtvVM0NrT5eyjlCOCj5JNf4lI+6s=
 opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a h1:4ggAMTwpfu/w3ZXOIJ9tfYF37JIYn+eNCA4O10NduZ0=
 opendev.org/airship/go-redfish v0.0.0-20200318103738-db034d1d753a/go.mod h1:FEjYcb3bYBWGpQIqtvVM0NrT5eyjlCOCj5JNf4lI+6s=

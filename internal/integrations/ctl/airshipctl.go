@@ -14,12 +14,21 @@
 package ctl
 
 import (
-	"log"
+	"bytes"
+	"text/template"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/version"
-	"opendev.org/airship/airshipui/internal/configs"
 )
+
+// ctlPage struct is used for templated HTML
+type ctlPage struct {
+	ClusterRows    string
+	ContextRows    string
+	CredentialRows string
+	Title          string
+	Version        string
+}
 
 // client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
 // functionality in exactly the same manner as the CLI.
@@ -43,21 +52,26 @@ func NewClient() *client {
 var c *client = NewClient()
 
 // GetAirshipCTLVersion will kick out what version of airshipctl we're using
-func GetAirshipCTLVersion() string {
+func getAirshipCTLVersion() string {
 	return version.Get().GitVersion
 }
 
-// GetDefaults will send to the UI the basics of what airshipctl we know about
-func GetDefaults(configs.WsMessage) configs.WsMessage {
-	config, err := getDefaultHTML()
+func getHTML(templateFile string, contents ctlPage) (string, error) {
+	// go templates need an io writer, since we need a string this buffer can be converted
+	var buff bytes.Buffer
+
+	// TODO: make the node path dynamic or setable at compile time
+	t, err := template.ParseFiles(templateFile)
+
 	if err != nil {
-		config = "Error attempting to get data for AirshipCTL configs: " + err.Error()
-		log.Println(err)
+		return "", err
 	}
 
-	return configs.WsMessage{
-		Type:      configs.AirshipCTL,
-		Component: configs.Info,
-		HTML:      config,
+	// parse and merge the template
+	err = template.Must(t, err).Execute(&buff, contents)
+	if err != nil {
+		return "", err
 	}
+
+	return buff.String(), nil
 }

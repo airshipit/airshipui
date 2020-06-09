@@ -39,8 +39,9 @@ var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(con
 		configs.Initialize: clientInit,
 	},
 	configs.AirshipCTL: {
-		configs.Info:      ctl.GetDefaults,
-		configs.SetConfig: ctl.SetConfig,
+		configs.CTLConfig: ctl.HandleConfigRequest,
+		configs.Baremetal: ctl.HandleBaremetalRequest,
+		configs.Document:  ctl.HandleDocumentRequest,
 	},
 }
 
