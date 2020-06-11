@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 )
@@ -30,9 +29,9 @@ var (
 
 // Config basic structure to hold configuration params for Airship UI
 type Config struct {
-	AuthMethod AuthMethod `json:"authMethod,omitempty"`
-	Plugins    []Plugin   `json:"plugins,omitempty"`
-	Clusters   []Cluster  `json:"clusters,omitempty"`
+	AuthMethod *AuthMethod `json:"authMethod,omitempty"`
+	Plugins    []Plugin    `json:"plugins,omitempty"`
+	Clusters   []Cluster   `json:"clusters,omitempty"`
 }
 
 // AuthMethod structure to hold authentication parameters
@@ -44,18 +43,24 @@ type AuthMethod struct {
 
 // Plugin structure to hold plugin specific parameters
 type Plugin struct {
-	Name      string `json:"name,omitempty"`
-	Dashboard struct {
-		Protocol string `json:"protocol,omitempty"`
-		FQDN     string `json:"fqdn,omitempty"`
-		Port     uint16 `json:"port,omitempty"`
-		Path     string `json:"path,omitempty"`
-	} `json:"dashboard"`
-	Executable struct {
-		AutoStart bool     `json:"autoStart,omitempty"`
-		Filepath  string   `json:"filepath,omitempty"`
-		Args      []string `json:"args,omitempty"`
-	} `json:"executable"`
+	Name       string           `json:"name,omitempty"`
+	Dashboard  *PluginDashboard `json:"dashboard,omitempty"`
+	Executable *Executable      `json:"executable"`
+}
+
+// PluginDashboard structure to hold web dashboard parameters for plugins
+type PluginDashboard struct {
+	Protocol string `json:"protocol,omitempty"`
+	FQDN     string `json:"fqdn,omitempty"`
+	Port     uint16 `json:"port,omitempty"`
+	Path     string `json:"path,omitempty"`
+}
+
+// Executable structure to hold parameters for launching an executable plugin
+type Executable struct {
+	AutoStart bool     `json:"autoStart,omitempty"`
+	Filepath  string   `json:"filepath,omitempty"`
+	Args      []string `json:"args,omitempty"`
 }
 
 // Dashboard structure
@@ -132,39 +137,42 @@ type WsMessage struct {
 	Message         string `json:"message,omitempty"`
 
 	// information related to the init of the UI
-	Dashboards      []Cluster              `json:"dashboards,omitempty"`
-	Plugins         []Plugin               `json:"plugins,omitempty"`
-	Authentication  AuthMethod             `json:"authentication,omitempty"`
-	AuthInfoOptions config.AuthInfoOptions `json:"authInfoOptions,omitempty"`
-	ContextOptions  config.ContextOptions  `json:"contextOptions,omitempty"`
-	ClusterOptions  config.ClusterOptions  `json:"clusterOptions,omitempty"`
+	Dashboards      []Cluster               `json:"dashboards,omitempty"`
+	Plugins         []Plugin                `json:"plugins,omitempty"`
+	Authentication  *AuthMethod             `json:"authentication,omitempty"`
+	AuthInfoOptions *config.AuthInfoOptions `json:"authInfoOptions,omitempty"`
+	ContextOptions  *config.ContextOptions  `json:"contextOptions,omitempty"`
+	ClusterOptions  *config.ClusterOptions  `json:"clusterOptions,omitempty"`
 }
 
-// GetConfigFromFile reads configuration file and returns error on any error reading the file
+// SetUIConfig sets the UIConfig object with values obtained from
+// airshipui.json, located at 'filename'
 // TODO: add watcher to the json file to reload conf on change
-func GetConfigFromFile() error {
-	var fileName string
-	home, err := os.UserHomeDir()
+func SetUIConfig(filename string) error {
+	bytes, err := getBytesFromFile(filename)
 	if err != nil {
 		return err
 	}
 
-	fileName = filepath.FromSlash(home + "/.airship/airshipui.json")
-
-	jsonFile, err := os.Open(fileName)
+	err = json.Unmarshal(bytes, &UIConfig)
 	if err != nil {
 		return err
 	}
 
-	defer jsonFile.Close()
+	return nil
+}
 
-	byteValue, err := ioutil.ReadAll(jsonFile)
-
+func getBytesFromFile(filename string) ([]byte, error) {
+	f, err := os.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
 	}
 
-	err = json.Unmarshal(byteValue, &UIConfig)
-
-	return err
+	return bytes, nil
 }

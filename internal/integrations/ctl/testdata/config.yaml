@@ -1,0 +1,73 @@
+apiVersion: airshipit.org/v1alpha1
+bootstrapInfo:
+  default:
+    builder:
+      networkConfigFileName: network-config
+      outputMetadataFileName: output-metadata.yaml
+      userDataFileName: user-data
+    container:
+      containerRuntime: docker
+      image: quay.io/airshipit/isogen:latest-debian_stable
+      volume: /srv/iso:/config
+    remoteDirect:
+      isoUrl: http://localhost:8099/debian-custom.iso
+  dummy_bootstrap_config:
+    builder:
+      networkConfigFileName: netconfig
+      outputMetadataFileName: output-metadata.yaml
+      userDataFileName: user-data
+    container:
+      containerRuntime: docker
+      image: dummy_image:dummy_tag
+      volume: /dummy:dummy
+clusters:
+  kubernetes:
+    clusterType:
+      target:
+        bootstrapInfo: default
+        clusterKubeconf: kubernetes_target
+        managementConfiguration: default
+contexts:
+  admin@kubernetes:
+    contextKubeconf: kubernetes_target
+currentContext: admin@kubernetes
+kind: Config
+managementConfiguration:
+  default:
+    insecure: true
+    systemActionRetries: 30
+    systemRebootDelay: 30
+    type: redfish
+  dummy_management_config:
+    insecure: true
+    type: redfish
+manifests:
+  default:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        checkout:
+          branch: master
+          commitHash: ""
+          force: false
+          tag: ""
+        url: https://opendev.org/airship/treasuremap
+    subPath: treasuremap/manifests/site
+    targetPath: /tmp/default
+  dummy_manifest:
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        auth:
+          sshKey: testdata/test-key.pem
+          type: ssh-key
+        checkout:
+          branch: ""
+          commitHash: ""
+          force: false
+          tag: v1.0.1
+        url: http://dummy.url.com/manifests.git
+    subPath: manifests/site/test-site
+    targetPath: /var/tmp/
+users:
+  admin: {}

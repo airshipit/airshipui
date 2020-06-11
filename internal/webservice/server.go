@@ -187,7 +187,7 @@ func WebServer() {
 
 func clientInit(configs.WsMessage) configs.WsMessage {
 	// if no auth method is supplied start with minimal functionality
-	if len(configs.UIConfig.AuthMethod.URL) == 0 {
+	if configs.UIConfig.AuthMethod == nil {
 		isAuthenticated = true
 	}
 

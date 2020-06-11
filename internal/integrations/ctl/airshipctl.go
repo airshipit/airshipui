@@ -16,11 +16,20 @@ package ctl
 
 import (
 	"bytes"
+	"path/filepath"
+	"runtime"
 	"text/template"
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/version"
 	"opendev.org/airship/airshipui/internal/configs"
+)
+
+// obtain base path of caller so references to html
+// template files still work from outside the package
+var (
+	_, b, _, _ = runtime.Caller(0)
+	basepath   = filepath.Dir(b)
 )
 
 // maintain the state of a potentially long running process

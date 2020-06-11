@@ -16,6 +16,7 @@ package ctl
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -77,5 +78,5 @@ func getBaremetalHTML() (string, error) {
 		p.ButtonText = "In Progress"
 	}
 
-	return getHTML("./internal/integrations/ctl/templates/baremetal.html", p)
+	return getHTML(filepath.Join(basepath, "/templates/baremetal.html"), p)
 }

@@ -1,0 +1,55 @@
+{
+    "authMethod": {
+        "url": "http://fake.auth.method.com/auth"
+    },
+    "plugins": [
+        {
+            "name": "dummy_plugin_with_dash",
+            "dashboard": {
+                "protocol": "http",
+                "fqdn": "localhost",
+                "port": 80,
+                "path": "index.html"
+            },
+            "executable": {
+                "autoStart": true,
+                "filepath": "/fake/path/to/executable",
+                "args": [
+                    "--fakeflag",
+                    "fakevalue"
+                ]
+            }
+        },
+        {
+            "name": "dummy_plugin_no_dash",
+            "executable": {
+                "autoStart": true,
+                "filepath": "/fake/path/to/executable",
+                "args": [
+                    "--fakeflag",
+                    "fakevalue"
+                ]
+            }
+        }
+    ],
+    "clusters": [
+        {
+            "name": "dummy_cluster",
+            "baseFqdn": "dummy.cluster.local",
+            "namespaces": [
+                {
+                    "name": "dummy_namespace",
+                    "dashboards": [
+                        {
+                            "name": "dummy_dashboard",
+                            "protocol": "http",
+                            "hostname": "dummyhost",
+                            "port": 80,
+                            "path": "fake/login/path"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

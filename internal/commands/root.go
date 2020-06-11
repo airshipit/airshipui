@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 
@@ -51,6 +52,13 @@ func init() {
 }
 
 func launch(cmd *cobra.Command, args []string) {
+	// set default config path
+	// TODO: do we want to make this a flag that can be passed in?
+	airshipUIConfigPath, err := getDefaultConfigPath()
+	if err != nil {
+		log.Printf("Error setting config path %s", err)
+	}
+
 	sigs := make(chan os.Signal)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
@@ -59,7 +67,7 @@ func launch(cmd *cobra.Command, args []string) {
 	waitgrp := sync.WaitGroup{}
 
 	// Read AirshipUI config file
-	if err := configs.GetConfigFromFile(); err == nil {
+	if err := configs.SetUIConfig(airshipUIConfigPath); err == nil {
 		// launch any plugins marked as autoStart: true in airshipui.json
 		for _, p := range configs.UIConfig.Plugins {
 			if p.Executable.AutoStart {
@@ -133,4 +141,13 @@ func Execute() {
 		log.Println(err)
 		os.Exit(1)
 	}
+}
+
+func getDefaultConfigPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.FromSlash(home + "/.airship/airshipui.json"), nil
 }
