@@ -19,6 +19,17 @@ Welcome to airshipui's Documentation!
 =====================================
 
 .. toctree::
+   :caption: Airshipui
    :maxdepth: 2
+   :hidden:
 
    developers
+
+.. toctree::
+   :caption: Airship Project Documentation
+   :hidden:
+
+   Airship Documentation <https://docs.airshipit.org>
+   Airshipctl <https://docs.airshipit.org/airshipctl>
+   Airshipui <https://docs.airshipit.org/airshipui>
+   Treasuremap <https://docs.airshipit.org/treasuremap>

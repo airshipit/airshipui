@@ -18,8 +18,8 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'airshipui'
-copyright = '2020, The Airship Authors'
+project = 'Airshipui'
+copyright = '2019-2020, The Airship Authors'
 author = 'The Airship Authors'
 
 
@@ -46,7 +46,9 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "img/airship.logo.white.svg"
+html_logo = "_static/airship.logo.white.svg"
+html_show_sourcelink = False
+html_show_sphinx = False
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     'display_version': False,
