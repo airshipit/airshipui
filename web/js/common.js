@@ -34,20 +34,22 @@ if (document.addEventListener) {
 
 // add dashboard links to Dropdown if present in $HOME/.airship/airshipui.json
 function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
-    for (let i = 0; i < json.length; i++) {
-        let cluster = json[i];
-        for (let j = 0; j < cluster.namespaces.length; j++) {
-            let namespace = cluster.namespaces[j];
-            for (let k = 0; k < namespace.dashboards.length; k++) {
-                let dash = namespace.dashboards[k];
-                let fqdn = "";
-                if (dash.fqdn === undefined) {
-                    fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`
-                } else {
-                    ({ fqdn } = dash.fqdn);
+    if (json !== undefined) {
+        for (let i = 0; i < json.length; i++) {
+            let cluster = json[i];
+            for (let j = 0; j < cluster.namespaces.length; j++) {
+                let namespace = cluster.namespaces[j];
+                for (let k = 0; k < namespace.dashboards.length; k++) {
+                    let dash = namespace.dashboards[k];
+                    let fqdn = "";
+                    if (dash.fqdn === undefined) {
+                        fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`
+                    } else {
+                        ({ fqdn } = dash.fqdn);
+                    }
+                    let url = `${dash.protocol}://${fqdn}:${dash.port}/${dash.path || ""}`;
+                    addDashboard("DashDropdown", dash.name, url)
                 }
-                let url = `${dash.protocol}://${fqdn}:${dash.port}/${dash.path || ""}`;
-                addDashboard("DashDropdown", dash.name, url)
             }
         }
     }
@@ -56,11 +58,13 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
 // if any plugins (external executables) have a corresponding web dashboard defined,
 // add them to the dropdown
 function addPluginDashboards(json) { // eslint-disable-line no-unused-vars
-    for (let i = 0; i < json.length; i++) {
-        if (json[i].executable.autoStart && json[i].dashboard.fqdn !== undefined) {
-            let dash = json[i].dashboard;
-            let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path || ""}`;
-            addDashboard("PluginDropdown", json[i].name, url);
+    if (json !== undefined) {
+        for (let i = 0; i < json.length; i++) {
+            if (json[i].executable.autoStart && json[i].dashboard.fqdn !== undefined) {
+                let dash = json[i].dashboard;
+                let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path || ""}`;
+                addDashboard("PluginDropdown", json[i].name, url);
+            }
         }
     }
 }
@@ -89,12 +93,6 @@ function authenticate(json) { // eslint-disable-line no-unused-vars
     // use webview to display the auth page
     let view = document.getElementById("AuthView");
     view.src = json["url"];
-}
-
-function removeElement(id) { // eslint-disable-line no-unused-vars
-    if (document.contains(document.getElementById(id))) {
-        document.getElementById(id).remove();
-    }
 }
 
 // show a dismissable alert in the UI

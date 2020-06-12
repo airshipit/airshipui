@@ -75,11 +75,11 @@ function hanldleElectronMessages(json) {
             authenticate(json["authentication"]);
         } else {
             authComplete();
-        } 
-        if (json["plugins"] !== null) {
+        }
+        if (json.hasOwnProperty("plugins")) {
             addPluginDashboards(json["plugins"]);
         }
-        if (json["dashboards"] !== null) {
+        if (json.hasOwnProperty("dashboards")) {
             addServiceDashboards(json["dashboards"]);
         }
     } else if (json["component"] === "authcomplete") {
