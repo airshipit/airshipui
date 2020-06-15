@@ -21,7 +21,7 @@
           {{.ClusterRows}}
       </tbody>
     </table>
-    <button type="button" class="btn btn-info" onclick="addClusterModal()">Add</button>
+    <button type="button" class="btn btn-info" id="ClusterBtn" onclick="addConfigModal(this)">Add</button>
   </p>
 </div>
 
@@ -77,7 +77,7 @@
       </tbody>
     </table>
   </p>
-  <button type="button" class="btn btn-info" onclick="addContextModal()">Add</button>
+  <button type="button" class="btn btn-info" id="ContextBtn" onclick="addConfigModal(this)">Add</button>
 </div>
 
 <!-- This is used by the context add modal and is injected into the DOM but not displayed except by the popup -->
@@ -130,7 +130,7 @@
           {{.CredentialRows}}
       </tbody>
     </table>
-    <button type="button" class="btn btn-info" onclick="addCredentialModal()">Add</button>
+    <button type="button" class="btn btn-info" id="CredentialBtn" onclick="addConfigModal(this)">Add</button>
   </p>
 </div>
 

@@ -62,7 +62,7 @@ function handleMessages(message) {
     // create and dispatch an event based on the data received
     switch(json["type"]) {
         case "alert":   showDismissableAlert(json["component"], json["message"], json["fade"]); break;
-        case "airshipctl": ctlParseConfig(json); break;
+        case "airshipctl": handleCTLMessages(json); break;
         case "electron":   hanldleElectronMessages(json); break;
         default:  console.log("Received message: " + json["type"]); break;
     }
@@ -84,6 +84,16 @@ function hanldleElectronMessages(json) {
         }
     } else if (json["component"] === "authcomplete") {
         authComplete();
+    }
+}
+
+// helper function for the airshiptctl interactions
+function handleCTLMessages(json) {
+    switch(json["component"]) {
+        case "config":  ctlParseConfig(json); break;
+        case "baremetal": ctlParseBaremetal(json); break;
+        case "document": ctlParseDocument(json); break;
+        default:  console.log("Received message: " + json); break;
     }
 }
 

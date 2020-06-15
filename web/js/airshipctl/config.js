@@ -13,39 +13,26 @@
 */
 
 function ctlGetConfig() { // eslint-disable-line no-unused-vars
-    console.log("Requesting airshipctl config info");
-    var json = { "type": "airshipctl", "component": "info" };
+    var json = { "type": "airshipctl", "component": "config",  "subComponent": "getDefaults" };
     ws.send(JSON.stringify(json));
 }
 
 function ctlParseConfig(json) { // eslint-disable-line no-unused-vars
-    switch(json["component"]) {
-        case "info": displayInfo(json); break;
-        default: handleCtlResponse(json);
+    switch(json["subComponent"]) {
+        case "getDefaults": displayConfigInfo(json); break;
+        default: handleCTLResponse(json);
     }
 }
 
-function displayInfo(json) {
-    document.getElementById("DashView").style.display = "none";
-    let div = document.getElementById("ContentDiv");
-    div.style.display = "";
-    div.innerHTML =  json["html"];
-
+function displayConfigInfo(json) {
+    displayCTLInfo(json);
     enableAccordion();
-}
-
-function handleCtlResponse(json) {
-    if (json.hasOwnProperty("error")) {
-        showDismissableAlert("danger", json["error"], true);
-    } else {
-        showDismissableAlert("info", json["message"], true);
-    }
 }
 
 function saveConfig(element) { // eslint-disable-line no-unused-vars
     var json = {
         "type": "airshipctl",
-        "component": "setConfig",
+        "component": "config",
     };
 
     tableID = getTableId(element);
@@ -59,11 +46,12 @@ function saveConfig(element) { // eslint-disable-line no-unused-vars
                 case "CredentialTable": json = Object.assign(json, saveCredential(element)); break;
                 case "CredentialAddTable": json = Object.assign(json, addCredential(element)); break;
             }
-
-            ws.send(JSON.stringify(json));
             break;
         }
     }
+
+    console.log("Save Config Request: ", json);
+    ws.send(JSON.stringify(json));
 }
 
 function addCluster(row) {
@@ -124,8 +112,8 @@ function addCredential(row) {
     };
 }
 
-function saveCredential(row) { 
-    return { 
+function saveCredential(row) {
+    return {
         "subComponent": "credential",
         "authInfoOptions": {
             "Name": row.cells[0].textContent,
@@ -148,30 +136,20 @@ function saveConfigDialog(element) { // eslint-disable-line no-unused-vars
     closeDialog(element);
 }
 
-// This will use the cluster modal described in the pagelet that is sent via the websocket from the backend
-function addClusterModal() { // eslint-disable-line no-unused-vars
-    let dialog = document.createElement("DIALOG");
-    document.body.appendChild(dialog);
-    dialog.setAttribute("id", "AddCluster");
-    dialog.innerHTML = document.getElementById("ClusterModalTemplate").innerHTML;
-    dialog.showModal();
-}
+// This will use the modal described in the pagelet that is sent via the websocket from the backend
+function addConfigModal(element) { // eslint-disable-line no-unused-vars
+    let elementId = element.id;
+    var id, template;
+    switch(elementId) {
+        case "ClusterBtn": id = "AddCluster"; template = "ClusterModalTemplate"; break;
+        case "ContextBtn": id = "AddContext"; template = "ContextModalTemplate"; break;
+        case "CredentialBtn": id = "AddCredential"; template = "CredentialModalTemplate"; break;
+    }
 
-// This will use the context modal described in the pagelet that is sent via the websocket from the backend
-function addContextModal() { // eslint-disable-line no-unused-vars
     let dialog = document.createElement("DIALOG");
     document.body.appendChild(dialog);
-    dialog.setAttribute("id", "AddContext");
-    dialog.innerHTML = document.getElementById("ContextModalTemplate").innerHTML;
-    dialog.showModal();
-}
-
-// This will use the context modal described in the pagelet that is sent via the websocket from the backend
-function addCredentialModal() { // eslint-disable-line no-unused-vars
-    let dialog = document.createElement("DIALOG");
-    document.body.appendChild(dialog);
-    dialog.setAttribute("id", "AddCredential");
-    dialog.innerHTML = document.getElementById("CredentialModalTemplate").innerHTML;
+    dialog.setAttribute("id", id);
+    dialog.innerHTML = document.getElementById(template).innerHTML;
     dialog.showModal();
 }
 
