@@ -21,6 +21,7 @@ import (
 )
 
 // HandleBaremetalRequest will flop between requests so we don't have to have them all mapped as function calls
+// This will wait for the sub component to complete before responding.  The assumption is this is an async request
 func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.AirshipCTL,
@@ -30,13 +31,16 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 
 	var err error
 	var message string
-	switch request.SubComponent {
+	subComponent := request.SubComponent
+	switch subComponent {
 	case configs.GetDefaults:
 		response.HTML, err = getBaremetalHTML()
-	case configs.DocPull:
-		message, err = c.docPull()
 	case configs.GenerateISO:
+		// since this is long running cache it up
+		runningRequests[subComponent] = true
 		message, err = c.generateIso()
+		// now that we're done forget we did anything
+		delete(runningRequests, subComponent)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -61,8 +65,16 @@ func (c *client) generateIso() (string, error) {
 }
 
 func getBaremetalHTML() (string, error) {
-	return getHTML("./internal/integrations/ctl/templates/baremetal.html", ctlPage{
-		Title:   "Baremetal",
-		Version: getAirshipCTLVersion(),
-	})
+	p := ctlPage{
+		Title:      "Baremetal",
+		Version:    getAirshipCTLVersion(),
+		ButtonText: "Generate ISO",
+	}
+
+	if _, ok := runningRequests[configs.GenerateISO]; ok {
+		p.Disabled = "disabled"
+		p.ButtonText = "In Progress"
+	}
+
+	return getHTML("./internal/integrations/ctl/templates/baremetal.html", p)
 }

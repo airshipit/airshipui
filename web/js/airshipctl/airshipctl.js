@@ -26,10 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Displays the alerts from the backend
 function handleCTLResponse(json) { // eslint-disable-line no-unused-vars
+    let message = json["type"] + " " + json["component"] + " " + json["subComponent"] + " ";
     if (json.hasOwnProperty("error")) {
-        showDismissableAlert("danger", json["error"], false);
+        showDismissableAlert("danger", message + json["error"], false);
     } else {
-        showDismissableAlert("info", json["message"], false);
+        showDismissableAlert("info", message + json["message"], true);
     }
 }
 

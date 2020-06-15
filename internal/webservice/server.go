@@ -31,7 +31,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // this is a way to allow for arbitrary messages to be processed by the backend
-// most likely we will need to have sub components register with the system
+// the message of a specifc component is shunted to that subsystem for further processing
 // TODO: make this a dynamic registration of components
 var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
 	configs.Electron: {

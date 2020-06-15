@@ -19,7 +19,11 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/version"
+	"opendev.org/airship/airshipui/internal/configs"
 )
+
+// maintain the state of a potentially long running process
+var runningRequests map[configs.WsSubComponentType]bool = make(map[configs.WsSubComponentType]bool)
 
 // ctlPage struct is used for templated HTML
 type ctlPage struct {
@@ -28,6 +32,8 @@ type ctlPage struct {
 	CredentialRows string
 	Title          string
 	Version        string
+	Disabled       string
+	ButtonText     string
 }
 
 // client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
