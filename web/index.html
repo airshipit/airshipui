@@ -14,6 +14,7 @@
   <script src="js/common.js"></script>
   <script src="js/airshipctl/airshipctl.js"></script>
   <script src="js/coreui-3.2.0/vendors/@coreui/coreui/js/coreui.bundle.min.js"></script>
+  <script type="text/javascript" src="node_modules/vis-network/standalone/umd/vis-network.min.js"></script>
   <link href="js/coreui-3.2.0/css/style.css" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
 </head>
@@ -110,6 +111,11 @@
     </div>
   </div>
   <webview class="webview" id="AuthView" autosize="on" style="height:92vh;"></webview>
-</body>
 
+  <!-- For some reason monaco includes can't live in the head of html because they rely on some post content loaded listener -->
+  <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script>require.config( { paths: { "vs": "node_modules/monaco-editor/min/vs" } } );</script>
+  <script src="node_modules/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
+  <script src="node_modules/monaco-editor/min/vs/editor/editor.main.js"></script>
+</body>
 </html>

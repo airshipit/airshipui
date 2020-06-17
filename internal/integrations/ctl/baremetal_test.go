@@ -15,7 +15,6 @@
 package ctl
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,12 +22,12 @@ import (
 	"opendev.org/airship/airshipui/internal/configs"
 )
 
-const (
-	testBaremetalHTML string = "testdata/baremetal.html"
-)
+func init() {
+	initCTL()
+}
 
 func TestHandleDefaultBaremetalRequest(t *testing.T) {
-	html, err := ioutil.ReadFile(testBaremetalHTML)
+	html, err := GetBaremetalHTML()
 	require.NoError(t, err)
 
 	request := configs.WsMessage{
@@ -43,7 +42,7 @@ func TestHandleDefaultBaremetalRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
-		HTML:         string(html),
+		HTML:         html,
 	}
 
 	assert.Equal(t, expected, response)

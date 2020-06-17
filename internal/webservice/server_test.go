@@ -16,13 +16,13 @@ package webservice
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
 	"time"
 
 	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/internal/integrations/ctl"
 	"opendev.org/airship/airshipui/testutil"
 
 	"github.com/gorilla/websocket"
@@ -31,9 +31,7 @@ import (
 )
 
 const (
-	serverAddr        string = "localhost:8080"
-	testBaremetalHTML string = "../integrations/ctl/testdata/baremetal.html"
-	testDocumentHTML  string = "../integrations/ctl/testdata/document.html"
+	serverAddr string = "localhost:8080"
 
 	// client messages
 	initialize       string = `{"type":"electron","component":"initialize"}`
@@ -201,7 +199,7 @@ func TestHandleDocumentRequest(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
-	expectedHTML, err := ioutil.ReadFile(testDocumentHTML)
+	expectedHTML, err := ctl.GetDocumentHTML()
 	require.NoError(t, err)
 
 	response, err := getResponse(client, document)
@@ -211,12 +209,16 @@ func TestHandleDocumentRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
-		HTML:         string(expectedHTML),
+		HTML:         expectedHTML,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
 
-	assert.Equal(t, expected, response)
+	// the non typed interface requires us to break up the checking otherwise the 2 will never be equal
+	assert.Equal(t, expected.Type, response.Type)
+	assert.Equal(t, expected.Component, response.Component)
+	assert.Equal(t, expected.SubComponent, response.SubComponent)
+	assert.Equal(t, expected.HTML, response.HTML)
 }
 
 func TestHandleBaremetalRequest(t *testing.T) {
@@ -224,7 +226,7 @@ func TestHandleBaremetalRequest(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
-	expectedHTML, err := ioutil.ReadFile(testBaremetalHTML)
+	expectedHTML, err := ctl.GetBaremetalHTML()
 	require.NoError(t, err)
 
 	response, err := getResponse(client, baremetal)
@@ -234,7 +236,7 @@ func TestHandleBaremetalRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
-		HTML:         string(expectedHTML),
+		HTML:         expectedHTML,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}

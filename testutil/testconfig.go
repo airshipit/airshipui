@@ -14,7 +14,9 @@
 
 package testutil
 
-import "opendev.org/airship/airshipui/internal/configs"
+import (
+	"opendev.org/airship/airshipui/internal/configs"
+)
 
 // DummyDashboardConfig returns a populated Dashboard struct
 func DummyDashboardConfig() configs.Dashboard {

@@ -15,27 +15,26 @@
 package ctl
 
 import (
-	"io/ioutil"
+	"log"
 	"testing"
 
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipui/internal/configs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipctl/pkg/environment"
 )
 
+// TODO: Determine if this should be broken out into it's own file
 const (
-	testConfigHTML    string = "testdata/config.html"
 	testKubeConfig    string = "testdata/kubeconfig.yaml"
 	testAirshipConfig string = "testdata/config.yaml"
 )
 
-func TestHandleDefaultConfigRequest(t *testing.T) {
-	html, err := ioutil.ReadFile(testConfigHTML)
-	require.NoError(t, err)
-
+// TODO: Determine if this should be broken out into it's own file
+// setup the airshipCTL env prior to running
+func initCTL() {
 	// point airshipctl client toward test configs
 	c.settings = &environment.AirshipCTLSettings{
 		AirshipConfigPath: testAirshipConfig,
@@ -43,10 +42,23 @@ func TestHandleDefaultConfigRequest(t *testing.T) {
 		Config:            config.NewConfig(),
 	}
 
-	err = c.settings.Config.LoadConfig(
+	err := c.settings.Config.LoadConfig(
 		c.settings.AirshipConfigPath,
 		c.settings.KubeConfigPath,
 	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func init() {
+	initCTL()
+}
+
+func TestHandleDefaultConfigRequest(t *testing.T) {
+	// get the default html
+	html, err := getConfigHTML()
 	require.NoError(t, err)
 
 	// simulate incoming WsMessage from websocket client
@@ -62,7 +74,7 @@ func TestHandleDefaultConfigRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.CTLConfig,
 		SubComponent: configs.GetDefaults,
-		HTML:         string(html),
+		HTML:         html,
 	}
 
 	assert.Equal(t, expected, response)

@@ -16,7 +16,6 @@ package ctl
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -127,7 +126,7 @@ func getCredentialTableRows() string {
 }
 
 func getConfigHTML() (string, error) {
-	return getHTML(filepath.Join(basepath, "/templates/config.html"), ctlPage{
+	return getHTML("/templates/config.html", ctlPage{
 		ClusterRows:    getClusterTableRows(),
 		ContextRows:    getContextTableRows(),
 		CredentialRows: getCredentialTableRows(),

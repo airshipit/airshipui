@@ -12,6 +12,8 @@
  limitations under the License.
 */
 
+var graph = null;
+
 // add the footer and header when the page loads
 if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", function () {
@@ -30,6 +32,69 @@ if (document.addEventListener) {
         webview.addEventListener("did-stop-loading", loadStop);
         webview.addEventListener("did-fail-load", loadFail);
     }, false);
+}
+
+function tabAction(event, element) { // eslint-disable-line no-unused-vars
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    let id = String(element.id);
+    let div = id.replace("Btn","");
+    switch (id) {
+        case "DocOverviewTabBtn": document.getElementById(div).style.display = "block"; break;
+        case "DocPullTabBtn": document.getElementById(div).style.display = "block"; break;
+        case "YamlTabBtn": document.getElementById(div).style.display = "block"; break;
+    }
+
+    event.currentTarget.className += " active";
+}
+
+function insertGraph(data) { // eslint-disable-line no-unused-vars
+    if (graph !== null) { graph.destroy(); }
+
+    // create a network
+    var container = document.getElementById("DocOverviewDiv");
+
+    // TODO: extract these to a constants file somewhere
+    var options = {
+        nodes: {
+            shape: "box",
+            scaling: {
+                max: 200, min: 100
+            }
+        },
+        physics: {
+            forceAtlas2Based: {
+                gravitationalConstant: -26,
+                centralGravity: 0.005,
+                springLength: 230,
+                springConstant: 0.18,
+                avoidOverlap: 1.5
+            },
+            maxVelocity: 146,
+            solver: "forceAtlas2Based",
+            timestep: 0.35,
+            stabilization: {
+                enabled: true,
+                iterations: 1000,
+                updateInterval: 25
+            }
+        }
+    };
+    graph = new vis.Network(container, data, options);
 }
 
 // add dashboard links to Dropdown if present in $HOME/.airship/airshipui.json
@@ -154,21 +219,4 @@ function alertFadeOut(id) { // eslint-disable-line no-unused-vars
     element.addEventListener("transitionend", function() {
         element.parentNode.removeChild(element);
     });
-}
-
-function enableAccordion() { // eslint-disable-line no-unused-vars
-    var acc = document.getElementsByClassName("accordion");
-    var i;
-
-    for (i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function () {
-            this.classList.toggle("active");
-            var panel = this.nextElementSibling;
-            if (panel.style.maxHeight) {
-                panel.style.maxHeight = null;
-            } else {
-                panel.style.maxHeight = panel.scrollHeight + "px";
-            }
-        });
-    }
 }

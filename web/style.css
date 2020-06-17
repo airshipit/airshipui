@@ -42,40 +42,98 @@
   }
 }
 
-/* accordion taken from w3schools, https://www.w3schools.com/howto/howto_js_accordion.asp */
-.accordion {
-  background-color: #eee;
-  color: #444;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 15px;
-  transition: 0.4s;
+/** tab styles taken from w3schools.com https://www.w3schools.com/howto/howto_js_tabs.asp **/
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
 }
 
-.active, .accordion:hover {
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
   background-color: #ccc;
 }
 
-.accordion:after {
-  content: '\002B';
-  color: #777;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border-top: none;
 }
 
-.active:after {
-  content: "\2212";
+/* tree view taken from w3scools.com https://www.w3schools.com/howto/howto_js_treeview.asp */
+ /* Remove default bullets */
+ ul, #treeUL {
+  list-style-type: none;
 }
 
-.panel {
-  padding: 0 18px;
-  background-color: white;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out;
+/* Remove margins and padding from the parent ul */
+#treeUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the folder/arrow */
+.folder {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the folder/arrow with a unicode, and style it */
+.folder::before {
+  content: "\1F5C0";
+  display: inline-block;
+  margin-right: 6px;
+  font-size:2em;
+}
+
+/* Rotate the folder/arrow icon when clicked on (using JavaScript) */
+.folder-open::before {
+  content: "\1F5C1";
+  font-size:2em;
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the folder/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+
+/* for use with the yaml tree view */
+.unstyled-button {
+  border: none;
+  padding: 0;
+  background: none;
+}
+
+.document::before {
+  content: "\1F5B9";
+  font-size: 1.5em;
+}
+
+.document-open::before {
+  content: "\1F5CE";
+  font-size: 1.5em;
+  color:darkcyan;"
 }

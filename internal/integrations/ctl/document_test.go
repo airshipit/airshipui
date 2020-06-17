@@ -15,7 +15,6 @@
 package ctl
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,12 +22,12 @@ import (
 	"opendev.org/airship/airshipui/internal/configs"
 )
 
-const (
-	testDocumentHTML string = "testdata/document.html"
-)
+func init() {
+	initCTL()
+}
 
 func TestHandleDefaultDocumentRequest(t *testing.T) {
-	html, err := ioutil.ReadFile(testDocumentHTML)
+	html, err := GetDocumentHTML()
 	require.NoError(t, err)
 
 	request := configs.WsMessage{
@@ -43,7 +42,8 @@ func TestHandleDefaultDocumentRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
-		HTML:         string(html),
+		HTML:         html,
+		Data:         getGraphData(),
 	}
 
 	assert.Equal(t, expected, response)

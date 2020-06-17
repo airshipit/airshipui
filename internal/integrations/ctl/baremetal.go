@@ -16,7 +16,6 @@ package ctl
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -36,7 +35,7 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	subComponent := request.SubComponent
 	switch subComponent {
 	case configs.GetDefaults:
-		response.HTML, err = getBaremetalHTML()
+		response.HTML, err = GetBaremetalHTML()
 	case configs.GenerateISO:
 		// since this is long running cache it up
 		runningRequests[subComponent] = true
@@ -66,7 +65,8 @@ func (c *Client) generateIso() (string, error) {
 	return message, err
 }
 
-func getBaremetalHTML() (string, error) {
+// GetBaremetalHTML will return the templated baremetal pagelet html
+func GetBaremetalHTML() (string, error) {
 	p := ctlPage{
 		Title:      "Baremetal",
 		Version:    getAirshipCTLVersion(),
@@ -78,5 +78,5 @@ func getBaremetalHTML() (string, error) {
 		p.ButtonText = "In Progress"
 	}
 
-	return getHTML(filepath.Join(basepath, "/templates/baremetal.html"), p)
+	return getHTML("/templates/baremetal.html", p)
 }

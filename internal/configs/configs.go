@@ -119,6 +119,8 @@ const (
 	SetCredential WsSubComponentType = "credential"
 	GenerateISO   WsSubComponentType = "generateISO"
 	DocPull       WsSubComponentType = "docPull"
+	Yaml          WsSubComponentType = "yaml"
+	YamlWrite     WsSubComponentType = "yamlWrite"
 )
 
 // WsMessage is a request / return structure used for websockets
@@ -130,11 +132,13 @@ type WsMessage struct {
 	Timestamp    int64              `json:"timestamp,omitempty"`
 
 	// additional conditional components that may or may not be involved in the request / response
-	Error           string `json:"error,omitempty"`
-	Fade            bool   `json:"fade,omitempty"`
-	HTML            string `json:"html,omitempty"`
-	IsAuthenticated bool   `json:"isAuthenticated,omitempty"`
-	Message         string `json:"message,omitempty"`
+	Error           string                 `json:"error,omitempty"`
+	Fade            bool                   `json:"fade,omitempty"`
+	HTML            string                 `json:"html,omitempty"`
+	IsAuthenticated bool                   `json:"isAuthenticated,omitempty"`
+	Message         string                 `json:"message,omitempty"`
+	Data            map[string]interface{} `json:"data,omitempty"`
+	YAML            string                 `json:"yaml,omitempty"`
 
 	// information related to the init of the UI
 	Dashboards      []Cluster               `json:"dashboards,omitempty"`
