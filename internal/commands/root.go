@@ -61,7 +61,7 @@ func launch(cmd *cobra.Command, args []string) {
 	// Read AirshipUI config file
 	if err := configs.GetConfigFromFile(); err == nil {
 		// launch any plugins marked as autoStart: true in airshipui.json
-		for _, p := range configs.UiConfig.Plugins {
+		for _, p := range configs.UIConfig.Plugins {
 			if p.Executable.AutoStart {
 				waitgrp.Add(1)
 				go RunBinaryWithOptions(

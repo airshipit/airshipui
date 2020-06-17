@@ -11,6 +11,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 package main
 
 import (
@@ -216,9 +217,8 @@ func randBytes(length int) ([]byte, error) {
 	_, err := rand.Read(b)
 	if err != nil {
 		return nil, err
-	} else {
-		return b, nil
 	}
+	return b, nil
 }
 
 // this creates a random ciphertext for demo purposes

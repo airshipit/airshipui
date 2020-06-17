@@ -11,6 +11,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 package ctl
 
 import (
@@ -20,7 +21,7 @@ import (
 	"opendev.org/airship/airshipui/internal/configs"
 )
 
-// HandleBaremetalRequest will flop between requests so we don't have to have them all mapped as function calls
+// HandleDocumentRequest will flop between requests so we don't have to have them all mapped as function calls
 func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.AirshipCTL,

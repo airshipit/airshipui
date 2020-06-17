@@ -11,6 +11,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 package configs
 
 import (
@@ -22,8 +23,9 @@ import (
 	"opendev.org/airship/airshipctl/pkg/config"
 )
 
+// variables related to UI config
 var (
-	UiConfig Config
+	UIConfig Config
 )
 
 // Config basic structure to hold configuration params for Airship UI
@@ -33,12 +35,14 @@ type Config struct {
 	Clusters   []Cluster  `json:"clusters,omitempty"`
 }
 
+// AuthMethod structure to hold authentication parameters
 type AuthMethod struct {
 	Type  string   `json:"type,omitempty"`
 	Value []string `json:"values,omitempty"`
 	URL   string   `json:"url,omitempty"`
 }
 
+// Plugin structure to hold plugin specific parameters
 type Plugin struct {
 	Name      string `json:"name,omitempty"`
 	Dashboard struct {
@@ -86,6 +90,7 @@ type WsComponentType string
 // WsSubComponentType is used to set the specific subcomponent types allowable for WsRequests
 type WsSubComponentType string
 
+// constants related to specific request/component/subcomponent types for WsRequests
 const (
 	AirshipCTL WsRequestType = "airshipctl"
 	Electron   WsRequestType = "electron"
@@ -135,6 +140,7 @@ type WsMessage struct {
 	ClusterOptions  config.ClusterOptions  `json:"clusterOptions,omitempty"`
 }
 
+// GetConfigFromFile reads configuration file and returns error on any error reading the file
 // TODO: add watcher to the json file to reload conf on change
 func GetConfigFromFile() error {
 	var fileName string
@@ -158,11 +164,7 @@ func GetConfigFromFile() error {
 		return err
 	}
 
-	err = json.Unmarshal(byteValue, &UiConfig)
-
-	if err != nil {
-		return err
-	}
+	err = json.Unmarshal(byteValue, &UIConfig)
 
 	return err
 }

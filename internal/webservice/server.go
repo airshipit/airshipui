@@ -11,6 +11,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 package webservice
 
 import (
@@ -186,7 +187,7 @@ func WebServer() {
 
 func clientInit(configs.WsMessage) configs.WsMessage {
 	// if no auth method is supplied start with minimal functionality
-	if len(configs.UiConfig.AuthMethod.URL) == 0 {
+	if len(configs.UIConfig.AuthMethod.URL) == 0 {
 		isAuthenticated = true
 	}
 
@@ -194,8 +195,8 @@ func clientInit(configs.WsMessage) configs.WsMessage {
 		Type:            configs.Electron,
 		Component:       configs.Initialize,
 		IsAuthenticated: isAuthenticated,
-		Dashboards:      configs.UiConfig.Clusters,
-		Plugins:         configs.UiConfig.Plugins,
-		Authentication:  configs.UiConfig.AuthMethod,
+		Dashboards:      configs.UIConfig.Clusters,
+		Plugins:         configs.UIConfig.Plugins,
+		Authentication:  configs.UIConfig.AuthMethod,
 	}
 }

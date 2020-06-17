@@ -11,6 +11,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
+
 package commands
 
 import (
@@ -38,6 +39,7 @@ func newVersionCmd() *cobra.Command {
 	return versionCmd
 }
 
+// Version returns application version
 func Version() string {
 	return version
 }
