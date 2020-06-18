@@ -201,6 +201,7 @@ linters:
     - gocyclo              # Computes and checks the cyclomatic complexity of functions
     - gofmt                # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
     - goimports            # Goimports does everything that gofmt does. Additionally it checks unused imports
+    - golint               # Finds all coding style mistakes
     - gosec                # Inspects source code for security problems
     - govet                # Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
     - ineffassign          # Detects when assignments to existing variables are not used
@@ -209,7 +210,6 @@ linters:
     - misspell             # Finds commonly misspelled English words in comments
     - nakedret             # Finds naked returns in functions greater than a specified function length
     - prealloc             # Finds slice declarations that could potentially be preallocated
-    - scopelint            # Scopelint checks for unpinned variables in go programs
     - unconvert            # Remove unnecessary type conversions
     - unparam              # Reports unused function parameters
     - unused               # Checks Go code for unused constants, variables, functions and types

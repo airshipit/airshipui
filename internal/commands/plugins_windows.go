@@ -91,12 +91,12 @@ func (grp *ProcessGrpCmd) AddProcess(p *os.Process) error {
 // job object, listen for interrupts or context.Done events,
 // and signal to the WaitGroup when the process is terminated
 func (grp *ProcessGrpCmd) Run() error {
-	if handle, err := NewProcessGroup(); err != nil {
+	handle, err := NewProcessGroup()
+	if err != nil {
 		grp.waitgrp.Done()
 		return err
-	} else {
-		grp.handle = handle
 	}
+	grp.handle = handle
 
 	if err := grp.Cmd.Start(); err != nil {
 		grp.waitgrp.Done()
