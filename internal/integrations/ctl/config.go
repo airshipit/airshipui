@@ -54,7 +54,7 @@ func HandleConfigRequest(request configs.WsMessage) configs.WsMessage {
 }
 
 // GetCluster gets cluster information from the airshipctl config
-func (c *client) getCluster() []*config.Cluster {
+func (c *Client) getCluster() []*config.Cluster {
 	return c.settings.Config.GetClusters()
 }
 
@@ -78,7 +78,7 @@ func getClusterTableRows() string {
 }
 
 // GetContext gets cluster information from the airshipctl config
-func (c *client) getContext() []*config.Context {
+func (c *Client) getContext() []*config.Context {
 	return c.settings.Config.GetContexts()
 }
 
@@ -101,7 +101,7 @@ func getContextTableRows() string {
 }
 
 // GetCredential gets user credentials from the airshipctl config
-func (c *client) getCredential() []*config.AuthInfo {
+func (c *Client) getCredential() []*config.AuthInfo {
 	authinfo, err := c.settings.Config.GetAuthInfos()
 	if err != nil {
 		return []*config.AuthInfo{}

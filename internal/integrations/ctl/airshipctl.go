@@ -37,18 +37,18 @@ type ctlPage struct {
 	ButtonText     string
 }
 
-// client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
+// Client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
 // functionality in exactly the same manner as the CLI.
-type client struct {
+type Client struct {
 	settings *environment.AirshipCTLSettings
 }
 
 // NewClient initializes the airshipctl client for external usage.
-func NewClient() *client {
+func NewClient() *Client {
 	settings := &environment.AirshipCTLSettings{}
 	settings.InitConfig()
 
-	c := &client{
+	c := &Client{
 		settings: settings,
 	}
 
@@ -56,7 +56,7 @@ func NewClient() *client {
 }
 
 // initilize the connection to airshipctl
-var c *client = NewClient()
+var c *Client = NewClient()
 
 // GetAirshipCTLVersion will kick out what version of airshipctl we're using
 func getAirshipCTLVersion() string {

@@ -55,7 +55,7 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
-func (c *client) generateIso() (string, error) {
+func (c *Client) generateIso() (string, error) {
 	var message string
 	err := isogen.GenerateBootstrapIso(c.settings)
 	if err == nil {

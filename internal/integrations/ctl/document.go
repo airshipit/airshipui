@@ -49,7 +49,7 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
-func (c *client) docPull() (string, error) {
+func (c *Client) docPull() (string, error) {
 	var message string
 	settings := pull.Settings{AirshipCTLSettings: c.settings}
 	err := settings.Pull()
