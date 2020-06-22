@@ -16,6 +16,7 @@ package ctl
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -61,7 +62,7 @@ func (c *Client) docPull() (string, error) {
 }
 
 func getDocumentHTML() (string, error) {
-	return getHTML("./internal/integrations/ctl/templates/document.html", ctlPage{
+	return getHTML(filepath.Join(basepath, "/templates/document.html"), ctlPage{
 		Title:   "Document",
 		Version: getAirshipCTLVersion(),
 	})

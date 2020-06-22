@@ -1,5 +1,5 @@
-<h1>Airship CTL {{.Title}} Base Information</h1>
-<p>Version: {{.Version}}</p>
+<h1>Airship CTL Config Base Information</h1>
+<p>Version: devel</p>
 
 <!-- Cluster details in accordion -->
 <button class="accordion">Cluster</button>
@@ -18,7 +18,7 @@
         </tr>
       </thead>
       <tbody>
-          {{.ClusterRows}}
+          <tr><td><div contenteditable=true>default</div></td><td><div contenteditable=true>kubernetes_target</div></td><td><div contenteditable=true>default</div></td><td>testdata/kubeconfig.yaml</td><td><div contenteditable=true>https://10.0.0.1:6553</div></td><td><div contenteditable=true>pki/cluster-ca.pem</div></td><td><button type="button" class="btn btn-success" onclick="saveConfig(this)">Save</button></td></tr>
       </tbody>
     </table>
     <button type="button" class="btn btn-info" id="ClusterBtn" onclick="addConfigModal(this)">Add</button>
@@ -73,7 +73,7 @@
         </tr>
       </thead>
       <tbody>
-          {{.ContextRows}}
+          <tr><td><div contenteditable=true>kubernetes_target</div></td><td><div contenteditable=true></div></td><td>testdata/kubeconfig.yaml</td><td><div contenteditable=true>kubernetes_target</div></td><td><div contenteditable=true>admin</div></td><td><button type="button" class="btn btn-success" onclick="saveConfig(this)">Save</button></td></tr>
       </tbody>
     </table>
   </p>
@@ -127,7 +127,7 @@
         </tr>
       </thead>
       <tbody>
-          {{.CredentialRows}}
+          
       </tbody>
     </table>
     <button type="button" class="btn btn-info" id="CredentialBtn" onclick="addConfigModal(this)">Add</button>

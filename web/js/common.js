@@ -60,7 +60,7 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
 function addPluginDashboards(json) { // eslint-disable-line no-unused-vars
     if (json !== undefined) {
         for (let i = 0; i < json.length; i++) {
-            if (json[i].executable.autoStart && json[i].dashboard.fqdn !== undefined) {
+            if (json[i].executable.autoStart && json[i].dashboard !== undefined) {
                 let dash = json[i].dashboard;
                 let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path || ""}`;
                 addDashboard("PluginDropdown", json[i].name, url);

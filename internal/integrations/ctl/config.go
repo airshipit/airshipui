@@ -16,6 +16,7 @@ package ctl
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -126,7 +127,7 @@ func getCredentialTableRows() string {
 }
 
 func getConfigHTML() (string, error) {
-	return getHTML("./internal/integrations/ctl/templates/config.html", ctlPage{
+	return getHTML(filepath.Join(basepath, "/templates/config.html"), ctlPage{
 		ClusterRows:    getClusterTableRows(),
 		ContextRows:    getContextTableRows(),
 		CredentialRows: getCredentialTableRows(),
@@ -137,7 +138,7 @@ func getConfigHTML() (string, error) {
 
 // SetCluster will take ui cluster info, translate them into CTL commands and send a response back to the UI
 func setCluster(request configs.WsMessage) (string, error) {
-	modified, err := config.RunSetCluster(&request.ClusterOptions, c.settings.Config, true)
+	modified, err := config.RunSetCluster(request.ClusterOptions, c.settings.Config, true)
 
 	var message string
 	if modified {
@@ -153,7 +154,7 @@ func setCluster(request configs.WsMessage) (string, error) {
 
 // SetContext will take ui context info, translate them into CTL commands and send a response back to the UI
 func setContext(request configs.WsMessage) (string, error) {
-	modified, err := config.RunSetContext(&request.ContextOptions, c.settings.Config, true)
+	modified, err := config.RunSetContext(request.ContextOptions, c.settings.Config, true)
 
 	var message string
 	if modified {
@@ -167,7 +168,7 @@ func setContext(request configs.WsMessage) (string, error) {
 
 // SetContext will take ui context info, translate them into CTL commands and send a response back to the UI
 func setCredential(request configs.WsMessage) (string, error) {
-	modified, err := config.RunSetAuthInfo(&request.AuthInfoOptions, c.settings.Config, true)
+	modified, err := config.RunSetAuthInfo(request.AuthInfoOptions, c.settings.Config, true)
 
 	var message string
 	if modified {
