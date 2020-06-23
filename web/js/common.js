@@ -184,6 +184,8 @@ function showDismissableAlert(alertLevel, msg, fade) { // eslint-disable-line no
     div.setAttribute("role", "alert");
     div.innerHTML = `<strong>${alertHeading}: </strong>${msg}`;
     div.style.opacity = "1";
+    div.style.width = "350px";
+    div.style.marginTop = "5px";
 
     // dismissable button
     let btn = document.createElement("button");

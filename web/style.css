@@ -135,5 +135,14 @@
 .document-open::before {
   content: "\1F5CE";
   font-size: 1.5em;
-  color:darkcyan;"
+  color:darkcyan;
+}
+
+#alert-div {
+  position:absolute;
+  display:flex;
+  flex-direction:column;
+  right:10px;
+  padding:0px;
+  opacity:97%;
 }
