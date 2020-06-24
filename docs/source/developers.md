@@ -175,6 +175,25 @@ If you're running behind a corporate proxy this is the workaround:
 
     npx cross-env ELECTRON_GET_USE_PROXY=true GLOBAL_AGENT_HTTPS_PROXY=http://<proxy_host>:<proxy_port> npm install electron
 
+If your corporate proxy terminates the SSL at the firewall you may also see this error:
+
+    $ npm install .
+    npm WARN monaco-editor-samples@0.0.1 No repository field.
+
+    npm ERR! code UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+    npm ERR! errno UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+    npm ERR! request to https://registry.npmjs.org/yaserver/-/yaserver-0.2.0.tgz failed, reason: unable to get local issuer certificate
+
+    npm ERR! A complete log of this run can be found in:
+    npm ERR!     /home/user/npm-cache/_logs/2020-06-16T18_19_34_581Z-debug.log
+
+If you normally have to install a certificate authority to use the corporate proxy you will need to instruct NPM to use it:
+
+    export NODE_EXTRA_CA_CERTS=/<path>/<truststore>.pem
+
+### Issues unicode characters not showing up
+Some of the UI contents are derived from standard unicode characters.  If you are running the UI on a linux based OS it is possible that you will need to install noto fonts either by the system's package manager or directly from https://www.google.com/get/noto/help/install/.
+
 ### Optional proxy settings
 
 #### Environment settings for wget or curl
