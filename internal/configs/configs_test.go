@@ -23,8 +23,9 @@ import (
 )
 
 const (
-	fakeFile string = "/fake/config/path"
-	testFile string = "testdata/airshipui.json"
+	fakeFile        string = "/fake/config/path"
+	testFile        string = "testdata/airshipui.json"
+	invalidTestFile string = "testdata/airshipui_invalid.json"
 )
 
 func TestSetUIConfig(t *testing.T) {
@@ -43,6 +44,9 @@ func TestSetUIConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, conf, configs.UIConfig)
+
+	err = configs.SetUIConfig(invalidTestFile)
+	require.Error(t, err)
 }
 
 func TestFileNotFound(t *testing.T) {

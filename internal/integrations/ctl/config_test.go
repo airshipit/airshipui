@@ -71,6 +71,33 @@ func TestHandleDefaultConfigRequest(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, response)
+
+	request = configs.WsMessage{
+		Type:            configs.AirshipCTL,
+		Component:       configs.CTLConfig,
+		SubComponent:    configs.SetCredential,
+		AuthInfoOptions: testutil.DummyAuthInfoOptions(),
+	}
+	response = HandleConfigRequest(request)
+	assert.Contains(t, response.Message, "created")
+
+	request = configs.WsMessage{
+		Type:           configs.AirshipCTL,
+		Component:      configs.CTLConfig,
+		SubComponent:   configs.SetCluster,
+		ClusterOptions: testutil.DummyClusterOptions(),
+	}
+	response = HandleConfigRequest(request)
+	assert.Contains(t, response.Message, "created")
+
+	request = configs.WsMessage{
+		Type:           configs.AirshipCTL,
+		Component:      configs.CTLConfig,
+		SubComponent:   configs.SetContext,
+		ContextOptions: testutil.DummyContextOptions(),
+	}
+	response = HandleConfigRequest(request)
+	assert.Contains(t, response.Message, "created")
 }
 
 func TestHandleUnknownConfigSubComponent(t *testing.T) {

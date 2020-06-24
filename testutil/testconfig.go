@@ -195,3 +195,38 @@ func DummyCompleteConfig() configs.Config {
 		Clusters:   []configs.Cluster{c},
 	}
 }
+
+// DummyContextOptions creates ContextOptions config object
+// for unit testing
+func DummyContextOptions() *config.ContextOptions {
+	co := &config.ContextOptions{}
+	co.Name = "dummy_context"
+	co.Manifest = "dummy_manifest"
+	co.AuthInfo = "dummy_user"
+	co.CurrentContext = false
+	co.Namespace = "dummy_namespace"
+	return co
+}
+
+// DummyClusterOptions creates ClusterOptions config object
+// for unit testing
+func DummyClusterOptions() *config.ClusterOptions {
+	co := &config.ClusterOptions{}
+	co.Name = "dummy_cluster"
+	co.ClusterType = config.Ephemeral
+	co.Server = "http://1.1.1.1"
+	co.InsecureSkipTLSVerify = false
+	co.CertificateAuthority = ""
+	co.EmbedCAData = false
+
+	return co
+}
+
+// DummyAuthInfoOptions creates AuthInfoOptions config object
+// for unit testing
+func DummyAuthInfoOptions() *config.AuthInfoOptions {
+	authinfo := &config.AuthInfoOptions{}
+	authinfo.Username = "dummy_username"
+	authinfo.Password = "dummy_password"
+	return authinfo
+}

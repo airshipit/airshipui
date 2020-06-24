@@ -157,9 +157,9 @@ func setContext(request configs.WsMessage) (string, error) {
 
 	var message string
 	if modified {
-		message = fmt.Sprintf("Context %q modified.", request.ClusterOptions.Name)
+		message = fmt.Sprintf("Context %q modified.", request.ContextOptions.Name)
 	} else {
-		message = fmt.Sprintf("Context %q created.", request.ClusterOptions.Name)
+		message = fmt.Sprintf("Context %q created.", request.ContextOptions.Name)
 	}
 
 	return message, err
@@ -171,9 +171,9 @@ func setCredential(request configs.WsMessage) (string, error) {
 
 	var message string
 	if modified {
-		message = fmt.Sprintf("Credential %q modified.", request.ClusterOptions.Name)
+		message = fmt.Sprintf("Credential %q modified.", request.AuthInfoOptions.Name)
 	} else {
-		message = fmt.Sprintf("Credential %q created.", request.ClusterOptions.Name)
+		message = fmt.Sprintf("Credential %q created.", request.AuthInfoOptions.Name)
 	}
 
 	return message, err

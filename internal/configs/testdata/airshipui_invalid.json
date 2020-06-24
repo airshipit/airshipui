@@ -1,0 +1,7 @@
+{
+    "authMethod": {
+        "url": "http://fake.auth.method.com/auth"
+    },
+    "plugins": "",
+    "clusters": ""
+}
