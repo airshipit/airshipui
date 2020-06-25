@@ -106,11 +106,11 @@ function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
                 let namespace = cluster.namespaces[j];
                 for (let k = 0; k < namespace.dashboards.length; k++) {
                     let dash = namespace.dashboards[k];
-                    let fqdn = "";
-                    if (dash.fqdn === undefined) {
-                        fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`
+                    let fqdn = null;
+                    if (dash.hasOwnProperty("fqdn")) {
+                        fqdn = `${dash.fqdn}`;
                     } else {
-                        ({ fqdn } = dash.fqdn);
+                        fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`;
                     }
                     let url = `${dash.protocol}://${fqdn}:${dash.port}/${dash.path || ""}`;
                     addDashboard("DashDropdown", dash.name, url)
