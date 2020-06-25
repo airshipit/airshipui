@@ -18,7 +18,7 @@ NPX  		  := $(JSLINTER_BIN)/npx
 
 COVERAGE_OUTPUT := coverage.out
 
-TESTFLAGS     ?=
+TESTFLAGS     ?= -count=1
 
 # Override the value of the version variable in main.go
 LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERSION)'

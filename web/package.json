@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "electron-json-config": "^1.5.3",
+    "monaco-editor": "^0.20.0",
     "node-sass": "^4.14.0",
+    "vis-network": "^7.6.10",
     "xmlhttprequest": "^1.8.0"
   }
 }

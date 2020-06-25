@@ -53,6 +53,9 @@ function displayCTLInfo(json) { // eslint-disable-line no-unused-vars
         let div = document.getElementById("ContentDiv");
         div.style.display = "";
         div.innerHTML =  json["html"];
+        if (!! document.getElementById("DocOverviewDiv") && json.hasOwnProperty("data")) {
+            insertGraph(json["data"]);
+        }
     } else {
         if (json.hasOwnProperty("error")) {
             showDismissableAlert("danger", json["error"], false);

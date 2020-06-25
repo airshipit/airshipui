@@ -15,8 +15,12 @@
 package ctl
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -34,9 +38,16 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	var message string
 	switch request.SubComponent {
 	case configs.GetDefaults:
-		response.HTML, err = getDocumentHTML()
+		response.HTML, err = GetDocumentHTML()
+		response.Data = getGraphData()
 	case configs.DocPull:
 		message, err = c.docPull()
+	case configs.Yaml:
+		message = request.Message
+		response.YAML, err = getYaml(message)
+	case configs.YamlWrite:
+		message = request.Message
+		response.YAML, err = writeYaml(message, request.YAML)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -50,6 +61,64 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
+// network graphs have nodes and edges defined, just attempting to put some dynamically defined data in it
+func getGraphData() map[string]interface{} {
+	return map[string]interface{}{
+		"nodes": []map[string]string{
+			{"id": "1", "label": ".airshipui"},
+			{"id": "2", "label": c.settings.KubeConfigPath},
+			{"id": "3", "label": c.settings.AirshipConfigPath},
+		},
+		"edges": []map[string]int64{
+			{"from": 1, "to": 2},
+			{"from": 1, "to": 3},
+		},
+	}
+}
+
+// getYaml reads the requested file and returns base64 encoded yaml for the front end to render
+func getYaml(yamlType string) (string, error) {
+	yamlFile, err := os.Open(getYamlFile(yamlType))
+	if err != nil {
+		return "", err
+	}
+
+	defer yamlFile.Close()
+
+	// TODO: determine if this needs to be parsed as YAML as a validation effort
+	bytes, err := ioutil.ReadAll(yamlFile)
+	return base64.StdEncoding.EncodeToString(bytes), err
+}
+
+// a way to do a sanity check on the yaml passed from the frontend
+func writeYaml(yamlType string, yaml64 string) (string, error) {
+	// base64 decode
+	yaml, err := base64.StdEncoding.DecodeString(yaml64)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: determine if we need to backup the existing before overwrite
+	err = ioutil.WriteFile(getYamlFile(yamlType), yaml, 0600)
+	if err != nil {
+		return "", err
+	}
+
+	return getYaml(yamlType)
+}
+
+func getYamlFile(yamlType string) string {
+	var fileName string
+	switch yamlType {
+	case "kube":
+		fileName = c.settings.KubeConfigPath
+	case "airship":
+		fileName = c.settings.AirshipConfigPath
+	}
+
+	return fileName
+}
+
 func (c *Client) docPull() (string, error) {
 	var message string
 	settings := pull.Settings{AirshipCTLSettings: c.settings}
@@ -61,9 +130,31 @@ func (c *Client) docPull() (string, error) {
 	return message, err
 }
 
-func getDocumentHTML() (string, error) {
-	return getHTML(filepath.Join(basepath, "/templates/document.html"), ctlPage{
-		Title:   "Document",
-		Version: getAirshipCTLVersion(),
+// GetDocumentHTML will return the templated document pagelet
+func GetDocumentHTML() (string, error) {
+	return getHTML("/templates/document.html", ctlPage{
+		Title:    "Document",
+		Version:  getAirshipCTLVersion(),
+		YAMLTree: getYamlTree(),
+		YAMLHome: filepath.Dir(c.settings.AirshipConfigPath),
 	})
+}
+
+// TODO: when we figure out what tree structure we're doing make this dynamic
+// The string builder is unnecessary in an non dynamic role, so it may be needed later
+func getYamlTree() string {
+	var s strings.Builder
+
+	s.WriteString("<li><table>" +
+		"<tr><td><span class=\"document\" id=\"AirshipConfigSpan\"> </span></td>" +
+		"<td><button id=\"AirshipConfigBtn\" class=\"unstyled-button\" onclick=\"return documentAction(this)\"> - " +
+		filepath.Base(c.settings.AirshipConfigPath) +
+		"</button></td></tr>" +
+		"<tr><td><span class=\"document\" id=\"KubeConfigSpan\"> </span></td>" +
+		"<td><button id=\"KubeConfigBtn\" class=\"unstyled-button\" onclick=\"return documentAction(this)\"> - " +
+		filepath.Base(c.settings.KubeConfigPath) +
+		"</button></td></tr>" +
+		"</table></li>")
+
+	return s.String()
 }

@@ -44,6 +44,8 @@ type ctlPage struct {
 	Version        string
 	Disabled       string
 	ButtonText     string
+	YAMLTree       string
+	YAMLHome       string
 }
 
 // Client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
@@ -61,6 +63,9 @@ func NewClient() *Client {
 		settings: settings,
 	}
 
+	// set verbosity to true
+	c.settings.Debug = true
+
 	return c
 }
 
@@ -77,7 +82,7 @@ func getHTML(templateFile string, contents ctlPage) (string, error) {
 	var buff bytes.Buffer
 
 	// TODO: make the node path dynamic or setable at compile time
-	t, err := template.ParseFiles(templateFile)
+	t, err := template.ParseFiles(filepath.Join(basepath, templateFile))
 
 	if err != nil {
 		return "", err
