@@ -18,28 +18,24 @@ import (
 	"log"
 	"testing"
 
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipui/internal/configs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-)
-
-// TODO: Determine if this should be broken out into it's own file
-const (
-	testKubeConfig    string = "testdata/kubeconfig.yaml"
-	testAirshipConfig string = "testdata/config.yaml"
+	"opendev.org/airship/airshipui/testutil"
 )
 
 // TODO: Determine if this should be broken out into it's own file
 // setup the airshipCTL env prior to running
-func initCTL() {
+func initCTL(t *testing.T) {
+	conf, configPath, kubeConfigPath, cleanup := testutil.InitConfig(t)
+	defer cleanup(t)
 	// point airshipctl client toward test configs
 	c.settings = &environment.AirshipCTLSettings{
-		AirshipConfigPath: testAirshipConfig,
-		KubeConfigPath:    testKubeConfig,
-		Config:            config.NewConfig(),
+		AirshipConfigPath: configPath,
+		KubeConfigPath:    kubeConfigPath,
+		Config:            conf,
 	}
 
 	err := c.settings.Config.LoadConfig(
@@ -52,11 +48,8 @@ func initCTL() {
 	}
 }
 
-func init() {
-	initCTL()
-}
-
 func TestHandleDefaultConfigRequest(t *testing.T) {
+	initCTL(t)
 	// get the default html
 	html, err := getConfigHTML()
 	require.NoError(t, err)

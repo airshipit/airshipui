@@ -22,11 +22,8 @@ import (
 	"opendev.org/airship/airshipui/internal/configs"
 )
 
-func init() {
-	initCTL()
-}
-
 func TestHandleDefaultBaremetalRequest(t *testing.T) {
+	initCTL(t)
 	html, err := GetBaremetalHTML()
 	require.NoError(t, err)
 

@@ -22,11 +22,8 @@ import (
 	"opendev.org/airship/airshipui/internal/configs"
 )
 
-func init() {
-	initCTL()
-}
-
 func TestHandleDefaultDocumentRequest(t *testing.T) {
+	initCTL(t)
 	html, err := GetDocumentHTML()
 	require.NoError(t, err)
 
