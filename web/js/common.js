@@ -98,44 +98,18 @@ function insertGraph(data) { // eslint-disable-line no-unused-vars
 }
 
 // add dashboard links to Dropdown if present in $HOME/.airship/airshipui.json
-function addServiceDashboards(json) { // eslint-disable-line no-unused-vars
+function addDashboards(json) { // eslint-disable-line no-unused-vars
     if (json !== undefined) {
         for (let i = 0; i < json.length; i++) {
-            let cluster = json[i];
-            for (let j = 0; j < cluster.namespaces.length; j++) {
-                let namespace = cluster.namespaces[j];
-                for (let k = 0; k < namespace.dashboards.length; k++) {
-                    let dash = namespace.dashboards[k];
-                    let fqdn = null;
-                    if (dash.hasOwnProperty("fqdn")) {
-                        fqdn = `${dash.fqdn}`;
-                    } else {
-                        fqdn = `${dash.hostname}.${cluster.namespaces[j].name}.${cluster.baseFqdn}`;
-                    }
-                    let url = `${dash.protocol}://${fqdn}:${dash.port}/${dash.path || ""}`;
-                    addDashboard("DashDropdown", dash.name, url)
-                }
-            }
+            let dashboard = json[i];
+            let url = `${dashboard.baseURL}/${dashboard.path || ""}`;
+            addDashboard(dashboard.name, url, dashboard.isProxied)
         }
     }
 }
 
-// if any plugins (external executables) have a corresponding web dashboard defined,
-// add them to the dropdown
-function addPluginDashboards(json) { // eslint-disable-line no-unused-vars
-    if (json !== undefined) {
-        for (let i = 0; i < json.length; i++) {
-            if (json[i].executable.autoStart && json[i].dashboard !== undefined) {
-                let dash = json[i].dashboard;
-                let url = `${dash.protocol}://${dash.fqdn}:${dash.port}/${dash.path || ""}`;
-                addDashboard("PluginDropdown", json[i].name, url);
-            }
-        }
-    }
-}
-
-function addDashboard(navElement, name, url) {
-    let nav = document.getElementById(navElement);
+function addDashboard(name, url, proxied) {
+    let nav = document.getElementById("DashDropdown");
     let li = document.createElement("li");
     li.className = "c-sidebar-nav-item";
     let a = document.createElement("a");
@@ -143,15 +117,20 @@ function addDashboard(navElement, name, url) {
     let span = document.createElement("span");
     span.className = "c-sidebar-nav-icon";
     a.innerText = name;
-    a.onclick = () => {
-        let view = document.getElementById("DashView");
-        view.src = url;
-        document.getElementById("ContentDiv").style.display = "none";
-        document.getElementById("DashView").style.display = "";
-    }
     a.appendChild(span);
     li.appendChild(a);
     nav.appendChild(li);
+    if (proxied) {
+        a.target = "_blank";
+        a.href = "javascript:window.open('" + url + "')";
+    } else {
+        a.onclick = () => {
+            let view = document.getElementById("DashView");
+            view.src = url;
+            document.getElementById("ContentDiv").style.display = "none";
+            document.getElementById("DashView").style.display = "";
+        }
+    }
 }
 
 function authenticate(json) { // eslint-disable-line no-unused-vars

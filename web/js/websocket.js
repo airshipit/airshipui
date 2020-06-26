@@ -76,11 +76,8 @@ function hanldleAirshipUIMessages(json) {
         } else {
             authComplete();
         }
-        if (json.hasOwnProperty("plugins")) {
-            addPluginDashboards(json["plugins"]);
-        }
         if (json.hasOwnProperty("dashboards")) {
-            addServiceDashboards(json["dashboards"]);
+            addDashboards(json["dashboards"]);
         }
     } else if (json["component"] === "authcomplete") {
         authComplete();

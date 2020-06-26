@@ -66,16 +66,18 @@ func launch(cmd *cobra.Command, args []string) {
 	// Read AirshipUI config file
 	if err := configs.SetUIConfig(airshipUIConfigPath); err == nil {
 		// launch any plugins marked as autoStart: true in airshipui.json
-		for _, p := range configs.UIConfig.Plugins {
-			if p.Executable.AutoStart {
-				waitgrp.Add(1)
-				go RunBinaryWithOptions(
-					ctx,
-					p.Executable.Filepath,
-					p.Executable.Args,
-					&waitgrp,
-					sigs,
-				)
+		for _, dashboard := range configs.UIConfig.Dashboards {
+			if dashboard.Executable != nil {
+				if dashboard.Executable.AutoStart {
+					waitgrp.Add(1)
+					go RunBinaryWithOptions(
+						ctx,
+						dashboard.Executable.Filepath,
+						dashboard.Executable.Args,
+						&waitgrp,
+						sigs,
+					)
+				}
 			}
 		}
 	} else {

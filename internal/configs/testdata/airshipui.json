@@ -2,15 +2,11 @@
     "authMethod": {
         "url": "http://fake.auth.method.com/auth"
     },
-    "plugins": [
+    "dashboards": [
         {
-            "name": "dummy_plugin_with_dash",
-            "dashboard": {
-                "protocol": "http",
-                "fqdn": "localhost",
-                "port": 80,
-                "path": "index.html"
-            },
+            "name": "dummy_dashboard",
+            "baseURL": "http://dummyhost",
+            "path": "fake/login/path",
             "executable": {
                 "autoStart": true,
                 "filepath": "/fake/path/to/executable",
@@ -30,26 +26,11 @@
                     "fakevalue"
                 ]
             }
-        }
-    ],
-    "clusters": [
+        },
         {
-            "name": "dummy_cluster",
-            "baseFqdn": "dummy.cluster.local",
-            "namespaces": [
-                {
-                    "name": "dummy_namespace",
-                    "dashboards": [
-                        {
-                            "name": "dummy_dashboard",
-                            "protocol": "http",
-                            "hostname": "dummyhost",
-                            "port": 80,
-                            "path": "fake/login/path"
-                        }
-                    ]
-                }
-            ]
+            "name": "dummy_dashboard_no_exe",
+            "baseURL": "http://dummyhost",
+            "path": "fake/login/path"
         }
     ]
 }

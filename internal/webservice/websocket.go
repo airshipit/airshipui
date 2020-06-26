@@ -22,6 +22,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/internal/integrations/ctl"
 )
 
 // gorilla ws specific HTTP upgrade to WebSockets
@@ -32,6 +33,16 @@ var upgrader = websocket.Upgrader{
 
 // websocket that'll be reused by several places
 var ws *websocket.Conn
+
+// this is a way to allow for arbitrary messages to be processed by the backend
+// the message of a specifc component is shunted to that subsystem for further processing
+var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
+	configs.AirshipUI: {
+		configs.Keepalive:  keepaliveReply,
+		configs.Initialize: clientInit,
+	},
+	configs.AirshipCTL: ctl.CTLFunctionMap,
+}
 
 // handle the origin request & upgrade to websocket
 func onOpen(response http.ResponseWriter, request *http.Request) {
@@ -144,8 +155,7 @@ func clientInit(configs.WsMessage) configs.WsMessage {
 		Type:            configs.AirshipUI,
 		Component:       configs.Initialize,
 		IsAuthenticated: isAuthenticated,
-		Dashboards:      configs.UIConfig.Clusters,
-		Plugins:         configs.UIConfig.Plugins,
+		Dashboards:      configs.UIConfig.Dashboards,
 		Authentication:  configs.UIConfig.AuthMethod,
 	}
 }

@@ -84,28 +84,40 @@ func InitConfig(t *testing.T) (conf *config.Config, configPath string,
 
 // DummyDashboardConfig returns a populated Dashboard struct
 func DummyDashboardConfig() configs.Dashboard {
+	e := DummyExecutableConfig()
 	return configs.Dashboard{
-		Name:     "dummy_dashboard",
-		Protocol: "http",
-		Hostname: "dummyhost",
-		Port:     80,
-		Path:     "fake/login/path",
+		Name:       "dummy_dashboard",
+		BaseURL:    "http://dummyhost",
+		Path:       "fake/login/path",
+		Executable: e,
 	}
 }
 
-// DummyPluginDashboardConfig returns a populated PluginDashboard struct
-func DummyPluginDashboardConfig() configs.PluginDashboard {
-	return configs.PluginDashboard{
-		Protocol: "http",
-		FQDN:     "localhost",
-		Port:     80,
-		Path:     "index.html",
+// DummyDashboardsConfig returns an array of populated Dashboard structs
+func DummyDashboardsConfig() []configs.Dashboard {
+	e := DummyExecutableConfig()
+	return []configs.Dashboard{
+		{
+			Name:       "dummy_dashboard",
+			BaseURL:    "http://dummyhost",
+			Path:       "fake/login/path",
+			Executable: e,
+		},
+		{
+			Name:       "dummy_plugin_no_dash",
+			Executable: e,
+		},
+		{
+			Name:    "dummy_dashboard_no_exe",
+			BaseURL: "http://dummyhost",
+			Path:    "fake/login/path",
+		},
 	}
 }
 
 // DummyExecutableConfig returns a populated Executable struct
-func DummyExecutableConfig() configs.Executable {
-	return configs.Executable{
+func DummyExecutableConfig() *configs.Executable {
+	return &configs.Executable{
 		AutoStart: true,
 		Filepath:  "/fake/path/to/executable",
 		Args: []string{
@@ -122,77 +134,21 @@ func DummyAuthMethodConfig() *configs.AuthMethod {
 	}
 }
 
-// DummyPluginWithDashboardConfig returns a populated Plugin struct
-// with a populated PluginDashboard
-func DummyPluginWithDashboardConfig() configs.Plugin {
-	d := DummyPluginDashboardConfig()
-	e := DummyExecutableConfig()
-
-	return configs.Plugin{
-		Name:       "dummy_plugin_with_dash",
-		Dashboard:  &d,
-		Executable: &e,
-	}
-}
-
-// DummyPluginNoDashboard returns a populated Plugin struct
-// but omits the optional PluginDashboard
-func DummyPluginNoDashboard() configs.Plugin {
-	e := DummyExecutableConfig()
-
-	return configs.Plugin{
-		Name:       "dummy_plugin_no_dash",
-		Executable: &e,
-	}
-}
-
-// DummyNamespaceConfig returns a populated Namespace struct with
-// a single Dashboard
-func DummyNamespaceConfig() configs.Namespace {
-	d := DummyDashboardConfig()
-
-	return configs.Namespace{
-		Name:       "dummy_namespace",
-		Dashboards: []configs.Dashboard{d},
-	}
-}
-
-// DummyClusterConfig returns a populated Cluster struct with
-// a single Namespace
-func DummyClusterConfig() configs.Cluster {
-	n := DummyNamespaceConfig()
-
-	return configs.Cluster{
-		Name:       "dummy_cluster",
-		BaseFqdn:   "dummy.cluster.local",
-		Namespaces: []configs.Namespace{n},
-	}
-}
-
 // DummyConfigNoAuth returns a populated Config struct but omits
 // the optional AuthMethod
 func DummyConfigNoAuth() configs.Config {
-	p := DummyPluginWithDashboardConfig()
-	pn := DummyPluginNoDashboard()
-	c := DummyClusterConfig()
+	d := DummyDashboardConfig()
 
 	return configs.Config{
-		Plugins:  []configs.Plugin{p, pn},
-		Clusters: []configs.Cluster{c},
+		Dashboards: []configs.Dashboard{d},
 	}
 }
 
 // DummyCompleteConfig returns a fully populated Config struct
 func DummyCompleteConfig() configs.Config {
-	a := DummyAuthMethodConfig()
-	p := DummyPluginWithDashboardConfig()
-	pn := DummyPluginNoDashboard()
-	c := DummyClusterConfig()
-
 	return configs.Config{
-		AuthMethod: a,
-		Plugins:    []configs.Plugin{p, pn},
-		Clusters:   []configs.Cluster{c},
+		AuthMethod: DummyAuthMethodConfig(),
+		Dashboards: DummyDashboardsConfig(),
 	}
 }
 

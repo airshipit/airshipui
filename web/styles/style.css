@@ -146,3 +146,11 @@
   padding:0px;
   opacity:97%;
 }
+
+/* iframe itself */
+div#embedded-dashboard > iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}

@@ -28,6 +28,10 @@ function createWindow () {
   // disable the default menu bar
   //win.setMenu(null);
 
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({responseHeaders: Object.fromEntries(Object.entries(details.responseHeaders).filter(header => !/x-frame-options/i.test(header[0])))});
+  });
+
   // and load the index.html of the app.
   win.loadFile('index.html')
 

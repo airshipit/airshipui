@@ -22,18 +22,7 @@ import (
 	"time"
 
 	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/integrations/ctl"
 )
-
-// this is a way to allow for arbitrary messages to be processed by the backend
-// the message of a specifc component is shunted to that subsystem for further processing
-var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
-	configs.AirshipUI: {
-		configs.Keepalive:  keepaliveReply,
-		configs.Initialize: clientInit,
-	},
-	configs.AirshipCTL: ctl.CTLFunctionMap,
-}
 
 // semaphore to signal the UI to authenticate
 var isAuthenticated bool
@@ -69,6 +58,9 @@ func WebServer() {
 
 	// We can serve up static content if it's flagged as headless on command line
 	if configs.Headless {
+		// start proxies for web based use
+		startProxies()
+
 		// static file server
 		path, err := os.Getwd()
 		if err != nil {

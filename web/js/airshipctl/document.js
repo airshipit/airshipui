@@ -36,14 +36,12 @@ function documentAction(element) { // eslint-disable-line no-unused-vars
             Object.assign(json, { "subComponent": "yamlWrite" });
             Object.assign(json, { "message": editorContents });
             Object.assign(json, { "yaml": window.btoa(editor.getValue()) });
-            console.log(json);
             break;
     }
     ws.send(JSON.stringify(json));
 }
 
 function ctlParseDocument(json) { // eslint-disable-line no-unused-vars
-    console.log(json["subComponent"]);
     switch(json["subComponent"]) {
         case "getDefaults": displayCTLInfo(json); addFolderToggles(); break;
         case "yaml": insertEditor(json); break;

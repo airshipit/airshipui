@@ -42,14 +42,8 @@ func TestClientInit(t *testing.T) {
 		Type:            configs.AirshipUI,
 		Component:       configs.Initialize,
 		IsAuthenticated: true,
-		Dashboards: []configs.Cluster{
-			testutil.DummyClusterConfig(),
-		},
-		Plugins: []configs.Plugin{
-			testutil.DummyPluginWithDashboardConfig(),
-			testutil.DummyPluginNoDashboard(),
-		},
-		Authentication: testutil.DummyAuthMethodConfig(),
+		Dashboards:      testutil.DummyDashboardsConfig(),
+		Authentication:  testutil.DummyAuthMethodConfig(),
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -75,12 +69,8 @@ func TestClientInitNoAuth(t *testing.T) {
 		Component: configs.Initialize,
 		// isAuthenticated should now be true in response
 		IsAuthenticated: true,
-		Dashboards: []configs.Cluster{
-			testutil.DummyClusterConfig(),
-		},
-		Plugins: []configs.Plugin{
-			testutil.DummyPluginWithDashboardConfig(),
-			testutil.DummyPluginNoDashboard(),
+		Dashboards: []configs.Dashboard{
+			testutil.DummyDashboardConfig(),
 		},
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,

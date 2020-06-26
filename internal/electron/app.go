@@ -24,7 +24,7 @@ import (
 // RunElectron executes the standalone electron app which serves up our web components
 func RunElectron() error {
 	// determine ; or : depending on the OS
-	sep := string(os.PathListSeparator)
+	var sep = string(os.PathListSeparator)
 
 	// get the current working directory, should be the root of the airshipui tree
 	path, err := os.Getwd()

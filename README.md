@@ -25,36 +25,17 @@ $HOME/.airship/airshipui.json.
 To add service dashboards, create a section at the top level of airshipui.json as follows:
 
 ```
-"clusters": [
+"dashboards": [
         {
-            "name": "clusterA",
-            "baseFqdn": "svc.cluster.local",
-            "namespaces": [
-                {
-                    "name": "ceph",
-                    "dashboards": [
-                        {
-                            "name": "Ceph",
-                            "protocol": "https",
-                            "fqdn": "ceph-dash.example.domain",
-                            "port": 443,
-                            "path": ""
-                        }
-                    ]
-                },
-                {
-                    "name": "openstack",
-                    "dashboards": [
-                        {
-                            "name": "Horizon",
-                            "protocol": "http",
-                            "hostname": "horizon",
-                            "port": 80,
-                            "path": "dashboard/auth/login"
-                        }
-                    ]
-                }
-            ]
+            "name": "ceph",
+            "name": "Ceph",
+            "baseURL": "https://ceph-dash.example.domain",
+            "path": ""
+        },
+        {
+            "name": "Horizon",
+            "baseURL": "http://horizon",
+            "path": "dashboard/auth/login"
         }
 ]
 ```
@@ -68,21 +49,17 @@ For dashboards that are made available through service endpoints in your cluster
 
 If both "hostname" and "fqdn" are provided, "fqdn" will take precedence.
 
-The airshipui.json configuration file can also be used to launch "plugins", or external executables, in the background as Airship UI starts. Any processes
+The airshipui.json configuration file can also be used to launch external executables that server your dashboards, in the background as Airship UI starts. Any processes
 launched by Airship UI will be terminated when Airship UI exits, including any child processes started by the plugins. If the plugin launches a web
 dashboard, it can be also be included in the list of service dashboards within Airship UI. The following example demonstrates how to add configuration to
 launch and use Octant within Airship UI:
 
 ```
-"plugins": [
+"dashboards": [
         {
             "name": "Octant",
-            "dashboard": {
-                "protocol": "http",
-                "fqdn": "localhost",
-                "port": 7777,
-                "path": ""
-            },
+            "baseURL": "http://localhost:7777",
+            "path": "",
             "executable": {
                 "autoStart": true,
                 "filepath": "/usr/local/bin/octant",
@@ -96,7 +73,7 @@ launch and use Octant within Airship UI:
 ]
 ```
 
-To prevent a plugin from launching but retain its configuration for later use, simply set "autoStart" to false.
+To prevent a dashboard executable from launching but retain its configuration for later use, simply set "autoStart" to false.
 
 ## Developer's Guide
 

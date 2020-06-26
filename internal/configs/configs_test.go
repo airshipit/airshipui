@@ -30,13 +30,7 @@ const (
 
 func TestSetUIConfig(t *testing.T) {
 	conf := configs.Config{
-		Clusters: []configs.Cluster{
-			testutil.DummyClusterConfig(),
-		},
-		Plugins: []configs.Plugin{
-			testutil.DummyPluginWithDashboardConfig(),
-			testutil.DummyPluginNoDashboard(),
-		},
+		Dashboards: testutil.DummyDashboardsConfig(),
 		AuthMethod: testutil.DummyAuthMethodConfig(),
 	}
 

@@ -33,8 +33,7 @@ var (
 // Config basic structure to hold configuration params for Airship UI
 type Config struct {
 	AuthMethod *AuthMethod `json:"authMethod,omitempty"`
-	Plugins    []Plugin    `json:"plugins,omitempty"`
-	Clusters   []Cluster   `json:"clusters,omitempty"`
+	Dashboards []Dashboard `json:"dashboards,omitempty"`
 }
 
 // AuthMethod structure to hold authentication parameters
@@ -42,21 +41,6 @@ type AuthMethod struct {
 	Type  string   `json:"type,omitempty"`
 	Value []string `json:"values,omitempty"`
 	URL   string   `json:"url,omitempty"`
-}
-
-// Plugin structure to hold plugin specific parameters
-type Plugin struct {
-	Name       string           `json:"name,omitempty"`
-	Dashboard  *PluginDashboard `json:"dashboard,omitempty"`
-	Executable *Executable      `json:"executable"`
-}
-
-// PluginDashboard structure to hold web dashboard parameters for plugins
-type PluginDashboard struct {
-	Protocol string `json:"protocol,omitempty"`
-	FQDN     string `json:"fqdn,omitempty"`
-	Port     uint16 `json:"port,omitempty"`
-	Path     string `json:"path,omitempty"`
 }
 
 // Executable structure to hold parameters for launching an executable plugin
@@ -68,25 +52,11 @@ type Executable struct {
 
 // Dashboard structure
 type Dashboard struct {
-	Name     string `json:"name,omitempty"`
-	Protocol string `json:"protocol,omitempty"`
-	Hostname string `json:"hostname,omitempty"`
-	FQDN     string `json:"fqdn,omitempty"`
-	Port     uint16 `json:"port,omitempty"`
-	Path     string `json:"path,omitempty"`
-}
-
-// Namespace structure
-type Namespace struct {
 	Name       string      `json:"name,omitempty"`
-	Dashboards []Dashboard `json:"dashboards,omitempty"`
-}
-
-// Cluster basic structure describing a cluster
-type Cluster struct {
-	Name       string      `json:"name,omitempty"`
-	BaseFqdn   string      `json:"baseFqdn,omitempty"`
-	Namespaces []Namespace `json:"namespaces,omitempty"`
+	BaseURL    string      `json:"baseURL,omitempty"`
+	Path       string      `json:"path,omitempty"`
+	IsProxied  bool        `json:"isProxied,omitempty"`
+	Executable *Executable `json:"executable,omitempty"`
 }
 
 // WsRequestType is used to set the specific types allowable for WsRequests
@@ -144,8 +114,7 @@ type WsMessage struct {
 	YAML            string                 `json:"yaml,omitempty"`
 
 	// information related to the init of the UI
-	Dashboards      []Cluster               `json:"dashboards,omitempty"`
-	Plugins         []Plugin                `json:"plugins,omitempty"`
+	Dashboards      []Dashboard             `json:"dashboards,omitempty"`
 	Authentication  *AuthMethod             `json:"authentication,omitempty"`
 	AuthInfoOptions *config.AuthInfoOptions `json:"authInfoOptions,omitempty"`
 	ContextOptions  *config.ContextOptions  `json:"contextOptions,omitempty"`
