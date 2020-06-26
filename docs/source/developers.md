@@ -99,6 +99,10 @@ The UI will initiate the websocket and request data.  The backend uses a functio
 
 [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/) runs a single-node Kubernetes cluster for users looking to try out Kubernetes or develop with it day-to-day.  Installation instructions are available on the kubernetes website: https://kubernetes.io/docs/tasks/tools/install-minikube/).  If you are running behind a proxy it may be necessary to follow the steps outlined in the [How to use an HTTP/HTTPS proxy with minikube](https://minikube.sigs.k8s.io/docs/reference/networking/proxy/) website.
 
+### Docker on Windows
+
+The default Docker install on windows will attempt to enable Hyper-V.  Note: if you are using VirtualBox it cannot coexist with Hyper-V enabled at the same time.  To build docker images you will have to shut down VirtualBox and enable Hyper-V for the build.  You will need to disable Hyper-V to use VirtualBox after the images have been built.
+
 ### Issues with npm / npx and the electron go module
 It is possible that the airship ui will exit with an error code 1 when attempting to start the first time:
 

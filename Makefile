@@ -16,6 +16,20 @@ JSLINTER_BIN  := $(realpath tools)/node-v12.16.3/bin
 NPM  		  := $(JSLINTER_BIN)/npm
 NPX  		  := $(JSLINTER_BIN)/npx
 
+# docker
+DOCKER_MAKE_TARGET  := build
+
+# docker image options
+DOCKER_REGISTRY     ?= quay.io
+DOCKER_FORCE_CLEAN  ?= true
+DOCKER_IMAGE_NAME   ?= airshipui
+DOCKER_IMAGE_PREFIX ?= airshipit
+DOCKER_IMAGE_TAG    ?= dev
+DOCKER_IMAGE        ?= $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_PREFIX)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+DOCKER_TARGET_STAGE ?= release
+PUBLISH             ?= false
+
+# test flags
 COVERAGE_OUTPUT := coverage.out
 
 TESTFLAGS     ?= -count=1
@@ -75,6 +89,53 @@ test:
 cover: TESTFLAGS += -coverprofile=$(COVERAGE_OUTPUT)
 cover: test
 	go tool cover -html=$(COVERAGE_OUTPUT)
+
+.PHONY: images
+images: docker-image
+
+.PHONY: docker-image
+docker-image:
+ifeq ($(USE_PROXY), true)
+	@docker build . --network=host \
+		--build-arg http_proxy=$(PROXY) \
+		--build-arg https_proxy=$(PROXY) \
+		--build-arg HTTP_PROXY=$(PROXY) \
+		--build-arg HTTPS_PROXY=$(PROXY) \
+		--build-arg no_proxy=$(NO_PROXY) \
+		--build-arg NO_PROXY=$(NO_PROXY) \
+	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
+	    --tag $(DOCKER_IMAGE) \
+	    --target $(DOCKER_TARGET_STAGE) \
+	    --force-rm=$(DOCKER_FORCE_CLEAN)
+else
+	@docker build . --network=host \
+	    --build-arg MAKE_TARGET=$(DOCKER_MAKE_TARGET) \
+	    --tag $(DOCKER_IMAGE) \
+	    --target $(DOCKER_TARGET_STAGE) \
+	    --force-rm=$(DOCKER_FORCE_CLEAN)
+endif
+ifeq ($(PUBLISH), true)
+	@docker push $(DOCKER_IMAGE)
+endif
+
+.PHONY: print-docker-image-tag
+print-docker-image-tag:
+	@echo "$(DOCKER_IMAGE)"
+
+.PHONY: docker-image-test-suite
+docker-image-test-suite: DOCKER_MAKE_TARGET = "lint cover"
+docker-image-test-suite: DOCKER_TARGET_STAGE = builder
+docker-image-test-suite: docker-image
+
+.PHONY: docker-image-unit-tests
+docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
+docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
+docker-image-unit-tests: docker-image
+
+.PHONY: docker-image-lint
+docker-image-lint: DOCKER_MAKE_TARGET = lint
+docker-image-lint: DOCKER_TARGET_STAGE = builder
+docker-image-lint: docker-image
 
 .PHONY: clean
 clean:
