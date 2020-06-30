@@ -3,6 +3,7 @@ set -x
 
 tools_bin_dir="${BASH_SOURCE%/*}"
 node_version=v12.16.3
+npm_user=${USER:-root}
 
 if [[ ! -d $tools_bin_dir/node-$node_version ]]; then
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -40,6 +41,7 @@ if [[ ! -d $tools_bin_dir/node-$node_version ]]; then
 
   # npm will write to a node_modules even with the --directory flag it's better to be in the root of where you want this to live
   cd web
+  npm config set user ${npm_user}
   if ! npm install eslint-plugin-html@latest --save-dev; then
     printf "Something went wrong while installing eslint-plugin-html\n" 1>&2
     exit 1

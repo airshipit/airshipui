@@ -14,9 +14,9 @@
 - hosts: all
   name: Run linter
   tasks:
-    - name: make lint
+    - name: make docker-image-lint
       make:
-        target: lint
+        target: docker-image-lint
         chdir: "{{ zuul.project.src_dir }}"
       environment:
         PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"

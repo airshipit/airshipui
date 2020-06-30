@@ -32,12 +32,12 @@
 
 - job:
     name: airshipui-test
-    pre-run: playbooks/install-go.yaml
+    pre-run: playbooks/install-docker.yaml
     run: playbooks/airshipui-test/run.yaml
 
 - job:
     name: airshipui-lint
-    pre-run: playbooks/install-go.yaml
+    pre-run: playbooks/install-docker.yaml
     run: playbooks/airshipui-lint/run.yaml
 
 - job:

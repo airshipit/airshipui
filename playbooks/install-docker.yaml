@@ -12,11 +12,6 @@
 
 ---
 - hosts: all
-  name: Run tests
-  tasks:
-    - name: make docker-image-unit-tests
-      make:
-        target: docker-image-unit-tests
-        chdir: "{{ zuul.project.src_dir }}"
-      environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin"
+  name: Install Docker
+  roles:
+    - docker-install
