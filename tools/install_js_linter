@@ -39,6 +39,12 @@ if [[ ! -d $tools_bin_dir/node-$node_version ]]; then
   # npm requires node to also be on the path
   export PATH=$(realpath $tools_bin_dir)/node-$node_version/bin:$PATH
 
+  # Proxy / SSL issues when using custom CAs with proxy / self signed certs.
+  # This assumes the system certs are up to date and is on linux or in docker
+  if [ -r /etc/ssl/certs/ca-certificates.crt ]; then
+    export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+  fi
+
   # npm will write to a node_modules even with the --directory flag it's better to be in the root of where you want this to live
   cd web
   npm config set user ${npm_user}
