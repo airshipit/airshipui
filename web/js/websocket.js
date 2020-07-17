@@ -63,13 +63,13 @@ function handleMessages(message) {
     switch(json["type"]) {
         case "alert":   showDismissableAlert(json["component"], json["message"], json["fade"]); break;
         case "airshipctl": handleCTLMessages(json); break;
-        case "electron":   hanldleElectronMessages(json); break;
+        case "airshipui":   hanldleAirshipUIMessages(json); break;
         default:  console.log("Received message: " + json["type"]); break;
     }
 }
 
-// this is a helper function for electron / base app specific messages
-function hanldleElectronMessages(json) {
+// this is a helper function for airshipui / base app specific messages
+function hanldleAirshipUIMessages(json) {
     if (json["component"] === "initialize") {
         if (!json["isAuthenticated"]) {
             authenticate(json["authentication"]);
@@ -99,7 +99,7 @@ function handleCTLMessages(json) {
 
 function open() {
     console.log("Websocket established");
-    var json = { "type": "electron", "component": "initialize" };
+    var json = { "type": "airshipui", "component": "initialize" };
     ws.send(JSON.stringify(json));
     // start up the keepalive so the websocket stays open
     keepAlive();
@@ -137,7 +137,7 @@ function keepAlive() {
             // clear the previously set timeout
             window.clearTimeout(timeout);
             window.clearInterval(timeout);
-            var json = { "type": "electron", "component": "keepalive" };
+            var json = { "type": "airshipui", "component": "keepalive" };
             ws.send(JSON.stringify(json));
             timeout = window.setTimeout(keepAlive, 60000);
         }
