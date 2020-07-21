@@ -82,6 +82,7 @@ install-npm-modules: $(NPX)
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPM) install) && cd ..
 
 .PHONY: test
+test: check-copyright
 test:
 	go test $(RECURSIVE_DIRS) -v $(TESTFLAGS)
 
@@ -170,3 +171,13 @@ $(LINTER):
 $(NPX):
 	@mkdir -p $(TOOLBINDIR)
 	./tools/install_js_linter
+
+# add-copyright is a utility to add copyright header to missing files
+.PHONY: add-copyright
+add-copyright:
+	@./tools/add_license.sh
+
+# check-copyright is a utility to check if copyright header is present on all files
+.PHONY: check-copyright
+check-copyright:
+	@./tools/check_copyright
