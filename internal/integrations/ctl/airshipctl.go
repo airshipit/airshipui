@@ -32,6 +32,13 @@ var (
 	basepath   = filepath.Dir(b)
 )
 
+// CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
+var CTLFunctionMap = map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
+	configs.CTLConfig: HandleConfigRequest,
+	configs.Baremetal: HandleBaremetalRequest,
+	configs.Document:  HandleDocumentRequest,
+}
+
 // maintain the state of a potentially long running process
 var runningRequests map[configs.WsSubComponentType]bool = make(map[configs.WsSubComponentType]bool)
 

@@ -39,16 +39,13 @@ var rootCmd = &cobra.Command{
 	Version: Version(),
 }
 
-var headless bool
-var remote bool
-
 func init() {
 	// Add a 'version' command, in addition to the '--version' option that is auto created
 	rootCmd.AddCommand(newVersionCmd())
 
 	// add the remote & headless options in case people want to run a split setup
-	rootCmd.Flags().BoolVar(&headless, "headless", false, "start the system in headless webserver only, no ui.")
-	rootCmd.Flags().BoolVar(&remote, "remote", false, "start the system in remote ui only, no webserver.")
+	rootCmd.Flags().BoolVar(&configs.Headless, "headless", false, "start the system in headless webserver only, no ui.")
+	rootCmd.Flags().BoolVar(&configs.Remote, "remote", false, "start the system in remote ui only, no webserver.")
 }
 
 func launch(cmd *cobra.Command, args []string) {
@@ -87,6 +84,7 @@ func launch(cmd *cobra.Command, args []string) {
 	}
 
 	// just a little ditty to see if we should open the ui or the webservice or both
+	// this is done as a switch insted of an if else because our linter prefers switches to if elses
 	switch handleStartType() {
 	case "headless":
 		// start webservice and listen for the the ctl + c to exit
@@ -122,13 +120,13 @@ func startElectron() {
 // TODO: determine if cobra can make flags exclusive without the extra logic
 func handleStartType() string {
 	st := "default"
-	if remote && headless {
+	if configs.Remote && configs.Headless {
 		log.Fatalf("Cannot set both --remote and --headless flags")
 	}
 
-	if remote {
+	if configs.Remote {
 		st = "remote"
-	} else if headless {
+	} else if configs.Headless {
 		st = "headless"
 	}
 

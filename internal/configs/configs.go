@@ -25,6 +25,9 @@ import (
 // variables related to UI config
 var (
 	UIConfig Config
+
+	Headless bool
+	Remote   bool
 )
 
 // Config basic structure to hold configuration params for Airship UI
@@ -98,7 +101,7 @@ type WsSubComponentType string
 // constants related to specific request/component/subcomponent types for WsRequests
 const (
 	AirshipCTL WsRequestType = "airshipctl"
-	Electron   WsRequestType = "electron"
+	AirshipUI  WsRequestType = "airshipui"
 	Alert      WsRequestType = "alert"
 
 	Authcomplete WsComponentType = "authcomplete"
