@@ -15,7 +15,7 @@ if [[ ! -d $tools_bin_dir/node-$node_version ]]; then
       mv $tools_bin_dir/node-$node_version-linux-x64 $tools_bin_dir/node-$node_version
     fi
   elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # Mac OSX 
+    # Mac OSX
     if ! curl -sfL "https://nodejs.org/dist/$node_version/node-$node_version-darwin-x64.tar.gz" | tar zxf - --directory "$tools_bin_dir"; then
       printf "Something went wrong while installing Mac OSX nodejs\n" 1>&2
       exit 1

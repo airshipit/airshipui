@@ -1,5 +1,5 @@
 # Coverage File
-coverage.out
+*.out
 tools/bin
 tools/*node*
 
