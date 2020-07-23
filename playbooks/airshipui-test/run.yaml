@@ -12,7 +12,7 @@
 
 ---
 - hosts: all
-  name: Run tests
+  name: Run unit-tests
   tasks:
     - name: make docker-image-unit-tests
       make:

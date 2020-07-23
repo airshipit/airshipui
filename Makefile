@@ -34,6 +34,13 @@ COVERAGE_OUTPUT := coverage.out
 
 TESTFLAGS     ?= -count=1
 
+# go options
+PKG                 ?= ./...
+TESTS               ?= .
+COVER_FLAGS         ?=
+COVER_PROFILE       ?= cover.out
+COVER_EXCLUDE       ?= (zz_generated)
+
 # Override the value of the version variable in main.go
 LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERSION)'
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
@@ -82,14 +89,20 @@ install-npm-modules: $(NPX)
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPM) install) && cd ..
 
 .PHONY: test
+test: lint
+test: cover
 test: check-copyright
-test:
-	go test $(RECURSIVE_DIRS) -v $(TESTFLAGS)
+
+.PHONY: unit-tests
+unit-tests:
+	@echo "Performing unit test step..."
+	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) $(COVER_FLAGS)
+	@echo "All unit tests passed"
 
 .PHONY: cover
-cover: TESTFLAGS += -coverprofile=$(COVERAGE_OUTPUT)
-cover: test
-	go tool cover -html=$(COVERAGE_OUTPUT)
+cover: TESTFLAGS = -covermode=atomic -coverprofile=fullcover.out
+cover: unit-tests
+	@grep -vE "$(COVER_EXCLUDE)" fullcover.out > $(COVER_PROFILE)
 
 .PHONY: images
 images: docker-image
