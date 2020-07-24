@@ -167,9 +167,16 @@ docs:
 
 .PHONY: lint
 lint: tidy $(LINTER) $(NPX)
+	@echo "Performing linting steps..."
+	@echo "Running whitespace linting step..."
+	@./tools/whitespace_linter
+	@echo "Running golangci-lint linting step..."
 	$(LINTER) run --config $(LINTER_CONFIG)
+	@echo "Running eslint for JavaScript linting step..."
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint js) && cd ..
+	@echo "Running eslint for HTML linting step..."
 	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint --ext .html .) && cd ..
+	@echo "Linting completed successfully"
 
 .PHONY: tidy
 tidy:
