@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/electron"
 	"opendev.org/airship/airshipui/internal/webservice"
 )
 
@@ -42,10 +41,6 @@ var rootCmd = &cobra.Command{
 func init() {
 	// Add a 'version' command, in addition to the '--version' option that is auto created
 	rootCmd.AddCommand(newVersionCmd())
-
-	// add the remote & headless options in case people want to run a split setup
-	rootCmd.Flags().BoolVar(&configs.Headless, "headless", false, "start the system in headless webserver only, no ui.")
-	rootCmd.Flags().BoolVar(&configs.Remote, "remote", false, "start the system in remote ui only, no webserver.")
 }
 
 func launch(cmd *cobra.Command, args []string) {
@@ -85,54 +80,12 @@ func launch(cmd *cobra.Command, args []string) {
 		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err), true)
 	}
 
-	// just a little ditty to see if we should open the ui or the webservice or both
-	// this is done as a switch insted of an if else because our linter prefers switches to if elses
-	switch handleStartType() {
-	case "headless":
-		// start webservice and listen for the the ctl + c to exit
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-		go func() {
-			<-c
-			log.Println("Exiting the webservice")
-			os.Exit(0)
-		}()
-		webservice.WebServer()
-	case "remote":
-		// start the electron app
-		startElectron()
-	default:
-		// start webservice and electron
-		go webservice.WebServer()
-		startElectron()
-	}
+	// start the web service and related sundries
+	webservice.WebServer()
 
 	// cancel running plugins and wait for shut down
 	cancel()
 	waitgrp.Wait()
-}
-
-func startElectron() {
-	err := electron.RunElectron()
-	if err != nil {
-		log.Printf("Exit %s", err)
-	}
-}
-
-// TODO: determine if cobra can make flags exclusive without the extra logic
-func handleStartType() string {
-	st := "default"
-	if configs.Remote && configs.Headless {
-		log.Fatalf("Cannot set both --remote and --headless flags")
-	}
-
-	if configs.Remote {
-		st = "remote"
-	} else if configs.Headless {
-		st = "headless"
-	}
-
-	return st
 }
 
 // Execute is called from the main program and kicks this whole shindig off

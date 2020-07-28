@@ -46,9 +46,8 @@ var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(con
 
 // handle the origin request & upgrade to websocket
 func onOpen(response http.ResponseWriter, request *http.Request) {
-	// gorilla ws will give a 403 on a cross origin request, so we silence its complaints
-	// This happens with electron because it's sending an origin of 'file://' instead of 'localhost:8080'
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	// gorilla ws will give a 403 on a cross origin request, so to silence its complaints
+	// upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// upgrade to websocket protocol over http
 	log.Printf("Establishing the websocket")

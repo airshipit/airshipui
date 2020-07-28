@@ -57,21 +57,20 @@ func WebServer() {
 	})
 
 	// We can serve up static content if it's flagged as headless on command line
-	if configs.Headless {
-		// start proxies for web based use
-		startProxies()
+	// TODO: Figureout if we need to toggle the proxies on and off
+	// start proxies for web based use
+	startProxies()
 
-		// static file server
-		path, err := os.Getwd()
-		if err != nil {
-			log.Println(err)
-		}
-
-		staticContent := filepath.Join(path + string(os.PathSeparator) + "web")
-		log.Println("Attempting to serve static content from ", staticContent)
-		fs := http.FileServer(http.Dir(staticContent))
-		webServerMux.Handle("/", fs)
+	// static file server
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
 	}
+
+	staticContent := filepath.Join(path + string(os.PathSeparator) + "web")
+	log.Println("Attempting to serve static content from ", staticContent)
+	fs := http.FileServer(http.Dir(staticContent))
+	webServerMux.Handle("/", fs)
 
 	// TODO: pull ports out into conf files
 	log.Println("Attempting to start webservice on localhost:8080")

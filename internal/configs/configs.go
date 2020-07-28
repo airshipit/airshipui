@@ -25,9 +25,6 @@ import (
 // variables related to UI config
 var (
 	UIConfig Config
-
-	Headless bool
-	Remote   bool
 )
 
 // Config basic structure to hold configuration params for Airship UI
