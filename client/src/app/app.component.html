@@ -1,0 +1,71 @@
+<div class="main-container">
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav class="sidenav-content" #snav [mode]="'side'">
+      <mat-nav-list>
+        <svg width="249" height="46">
+          <use xlink:href="assets/logo/airship-horizontal-logo.svg#Layer_1"></use>
+        </svg>
+        <span *ngFor="let item of menu">
+          <span *ngIf="item.children && item.children.length > 0">
+            <mat-accordion>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <div fxLayout="row" fxLayoutAlign="center center" >
+                      <div *ngIf="item.iconName" class="icon-container" fxLayoutAlign="center center">
+                        <mat-icon svgIcon="{{ item.iconName }}"></mat-icon>
+                      </div>
+                      {{ item.displayName }}
+                    </div>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <span *ngFor="let child of item.children">
+                  <mat-list-item *ngIf="!child.external" routerLink="{{ child.route }}">
+                    <div fxLayout="row" fxLayoutAlign="center center" >
+                      <div *ngIf="child.iconName" class="icon-container" fxLayoutAlign="center center">
+                        <mat-icon svgIcon="{{ child.iconName }}"></mat-icon>
+                      </div>
+                      {{ child.displayName }}
+                    </div>
+                  </mat-list-item>
+                  <mat-list-item *ngIf="child.external" (click)="openLink(child.route)">
+                    <div fxLayout="row" fxLayoutAlign="center center" >
+                      <div *ngIf="child.iconName" class="icon-container" fxLayoutAlign="center center">
+                        <mat-icon svgIcon=launch></mat-icon>
+                      </div>
+                      {{ child.displayName }}
+                    </div>
+                  </mat-list-item>
+                </span>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </span>
+          <span *ngIf="!item.children || item.children.length === 0">
+            <mat-list-item routerLink="{{ item.route }}">
+              <div fxLayout="row" fxLayoutAlign="center center">
+                <div *ngIf="item.iconName" class="icon-container" fxLayoutAlign="center center">
+                  <mat-icon svgIcon="{{ item.iconName }}"></mat-icon>
+                </div>
+                {{item.displayName}}
+              </div>
+            </mat-list-item>
+          </span>
+        </span>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <mat-toolbar color="primary" class="toolbar-header">
+        <button mat-icon-button (click)="snav.toggle()"><mat-icon svgIcon="list"></mat-icon></button>
+        <span class="spacer"></span>
+        <button mat-icon-button><mat-icon svgIcon="account"></mat-icon></button>
+      </mat-toolbar>
+      <router-outlet></router-outlet>
+      <span class="page-body"></span>
+      <mat-toolbar class="toolbar-footer">
+        <h3>Airship UI &copy; {{ this.currentYear }}</h3>
+        <span class="spacer"></span>
+        <h3>Version: {{ this.version }}</h3>
+      </mat-toolbar>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

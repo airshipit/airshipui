@@ -34,7 +34,6 @@ var (
 
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
 var CTLFunctionMap = map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
-	configs.CTLConfig: HandleConfigRequest,
 	configs.Baremetal: HandleBaremetalRequest,
 	configs.Document:  HandleDocumentRequest,
 }

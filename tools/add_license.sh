@@ -19,8 +19,7 @@ add_license() {
   ext=$1
   template=$2
   # skipping license for testdata and manifests folders
-  # also skipping license for node and node_modules
-  FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests" | grep -v "tools/*node*" | grep -v "web/node_modules")
+  FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests")
 
   for each in $FILES
   do

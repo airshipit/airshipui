@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipui/internal/configs"
@@ -38,7 +36,6 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	var message string
 	switch request.SubComponent {
 	case configs.GetDefaults:
-		response.HTML, err = GetDocumentHTML()
 		response.Data = getGraphData()
 	case configs.DocPull:
 		message, err = c.docPull()
@@ -128,33 +125,4 @@ func (c *Client) docPull() (string, error) {
 	}
 
 	return message, err
-}
-
-// GetDocumentHTML will return the templated document pagelet
-func GetDocumentHTML() (string, error) {
-	return getHTML("/templates/document.html", ctlPage{
-		Title:    "Document",
-		Version:  getAirshipCTLVersion(),
-		YAMLTree: getYamlTree(),
-		YAMLHome: filepath.Dir(c.settings.AirshipConfigPath),
-	})
-}
-
-// TODO: when we figure out what tree structure we're doing make this dynamic
-// The string builder is unnecessary in an non dynamic role, so it may be needed later
-func getYamlTree() string {
-	var s strings.Builder
-
-	s.WriteString("<li><table>" +
-		"<tr><td><span class=\"document\" id=\"AirshipConfigSpan\"> </span></td>" +
-		"<td><button id=\"AirshipConfigBtn\" class=\"unstyled-button\" onclick=\"return documentAction(this)\"> - " +
-		filepath.Base(c.settings.AirshipConfigPath) +
-		"</button></td></tr>" +
-		"<tr><td><span class=\"document\" id=\"KubeConfigSpan\"> </span></td>" +
-		"<td><button id=\"KubeConfigBtn\" class=\"unstyled-button\" onclick=\"return documentAction(this)\"> - " +
-		filepath.Base(c.settings.KubeConfigPath) +
-		"</button></td></tr>" +
-		"</table></li>")
-
-	return s.String()
 }

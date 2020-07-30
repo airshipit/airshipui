@@ -17,8 +17,6 @@ package webservice
 import (
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
 
 	"opendev.org/airship/airshipui/internal/configs"
@@ -28,7 +26,7 @@ import (
 var isAuthenticated bool
 
 // handle an auth complete attempt
-func handleAuth(response http.ResponseWriter, request *http.Request) {
+func handleAuth(http.ResponseWriter, *http.Request) {
 	// TODO: handle the response body to capture the credentials
 	err := ws.WriteJSON(configs.WsMessage{
 		Type:      configs.AirshipUI,
@@ -52,29 +50,16 @@ func WebServer() {
 	webServerMux.HandleFunc("/auth", handleAuth)
 
 	// hand off the websocket upgrade over http
-	webServerMux.HandleFunc("/ws", func(response http.ResponseWriter, request *http.Request) {
-		onOpen(response, request)
-	})
+	webServerMux.HandleFunc("/ws", onOpen)
 
-	// We can serve up static content if it's flagged as headless on command line
+	// establish routing to static angular client
+	webServerMux.HandleFunc("/", serveFile)
+
 	// TODO: Figureout if we need to toggle the proxies on and off
 	// start proxies for web based use
 	startProxies()
 
-	// static file server
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-
-	staticContent := filepath.Join(path + string(os.PathSeparator) + "web")
-	log.Println("Attempting to serve static content from ", staticContent)
-	fs := http.FileServer(http.Dir(staticContent))
-	webServerMux.Handle("/", fs)
-
 	// TODO: pull ports out into conf files
 	log.Println("Attempting to start webservice on localhost:8080")
-	if err := http.ListenAndServe(":8080", webServerMux); err != nil {
-		log.Fatal("ListenAndServe:", err)
-	}
+	log.Fatal(http.ListenAndServe(":8080", webServerMux))
 }

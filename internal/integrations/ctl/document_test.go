@@ -18,14 +18,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/util/utiltest"
 )
 
 func TestHandleDefaultDocumentRequest(t *testing.T) {
-	initCTL(t)
-	html, err := GetDocumentHTML()
-	require.NoError(t, err)
+	utiltest.InitConfig(t)
 
 	request := configs.WsMessage{
 		Type:         configs.AirshipCTL,
@@ -39,11 +37,13 @@ func TestHandleDefaultDocumentRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
-		HTML:         html,
 		Data:         getGraphData(),
 	}
 
-	assert.Equal(t, expected, response)
+	assert.Equal(t, expected.Type, response.Type)
+	assert.Equal(t, expected.Component, response.Component)
+	assert.Equal(t, expected.SubComponent, response.SubComponent)
+	assert.Equal(t, expected.Data, response.Data)
 }
 
 func TestHandleUnknownDocumentSubComponent(t *testing.T) {

@@ -11,15 +11,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-package configs_test
+package configs
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/testutil"
 )
 
 const (
@@ -28,22 +26,62 @@ const (
 	invalidTestFile string = "testdata/airshipui_invalid.json"
 )
 
+// DummyExecutableConfig returns a populated Executable struct
+func dummyExecutableConfig() *Executable {
+	return &Executable{
+		AutoStart: true,
+		Filepath:  "/fake/path/to/executable",
+		Args: []string{
+			"--fakeflag",
+			"fakevalue",
+		},
+	}
+}
+
+// DummyDashboardsConfig returns an array of populated Dashboard structs
+func dummyDashboardsConfig() []Dashboard {
+	e := dummyExecutableConfig()
+	return []Dashboard{
+		{
+			Name:       "dummy_dashboard",
+			BaseURL:    "http://dummyhost",
+			Path:       "fake/login/path",
+			Executable: e,
+		},
+		{
+			Name:       "dummy_plugin_no_dash",
+			Executable: e,
+		},
+		{
+			Name:    "dummy_dashboard_no_exe",
+			BaseURL: "http://dummyhost",
+			Path:    "fake/login/path",
+		},
+	}
+}
+
+func dummyAuthMethodConfig() *AuthMethod {
+	return &AuthMethod{
+		URL: "http://fake.auth.method.com/auth",
+	}
+}
+
 func TestSetUIConfig(t *testing.T) {
-	conf := configs.Config{
-		Dashboards: testutil.DummyDashboardsConfig(),
-		AuthMethod: testutil.DummyAuthMethodConfig(),
+	conf := Config{
+		Dashboards: dummyDashboardsConfig(),
+		AuthMethod: dummyAuthMethodConfig(),
 	}
 
-	err := configs.SetUIConfig(testFile)
+	err := SetUIConfig(testFile)
 	require.NoError(t, err)
 
-	assert.Equal(t, conf, configs.UIConfig)
+	assert.Equal(t, conf, UIConfig)
 
-	err = configs.SetUIConfig(invalidTestFile)
+	err = SetUIConfig(invalidTestFile)
 	require.Error(t, err)
 }
 
 func TestFileNotFound(t *testing.T) {
-	err := configs.SetUIConfig(fakeFile)
+	err := SetUIConfig(fakeFile)
 	assert.Error(t, err)
 }

@@ -18,12 +18,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	"opendev.org/airship/airshipui/util/utiltest"
+
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/integrations/ctl"
-	"opendev.org/airship/airshipui/testutil"
 )
 
 func TestClientInit(t *testing.T) {
@@ -32,7 +32,7 @@ func TestClientInit(t *testing.T) {
 	defer client.Close()
 
 	// simulate config provided by airshipui.json
-	configs.UIConfig = testutil.DummyCompleteConfig()
+	configs.UIConfig = utiltest.DummyCompleteConfig()
 
 	// get server response to "initialize" message from client
 	response, err := getResponse(client, initialize)
@@ -42,8 +42,8 @@ func TestClientInit(t *testing.T) {
 		Type:            configs.AirshipUI,
 		Component:       configs.Initialize,
 		IsAuthenticated: true,
-		Dashboards:      testutil.DummyDashboardsConfig(),
-		Authentication:  testutil.DummyAuthMethodConfig(),
+		Dashboards:      utiltest.DummyDashboardsConfig(),
+		Authentication:  utiltest.DummyAuthMethodConfig(),
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -57,7 +57,7 @@ func TestClientInitNoAuth(t *testing.T) {
 	defer client.Close()
 
 	// simulate config provided by airshipui.json
-	configs.UIConfig = testutil.DummyConfigNoAuth()
+	configs.UIConfig = utiltest.DummyConfigNoAuth()
 
 	isAuthenticated = false
 
@@ -70,7 +70,7 @@ func TestClientInitNoAuth(t *testing.T) {
 		// isAuthenticated should now be true in response
 		IsAuthenticated: true,
 		Dashboards: []configs.Dashboard{
-			testutil.DummyDashboardConfig(),
+			utiltest.DummyDashboardConfig(),
 		},
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
@@ -141,9 +141,6 @@ func TestHandleDocumentRequest(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
-	expectedHTML, err := ctl.GetDocumentHTML()
-	require.NoError(t, err)
-
 	response, err := getResponse(client, document)
 	require.NoError(t, err)
 
@@ -151,7 +148,6 @@ func TestHandleDocumentRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
-		HTML:         expectedHTML,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -160,16 +156,12 @@ func TestHandleDocumentRequest(t *testing.T) {
 	assert.Equal(t, expected.Type, response.Type)
 	assert.Equal(t, expected.Component, response.Component)
 	assert.Equal(t, expected.SubComponent, response.SubComponent)
-	assert.Equal(t, expected.HTML, response.HTML)
 }
 
 func TestHandleBaremetalRequest(t *testing.T) {
 	client, err := NewTestClient()
 	require.NoError(t, err)
 	defer client.Close()
-
-	expectedHTML, err := ctl.GetBaremetalHTML()
-	require.NoError(t, err)
 
 	response, err := getResponse(client, baremetal)
 	require.NoError(t, err)
@@ -178,42 +170,13 @@ func TestHandleBaremetalRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
-		HTML:         expectedHTML,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
-	}
-
-	assert.Equal(t, expected, response)
-}
-
-func TestHandleConfigRequest(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	response, err := getResponse(client, config)
-	require.NoError(t, err)
-
-	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
-		Component:    configs.CTLConfig,
-		SubComponent: configs.GetDefaults,
 	}
 
 	assert.Equal(t, expected.Type, response.Type)
 	assert.Equal(t, expected.Component, response.Component)
 	assert.Equal(t, expected.SubComponent, response.SubComponent)
-
-	// NOTE(mfuller): integrations/ctl 'client' gets initialized
-	// *before* any env vars can be set here in tests, so client
-	// will always be initialized with default config file locations.
-	// Client is not exported, so we can't set it directly here. We'll
-	// simply make sure there's no Error value and that HTML has
-	// len > 0. Full testing of this response is covered in the
-	// integrations/ctl tests.
-
-	assert.Len(t, response.Error, 0)
-	assert.Greater(t, len(response.HTML), 0)
 }
 
 func getResponse(client *websocket.Conn, message string) (configs.WsMessage, error) {

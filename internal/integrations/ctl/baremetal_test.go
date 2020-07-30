@@ -18,14 +18,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/util/utiltest"
 )
 
 func TestHandleDefaultBaremetalRequest(t *testing.T) {
-	initCTL(t)
-	html, err := GetBaremetalHTML()
-	require.NoError(t, err)
+	utiltest.InitConfig(t)
 
 	request := configs.WsMessage{
 		Type:         configs.AirshipCTL,
@@ -39,10 +37,11 @@ func TestHandleDefaultBaremetalRequest(t *testing.T) {
 		Type:         configs.AirshipCTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
-		HTML:         html,
 	}
 
-	assert.Equal(t, expected, response)
+	assert.Equal(t, expected.Type, response.Type)
+	assert.Equal(t, expected.Component, response.Component)
+	assert.Equal(t, expected.SubComponent, response.SubComponent)
 }
 
 func TestHandleUnknownBaremetalSubComponent(t *testing.T) {

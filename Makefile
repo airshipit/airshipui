@@ -9,12 +9,13 @@ SHELL=/bin/bash
 GIT_VERSION=$(shell git describe --match 'v*' --always)
 
 TOOLBINDIR    := tools/bin
-WEBDIR        := web
+WEBDIR        := client
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
-JSLINTER_BIN  := $(realpath tools)/node-v12.16.3/bin
-NPM  		  := $(JSLINTER_BIN)/npm
-NPX  		  := $(JSLINTER_BIN)/npx
+NODEJS_BIN  := $(realpath tools)/node-v12.16.3/bin
+NPM  		  := $(NODEJS_BIN)/npm
+NPX  		  := $(NODEJS_BIN)/npx
+NG  		  := $(NODEJS_BIN)/ng
 
 # docker
 DOCKER_MAKE_TARGET  := build
@@ -46,7 +47,7 @@ LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERS
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
 BUILD_DIR := bin
 
-# Find all main.go files under cmd, excluding airshipui itself (which is the octant wrapper)
+# Find all main.go files under cmd, excluding airshipui itself
 EXAMPLE_NAMES := $(notdir $(subst /main.go,,$(wildcard examples/*/main.go)))
 EXAMPLES   := $(addprefix $(BUILD_DIR)/, $(EXAMPLE_NAMES))
 MAIN      := $(BUILD_DIR)/airshipui
@@ -66,9 +67,11 @@ DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build
-build: $(MAIN) $(NPX)
+build: $(NPX) $(MAIN)
 $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
+	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
 	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
 
 FORCE:
@@ -77,6 +80,9 @@ FORCE:
 examples: $(EXAMPLES)
 $(EXAMPLES): FORCE
 	@mkdir -p $(BUILD_DIR)
+	./tools/install_npm
+	cd $(WEBDIR) && npm install && cd ..
+	cd $(WEBDIR) && ng build && cd ..
 	go build -o $@$(EXTENSION) $(GO_FLAGS) examples/$(@F)/main.go
 
 .PHONY: install-octant-plugins
@@ -84,9 +90,11 @@ install-octant-plugins:
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
 	cp $(addsuffix $(EXTENSION), $(BUILD_DIR)/octant) $(OCTANT_PLUGINSTUB_DIR)
 
+
 .PHONY: install-npm-modules
 install-npm-modules: $(NPX)
-	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPM) install) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
+
 
 .PHONY: test
 test: lint
@@ -166,16 +174,16 @@ docs:
 .PHONY: env
 
 .PHONY: lint
-lint: tidy $(LINTER) $(NPX)
+lint: tidy $(LINTER)
 	@echo "Performing linting steps..."
 	@echo "Running whitespace linting step..."
 	@./tools/whitespace_linter
 	@echo "Running golangci-lint linting step..."
 	$(LINTER) run --config $(LINTER_CONFIG)
-	@echo "Running eslint for JavaScript linting step..."
-	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint js) && cd ..
-	@echo "Running eslint for HTML linting step..."
-	cd $(WEBDIR) && (PATH="$(PATH):$(JSLINTER_BIN)"; $(NPX) --no-install eslint --ext .html .) && cd ..
+	@echo "Installing NPM & running client linting step..."
+	./tools/install_npm
+	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
+	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
 	@echo "Linting completed successfully"
 
 .PHONY: tidy
@@ -190,7 +198,7 @@ $(LINTER):
 
 $(NPX):
 	@mkdir -p $(TOOLBINDIR)
-	./tools/install_js_linter
+	./tools/install_npm
 
 # add-copyright is a utility to add copyright header to missing files
 .PHONY: add-copyright

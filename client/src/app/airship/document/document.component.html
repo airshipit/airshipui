@@ -1,0 +1,5 @@
+<nav mat-tab-nav-bar>
+  <a mat-tab-link routerLink="overview" (click)="activeLink = 'overview'" [active]="activeLink == 'overview'">Document Overview</a>
+  <a mat-tab-link routerLink="pull" (click)="activeLink = 'pull'" [active]="activeLink == 'pull'">Document Pull</a>
+</nav>
+<router-outlet></router-outlet>

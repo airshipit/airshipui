@@ -37,7 +37,6 @@ const (
 	unknownComponent string = `{"type":"airshipui","component":"fake_component"}`
 	document         string = `{"type":"airshipctl","component":"document","subcomponent":"getDefaults"}`
 	baremetal        string = `{"type":"airshipctl","component":"baremetal","subcomponent":"getDefaults"}`
-	config           string = `{"type":"airshipctl","component":"config","subcomponent":"getDefaults"}`
 )
 
 func init() {
