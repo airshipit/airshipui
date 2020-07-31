@@ -80,7 +80,14 @@ func launch(cmd *cobra.Command, args []string) {
 		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err), true)
 	}
 
-	// start the web service and related sundries
+	// start webservice and listen for the the ctl + c to exit
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		log.Println("Exiting the webservice")
+		os.Exit(0)
+	}()
 	webservice.WebServer()
 
 	// cancel running plugins and wait for shut down
