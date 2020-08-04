@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // HandleBaremetalRequest will flop between requests so we don't have to have them all mapped as function calls

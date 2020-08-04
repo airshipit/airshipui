@@ -21,7 +21,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // map of proxy targets which will be used based on the request

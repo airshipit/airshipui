@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"

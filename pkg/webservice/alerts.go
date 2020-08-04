@@ -17,7 +17,7 @@ package webservice
 import (
 	"time"
 
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // Alerts serves as a queue to hold alerts to be sent to the UI,

@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/integrations/ctl"
+	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/ctl"
 )
 
 // gorilla ws specific HTTP upgrade to WebSockets

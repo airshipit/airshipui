@@ -22,7 +22,7 @@ import (
 
 	"opendev.org/airship/airshipctl/pkg/environment"
 	"opendev.org/airship/airshipctl/pkg/version"
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // obtain base path of caller so references to html

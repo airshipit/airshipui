@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"opendev.org/airship/airshipctl/pkg/config"
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // TODO: Determine if this should be broken out into it's own file

@@ -25,8 +25,8 @@ import (
 	"sync"
 	"syscall"
 
-	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/webservice"
+	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
 // ProcessGrpCmd wraps an exec.Cmd and a signal chan

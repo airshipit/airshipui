@@ -15,7 +15,7 @@
 package main
 
 import (
-	"opendev.org/airship/airshipui/internal/commands"
+	"opendev.org/airship/airshipui/pkg/commands"
 )
 
 func main() {

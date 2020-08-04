@@ -13,80 +13,12 @@ export class WebsocketService {
   private ws: WebSocket;
   private timeout: number;
 
-  private static convertIncomingMessageJsonToObject(incomingMessage: string): WebsocketMessage {
-    const json = JSON.parse(incomingMessage);
-    const messageTransform = new WebsocketMessage();
-    if (typeof json.type === 'string') {
-      messageTransform.type = json.type;
-    }
-    if (typeof json.component === 'string') {
-      messageTransform.component = json.component;
-    }
-    if (typeof json.subComponent === 'string') {
-      messageTransform.subComponent = json.subComponent;
-    }
-    if (typeof json.timestamp === 'number') {
-      messageTransform.timestamp = json.timestamp;
-    }
-    if (typeof json.error === 'string') {
-      messageTransform.error = json.error;
-    }
-    if (typeof json.fade === 'boolean') {
-      messageTransform.fade = json.fade;
-    }
-    if (typeof json.html === 'string') {
-      messageTransform.html = json.html;
-    }
-    if (typeof json.isAuthenticated === 'boolean') {
-      messageTransform.isAuthenticated = json.isAuthenticated;
-    }
-    if (typeof json.message === 'string') {
-      messageTransform.message = json.message;
-    }
-    if (typeof json.data === 'string' && JSON.parse(json.data)) {
-      messageTransform.data = JSON.parse(json.data);
-    }
-    if (typeof json.yaml === 'string') {
-      messageTransform.yaml = json.yaml;
-    }
-    if (typeof json.dashboards !== undefined && Array.isArray(json.dashboards)) {
-      json.dashboards.forEach(dashboard => {
-        const dashboardTransform = new Dashboard();
-        if (typeof dashboard.name === 'string') {
-          dashboardTransform.name = dashboard.name;
-        }
-        if (typeof dashboard.baseURL === 'string') {
-          dashboardTransform.baseURL = dashboard.baseURL;
-        }
-        if (typeof dashboard.path === 'string') {
-          dashboardTransform.path = dashboard.path;
-        }
-        if (typeof dashboard.isProxied === 'boolean') {
-          dashboardTransform.isProxied = dashboard.isProxied;
-        }
-        if (typeof dashboard.executable === 'object') {
-          const executableTransform = new Executable();
-          if (typeof dashboard.executable.autoStart === 'boolean') {
-            executableTransform.autoStart = dashboard.executable.autoStart;
-          }
-          if (typeof dashboard.executable.filePath === 'string') {
-            executableTransform.filePath = dashboard.executable.filePath;
-          }
-          if (typeof dashboard.executable.args !== undefined && Array.isArray(typeof dashboard.executable.args)) {
-            dashboard.executable.args.forEach(arg => {
-              if (typeof arg === 'string') {
-                executableTransform.args.push(arg);
-              }
-            });
-          }
-        }
-        if (messageTransform.dashboards === undefined) {
-          messageTransform.dashboards = [];
-        }
-        messageTransform.dashboards.push(dashboardTransform);
-      });
-    }
-    return messageTransform;
+  private static messageToObject(incomingMessage: string): WebsocketMessage {
+    let json = JSON.parse(incomingMessage);
+    let obj = new WebsocketMessage();
+
+    Object.assign(obj, json);
+    return obj;
   }
 
   constructor() {
@@ -107,7 +39,7 @@ export class WebsocketService {
     this.ws = new WebSocket('ws://localhost:8080/ws');
 
     this.ws.onmessage = (event) => {
-      this.subject.next(WebsocketService.convertIncomingMessageJsonToObject(event.data));
+      this.subject.next(WebsocketService.messageToObject(event.data));
     };
 
     this.ws.onerror = (event) => {

@@ -26,8 +26,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/webservice"
+	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
 // rootCmd represents the base command when called without any subcommands

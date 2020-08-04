@@ -43,7 +43,7 @@ COVER_PROFILE       ?= cover.out
 COVER_EXCLUDE       ?= (zz_generated)
 
 # Override the value of the version variable in main.go
-LD_FLAGS= '-X opendev.org/airship/airshipui/internal/commands.version=$(GIT_VERSION)'
+LD_FLAGS= '-X opendev.org/airship/airshipui/pkg/commands.version=$(GIT_VERSION)'
 GO_FLAGS  := -ldflags=$(LD_FLAGS)
 BUILD_DIR := bin
 
@@ -72,7 +72,7 @@ $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
 	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
 	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
-	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/$(@F)/main.go
+	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/main.go
 
 FORCE:
 
@@ -180,10 +180,11 @@ lint: tidy $(LINTER)
 	@./tools/whitespace_linter
 	@echo "Running golangci-lint linting step..."
 	$(LINTER) run --config $(LINTER_CONFIG)
-	@echo "Installing NPM & running client linting step..."
-	./tools/install_npm
-	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
-	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
+#   TODO: Replace eslint with TS lint
+#	@echo "Installing NPM & running client linting step..."
+#	./tools/install_npm
+#	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
+#	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
 	@echo "Linting completed successfully"
 
 .PHONY: tidy

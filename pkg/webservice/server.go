@@ -19,11 +19,35 @@ import (
 	"net/http"
 	"time"
 
-	"opendev.org/airship/airshipui/internal/configs"
+	"github.com/pkg/errors"
+	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/util/utilfile"
+	"opendev.org/airship/airshipui/util/utilhttp"
 )
 
 // semaphore to signal the UI to authenticate
 var isAuthenticated bool
+
+const (
+	clientPath = "client/dist/airshipui-ui"
+)
+
+// test if path and file exists, if it does send a page, else 404 for you
+func serveFile(w http.ResponseWriter, r *http.Request) {
+	filePath, filePathErr := utilfile.FilePath(clientPath, r.URL.Path)
+	if filePathErr != nil {
+		utilhttp.HandleErr(w, errors.WithStack(filePathErr), http.StatusInternalServerError)
+		return
+	}
+	fileExists, fileExistsErr := utilfile.Exists(filePath)
+	if fileExistsErr != nil {
+		utilhttp.HandleErr(w, errors.WithStack(fileExistsErr), http.StatusInternalServerError)
+		return
+	}
+	if fileExists {
+		http.ServeFile(w, r, filePath)
+	}
+}
 
 // handle an auth complete attempt
 func handleAuth(http.ResponseWriter, *http.Request) {

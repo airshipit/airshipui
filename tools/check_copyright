@@ -18,7 +18,7 @@ declare FILES_MISSING_COPYRIGHT=()
 check_license() {
   ext=$1
   # skipping license for testdata and manifests folders
-  FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests")
+   FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests" | grep -v "tools/*node*" | grep -v "client/node_modules" | grep -v "client/dist")
 
   for each in $FILES
   do

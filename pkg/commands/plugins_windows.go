@@ -24,8 +24,8 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-	"opendev.org/airship/airshipui/internal/configs"
-	"opendev.org/airship/airshipui/internal/webservice"
+	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
 // struct to store PID and process handle

@@ -21,7 +21,7 @@ import (
 	"os"
 
 	"opendev.org/airship/airshipctl/pkg/document/pull"
-	"opendev.org/airship/airshipui/internal/configs"
+	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // HandleDocumentRequest will flop between requests so we don't have to have them all mapped as function calls
