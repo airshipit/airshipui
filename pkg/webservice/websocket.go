@@ -113,7 +113,6 @@ func onMessage() {
 // common websocket close with logging
 func onClose() {
 	log.Printf("Closing websocket")
-	ws.Close()
 }
 
 // common websocket error handling with logging

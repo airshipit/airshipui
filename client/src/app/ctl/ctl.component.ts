@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
-  selector: 'app-airship',
+  selector: 'app-ctl',
   templateUrl: './ctl.component.html',
   styleUrls: ['./ctl.component.css']
 })
-export class CTLComponent {
-
+export class CtlComponent {
 }

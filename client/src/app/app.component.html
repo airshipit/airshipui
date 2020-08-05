@@ -1,6 +1,6 @@
 <div class="main-container">
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav class="sidenav-content" #snav [mode]="'side'" opened="true">
+    <mat-sidenav class="sidenav-content" #sidenav [mode]="'side'" opened="true">
       <mat-nav-list>
         <svg width="249" height="46">
           <use xlink:href="assets/logo/airship-horizontal-logo.svg#Layer_1"></use>
@@ -55,7 +55,7 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <mat-toolbar color="primary" class="toolbar-header">
-        <button mat-icon-button (click)="snav.toggle()"><mat-icon svgIcon="list"></mat-icon></button>
+        <button mat-icon-button (click)="sidenav.toggle()"><mat-icon svgIcon="list"></mat-icon></button>
         <span class="spacer"></span>
         <button mat-icon-button><mat-icon svgIcon="account"></mat-icon></button>
       </mat-toolbar>

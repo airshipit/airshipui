@@ -1,6 +1,14 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { DocumentComponent } from './document.component';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {DocumentComponent} from './document.component';
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatTreeModule} from '@angular/material/tree';
+import {MatButtonModule} from '@angular/material/button';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatIconModule} from '@angular/material/icon';
+import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {FormsModule} from '@angular/forms';
+import {ToastrModule} from 'ngx-toastr';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 describe('DocumentComponent', () => {
   let component: DocumentComponent;
@@ -8,7 +16,18 @@ describe('DocumentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DocumentComponent ]
+      imports: [
+        BrowserAnimationsModule,
+        MatTabsModule,
+        MatTreeModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatIconModule,
+        MonacoEditorModule,
+        FormsModule,
+        ToastrModule.forRoot()
+      ],
+      declarations: [DocumentComponent]
     })
     .compileComponents();
   }));

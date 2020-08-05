@@ -1,8 +1,8 @@
-export class NavInterface {
+export class Nav {
   displayName: string;
   disabled?: boolean;
   iconName?: string;
   route?: string;
   external?: boolean;
-  children?: NavInterface[];
+  children?: Nav[];
 }

@@ -13,8 +13,8 @@ WEBDIR        := client
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
 NODEJS_BIN    := $(realpath tools)/node-v12.16.3/bin
-NPM  		  := $(NODEJS_BIN)/npm
 NG  		  := $(NODEJS_BIN)/ng
+YARN		  := $(NODEJS_BIN)/yarn
 
 # docker
 DOCKER_MAKE_TARGET  := build
@@ -65,44 +65,127 @@ endif
 DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
+### Composite Make Commands ###
+
+.PHONY: $(MAIN)
+$(MAIN): build
+
 .PHONY: build
-build: $(NPM) $(MAIN)
-$(MAIN): FORCE
+build: frontend-build
+build: backend-build
+
+.PHONY: lint
+lint: tidy-lint
+lint: check-copyright-lint
+lint: whitespace-lint
+lint: frontend-lint
+lint: backend-lint
+
+.PHONY: unit-test
+test: frontend-unit-test
+test: backend-unit-test
+
+.PHONY: coverage
+coverage: frontend-coverage
+coverage: backend-coverage
+
+.PHONY: verify
+verify: build
+verify: coverage
+verify: lint
+
+### Backend (Go) Make Commands ###
+
+.PHONY: backend-build
+backend-build:
+	@echo "Executing backend build steps..."
 	@mkdir -p $(BUILD_DIR)
-	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
-	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
-	go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/main.go
+	@go build -o $(MAIN)$(EXTENSION) $(GO_FLAGS) cmd/main.go
+	@echo "Backend build completed successfully"
 
-FORCE:
-
-.PHONY: examples
-examples: $(NPM) $(EXAMPLES)
-$(EXAMPLES): FORCE
-	@mkdir -p $(BUILD_DIR)
-	cd $(WEBDIR) && npm install && cd ..
-	cd $(WEBDIR) && ng build && cd ..
-	go build -o $@$(EXTENSION) $(GO_FLAGS) examples/$(@F)/main.go
-
-.PHONY: install-octant-plugins
-install-octant-plugins:
-	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	cp $(addsuffix $(EXTENSION), $(BUILD_DIR)/octant) $(OCTANT_PLUGINSTUB_DIR)
-
-.PHONY: test
-test: lint
-test: cover
-test: check-copyright
-
-.PHONY: unit-tests
-unit-tests:
-	@echo "Performing unit test step..."
+.PHONY: backend-unit-test
+backend-unit-test:
+	@echo "Performing backend unit test step..."
 	@go test -run $(TESTS) $(PKG) $(TESTFLAGS) $(COVER_FLAGS)
-	@echo "All unit tests passed"
+	@echo "Backend unit tests completed successfully"
 
-.PHONY: cover
-cover: TESTFLAGS = -covermode=atomic -coverprofile=fullcover.out
-cover: unit-tests
+.PHONY: backend-coverage
+backend-coverage: TESTFLAGS = -covermode=atomic -coverprofile=fullcover.out
+backend-coverage: backend-unit-test
+	@echo "Generating backend coverage report..."
 	@grep -vE "$(COVER_EXCLUDE)" fullcover.out > $(COVER_PROFILE)
+	@echo "Backend coverage report completed successfully"
+
+.PHONY: backend-lint
+backend-lint: $(LINTER)
+backend-lint:
+	@echo "Running backend linting step..."
+	@$(LINTER) run --config $(LINTER_CONFIG)
+	@echo "Backend linting completed successfully"
+
+### Frontend (Angular) Make Commands ###
+
+.PHONY: frontend-build
+frontend-build: $(YARN)
+frontend-build:
+	@echo "Executing frontend build steps..."
+	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
+	@echo "Frontend build completed successfully"
+
+.PHONY: frontend-unit-test
+frontend-unit-test: $(YARN)
+frontend-unit-test:
+	@echo "Performing frontend unit test step..."
+	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) test) && cd ..
+	@echo "Frontend unit tests completed successfully"
+
+.PHONY: frontend-coverage
+frontend-coverage: frontend-unit-test
+
+.PHONY: frontend-lint
+frontend-lint: $(YARN)
+frontend-lint:
+	@echo "Running frontend linting step..."
+	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) lint) && cd ..
+	@echo "Frontend linting completed successfully"
+
+### Misc. Linting Commands ###
+
+.PHONY: whitespace-lint
+whitespace-lint:
+	@echo "Running whitespace linting step..."
+	@./tools/whitespace_linter
+	@echo "Whitespace linting completed successfully"
+
+.PHONY: tidy-lint
+tidy-lint:
+	@echo "Checking that go.mod is up to date..."
+	@./tools/gomod_check
+	@echo "go.mod check completed successfully"
+
+# check-copyright is a utility to check if copyright header is present on all files
+.PHONY: check-copyright-lint
+check-copyright-lint:
+	@echo "Checking file for copyright statement..."
+	@./tools/check_copyright
+	@echo "Copyright check completed successfully"
+
+### Helper Installations ###
+
+$(LINTER):
+	@echo "Installing Go linter..."
+	@mkdir -p $(TOOLBINDIR)
+	./tools/install_go_linter
+	@echo "Go linter installation completed successfully"
+
+$(YARN):
+	@echo "Installing Node.js, npm, yarn & project packages..."
+	@mkdir -p $(TOOLBINDIR)
+	./tools/install_npm
+	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(YARN) install) && cd ..
+	@echo "Node.js, npm, yarn, and project package installation completed successfully"
+
+### Docker ###
 
 .PHONY: images
 images: docker-image
@@ -142,7 +225,7 @@ docker-image-test-suite: DOCKER_TARGET_STAGE = builder
 docker-image-test-suite: docker-image
 
 .PHONY: docker-image-unit-tests
-docker-image-unit-tests: DOCKER_MAKE_TARGET = cover
+docker-image-unit-tests: DOCKER_MAKE_TARGET = coverage
 docker-image-unit-tests: DOCKER_TARGET_STAGE = builder
 docker-image-unit-tests: docker-image
 
@@ -153,11 +236,9 @@ docker-image-lint: docker-image
 
 .PHONY: clean
 clean:
+	@echo "Removing build directories..."
 	rm -rf $(BUILD_DIR) $(COVERAGE_OUTPUT)
-
-.PHONY: docs
-docs:
-	tox
+	@echo "Removal completed successfully"
 
 # The golang-unit zuul job calls the env target, so create one
 # Note: on windows if there is a WSL curl in c:\windows\system32
@@ -165,40 +246,11 @@ docs:
 #       The use of cygwin curl is working however
 .PHONY: env
 
-.PHONY: lint
-lint: tidy $(NPM) $(LINTER)
-	@echo "Performing linting steps..."
-	@echo "Running whitespace linting step..."
-	@./tools/whitespace_linter
-	@echo "Running golangci-lint linting step..."
-	$(LINTER) run --config $(LINTER_CONFIG)
-#   TODO: Replace eslint with TS lint
-#	@echo "Installing NPM & running client linting step..."
-#	./tools/install_npm
-#	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
-#	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
-	@echo "Linting completed successfully"
-
-.PHONY: tidy
-tidy:
-	@echo "Checking that go.mod is up to date..."
-	@./tools/gomod_check
-	@echo "go.mod is up to date"
-
-$(LINTER):
-	@mkdir -p $(TOOLBINDIR)
-	./tools/install_go_linter
-
-$(NPM):
-	@mkdir -p $(TOOLBINDIR)
-	./tools/install_npm
+### Helper Make Commands ###
 
 # add-copyright is a utility to add copyright header to missing files
 .PHONY: add-copyright
 add-copyright:
+	@echo "Adding copyright license to necessary files..."
 	@./tools/add_license.sh
-
-# check-copyright is a utility to check if copyright header is present on all files
-.PHONY: check-copyright
-check-copyright:
-	@./tools/check_copyright
+	@echo "Copyright license additions completed successfully"
