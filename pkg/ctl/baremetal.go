@@ -25,7 +25,7 @@ import (
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
 func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: request.SubComponent,
 	}

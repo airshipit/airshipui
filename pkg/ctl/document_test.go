@@ -23,7 +23,7 @@ import (
 
 func TestHandleUnknownDocumentSubComponent(t *testing.T) {
 	request := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: "fake_subcomponent",
 	}
@@ -31,7 +31,7 @@ func TestHandleUnknownDocumentSubComponent(t *testing.T) {
 	response := HandleDocumentRequest(request)
 
 	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: "fake_subcomponent",
 		Error:        "Subcomponent fake_subcomponent not found",

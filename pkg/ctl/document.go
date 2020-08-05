@@ -37,7 +37,7 @@ var (
 // HandleDocumentRequest will flop between requests so we don't have to have them all mapped as function calls
 func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: request.SubComponent,
 	}

@@ -1,45 +1,56 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { WebsocketMessage } from './models/websocket-message/websocket-message';
-import { Subject } from 'rxjs';
-import {Dashboard} from './models/websocket-message/dashboard/dashboard';
-import {Executable} from './models/websocket-message/dashboard/executable/executable';
+import { WSReceiver } from './websocket.models';
+import { ToastrService } from 'ngx-toastr';
+import 'reflect-metadata';
 
 @Injectable({
   providedIn: 'root'
 })
-export class WebsocketService {
 
-  public subject = new Subject<WebsocketMessage>();
+export class WebsocketService implements OnDestroy {
   private ws: WebSocket;
   private timeout: number;
 
+  // functionMap is how we know where to send the direct messages
+  // the structure of this map is: type -> component -> receiver
+  private functionMap = new Map<string, Map<string,WSReceiver>>();
+
+  // messageToObject unmarshalls the incoming message into a WebsocketMessage object
   private static messageToObject(incomingMessage: string): WebsocketMessage {
     let json = JSON.parse(incomingMessage);
-    let obj = new WebsocketMessage();
-    Object.assign(obj, json);
+    let wsm = new WebsocketMessage();
+    Object.assign(wsm, json);
 
-    return obj;
+    return wsm;
   }
 
-  constructor() {
+  // when the WebsocketService is created the toast message is initialized and a websocket is registered
+  constructor(private toastrService: ToastrService) {
     this.register();
   }
 
-  public sendMessage(message: WebsocketMessage): void {
+  // catch the page destroy and shut down the websocket connection normally
+  ngOnDestroy(): void {
+    this.ws.close();
+  }
+
+  // sendMessage will relay a WebsocketMessage to the go backend
+  public async sendMessage(message: WebsocketMessage): Promise<void> {
     message.timestamp = new Date().getTime();
     this.ws.send(JSON.stringify(message));
   }
 
+  // register initializes the websocket communication with the go backend
   private register(): void {
     if (this.ws !== undefined && this.ws !== null) {
       this.ws.close();
-      this.ws = null;
     }
 
     this.ws = new WebSocket('ws://localhost:8080/ws');
 
     this.ws.onmessage = (event) => {
-      this.subject.next(WebsocketService.messageToObject(event.data));
+      this.messageHandler(WebsocketService.messageToObject(event.data));
     };
 
     this.ws.onerror = (event) => {
@@ -48,8 +59,6 @@ export class WebsocketService {
 
     this.ws.onopen = () => {
       console.log('Websocket established');
-      const json = { type: 'airshipui', component: 'initialize' };
-      this.ws.send(JSON.stringify(json));
       // start up the keepalive so the websocket-message stays open
       this.keepAlive();
     };
@@ -113,14 +122,60 @@ export class WebsocketService {
     this.ws = null;
   }
 
+  // Takes the WebsocketMessage and iterates through the function map to send a directed message when it shows up
+  private async messageHandler(message: WebsocketMessage): Promise<void> {
+    switch (message.type) {
+      case 'alert': this.toastrService.warning(message.message); break; // TODO (aschiefe): improve alert handling
+      default:  if (this.functionMap.hasOwnProperty(message.type)) {
+                  if (this.functionMap[message.type].hasOwnProperty(message.component)){
+                    this.functionMap[message.type][message.component].receiver(message);
+                  } else {
+                    // special case where we want to handle all top level messages at a specific component
+                    if (this.functionMap[message.type].hasOwnProperty("any")) {
+                      this.functionMap[message.type]["any"].receiver(message);
+                    } else {
+                      this.printIfToast(message);
+                    }
+                  }
+                } else {
+                  this.toastrService.info(message.message);
+                }
+                break;
+    }
+  }
+
+  // websockets time out after 5 minutes of inactivity, this keeps the backend engaged so it doesn't time
   private keepAlive(): void {
     if (this.ws !== undefined && this.ws !== null && this.ws.readyState !== this.ws.CLOSED) {
       // clear the previously set timeout
       window.clearTimeout(this.timeout);
       window.clearInterval(this.timeout);
-      const json = { type: 'airshipui', component: 'keepalive' };
+      const json = { type: 'ui', component: 'keepalive' };
       this.ws.send(JSON.stringify(json));
       this.timeout = window.setTimeout(this.keepAlive, 60000);
+    }
+  }
+
+  // registerFunctions is a is called out of the target's constructor so it can auto populate the function map
+  public registerFunctions(target: WSReceiver): void {
+    let type = target.type;
+    let component = target.component;
+    if (this.functionMap.hasOwnProperty(type)) {
+      this.functionMap[type][component] = target;
+    } else {
+      let components = new Map<string,WSReceiver>();
+      components[component] = target;
+      this.functionMap[type] = components;
+    }
+  }
+
+  // printIfToast puts up the toast popup message on the UI
+  printIfToast(message: WebsocketMessage): void {
+    if (message.error !== undefined && message.error !== null) {
+      this.toastrService.error(message.error);
+    } else {
+      console.log(message);
+      this.toastrService.info(message.message);
     }
   }
 }

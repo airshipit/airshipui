@@ -26,7 +26,7 @@ func TestHandleDefaultBaremetalRequest(t *testing.T) {
 	utiltest.InitConfig(t)
 
 	request := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
 	}
@@ -34,7 +34,7 @@ func TestHandleDefaultBaremetalRequest(t *testing.T) {
 	response := HandleBaremetalRequest(request)
 
 	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
 	}
@@ -46,7 +46,7 @@ func TestHandleDefaultBaremetalRequest(t *testing.T) {
 
 func TestHandleUnknownBaremetalSubComponent(t *testing.T) {
 	request := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: "fake_subcomponent",
 	}
@@ -54,7 +54,7 @@ func TestHandleUnknownBaremetalSubComponent(t *testing.T) {
 	response := HandleBaremetalRequest(request)
 
 	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: "fake_subcomponent",
 		Error:        "Subcomponent fake_subcomponent not found",

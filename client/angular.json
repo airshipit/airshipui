@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "airshipui-ui": {
+    "airshipui": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/airshipui-ui",
+            "outputPath": "dist/airshipui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -64,18 +64,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "airshipui-ui:build"
+            "browserTarget": "airshipui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "airshipui-ui:build:production"
+              "browserTarget": "airshipui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "airshipui-ui:build"
+            "browserTarget": "airshipui:build"
           }
         },
         "test": {
@@ -112,15 +112,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "airshipui-ui:serve"
+            "devServerTarget": "airshipui:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "airshipui-ui:serve:production"
+              "devServerTarget": "airshipui:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "airshipui-ui"
+  "defaultProject": "airshipui"
 }

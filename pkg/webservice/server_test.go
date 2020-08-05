@@ -31,12 +31,12 @@ const (
 	serverAddr string = "localhost:8080"
 
 	// client messages
-	initialize       string = `{"type":"airshipui","component":"initialize"}`
-	keepalive        string = `{"type":"airshipui","component":"keepalive"}`
+	initialize       string = `{"type":"ui","component":"initialize"}`
+	keepalive        string = `{"type":"ui","component":"keepalive"}`
 	unknownType      string = `{"type":"fake_type","component":"initialize"}`
-	unknownComponent string = `{"type":"airshipui","component":"fake_component"}`
-	document         string = `{"type":"airshipctl","component":"document","subcomponent":"getDefaults"}`
-	baremetal        string = `{"type":"airshipctl","component":"baremetal","subcomponent":"getDefaults"}`
+	unknownComponent string = `{"type":"ui","component":"fake_component"}`
+	document         string = `{"type":"ctl","component":"document","subcomponent":"getDefaults"}`
+	baremetal        string = `{"type":"ctl","component":"baremetal","subcomponent":"getDefaults"}`
 )
 
 func init() {
@@ -54,14 +54,12 @@ func TestHandleAuth(t *testing.T) {
 	_, err = http.Get("http://localhost:8080/auth")
 	require.NoError(t, err)
 
-	var response configs.WsMessage
-	err = client.ReadJSON(&response)
+	response, err := MessageReader(client)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:      configs.AirshipUI,
+		Type:      configs.UI,
 		Component: configs.Authcomplete,
-		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
 
@@ -80,8 +78,24 @@ func NewTestClient() (*websocket.Conn, error) {
 		if err == nil {
 			return client, nil
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(250 * time.Millisecond)
 	}
 
 	return nil, err
+}
+
+func MessageReader(client *websocket.Conn) (configs.WsMessage, error) {
+	var response configs.WsMessage
+	err := client.ReadJSON(&response)
+
+	// dump the initialize message that comes immediately from the backend
+	if response.Component == configs.Initialize {
+		response = configs.WsMessage{}
+		err = client.ReadJSON(&response)
+	}
+
+	if err != nil {
+		return response, err
+	}
+	return response, err
 }

@@ -2,32 +2,21 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { DashboardsComponent } from './dashboards/dashboards.component';
-import { AirshipComponent } from './airship/airship.component';
-import { BareMetalComponent } from './airship/bare-metal/bare-metal.component';
-import { DocumentComponent } from './airship/document/document.component';
-import { DocumentOverviewComponent } from './airship/document/document-overview/document-overview.component';
-import { DocumentPullComponent } from './airship/document/document-pull/document-pull.component';
-
+import { CTLComponent } from './ctl/ctl.component';
+import { BareMetalComponent } from './ctl/baremetal/baremetal.component';
+import { DocumentComponent } from './ctl/document/document.component';
 
 const routes: Routes = [
   {
-    path: 'airship',
-    component: AirshipComponent,
+    path: 'ctl',
+    component: CTLComponent,
     children: [
       {
-        path: 'bare-metal',
+        path: 'baremetal',
         component: BareMetalComponent
       }, {
         path: 'documents',
-        component: DocumentComponent,
-        children: [
-          {
-            path: 'overview',
-            component: DocumentOverviewComponent
-          }, {
-            path: 'pull',
-            component: DocumentPullComponent
-          }]
+        component: DocumentComponent
       }]
   }, {
     path: 'dashboard',

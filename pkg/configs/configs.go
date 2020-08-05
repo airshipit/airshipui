@@ -67,9 +67,9 @@ type WsSubComponentType string
 
 // constants related to specific request/component/subcomponent types for WsRequests
 const (
-	AirshipCTL WsRequestType = "airshipctl"
-	AirshipUI  WsRequestType = "airshipui"
-	Alert      WsRequestType = "alert"
+	CTL   WsRequestType = "ctl"
+	UI    WsRequestType = "ui"
+	Alert WsRequestType = "alert"
 
 	Authcomplete WsComponentType = "authcomplete"
 	Error        WsComponentType = "danger"  // Error corresponds to a red alert message if used as an alert

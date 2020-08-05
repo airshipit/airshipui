@@ -45,7 +45,7 @@ func SendAlert(lvl configs.WsComponentType, msg string, fade bool) {
 }
 
 func sendAlertMessage(a configs.WsMessage) {
-	if err := ws.WriteJSON(a); err != nil {
+	if err := WebSocketSend(a); err != nil {
 		onError(err)
 	}
 }
