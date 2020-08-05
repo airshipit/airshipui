@@ -12,9 +12,8 @@ TOOLBINDIR    := tools/bin
 WEBDIR        := client
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
-NODEJS_BIN  := $(realpath tools)/node-v12.16.3/bin
+NODEJS_BIN    := $(realpath tools)/node-v12.16.3/bin
 NPM  		  := $(NODEJS_BIN)/npm
-NPX  		  := $(NODEJS_BIN)/npx
 NG  		  := $(NODEJS_BIN)/ng
 
 # docker
@@ -67,7 +66,7 @@ DIRS = internal
 RECURSIVE_DIRS = $(addprefix ./, $(addsuffix /..., $(DIRS)))
 
 .PHONY: build
-build: $(NPX) $(MAIN)
+build: $(NPM) $(MAIN)
 $(MAIN): FORCE
 	@mkdir -p $(BUILD_DIR)
 	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
@@ -77,10 +76,9 @@ $(MAIN): FORCE
 FORCE:
 
 .PHONY: examples
-examples: $(EXAMPLES)
+examples: $(NPM) $(EXAMPLES)
 $(EXAMPLES): FORCE
 	@mkdir -p $(BUILD_DIR)
-	./tools/install_npm
 	cd $(WEBDIR) && npm install && cd ..
 	cd $(WEBDIR) && ng build && cd ..
 	go build -o $@$(EXTENSION) $(GO_FLAGS) examples/$(@F)/main.go
@@ -89,12 +87,6 @@ $(EXAMPLES): FORCE
 install-octant-plugins:
 	@mkdir -p $(OCTANT_PLUGINSTUB_DIR)
 	cp $(addsuffix $(EXTENSION), $(BUILD_DIR)/octant) $(OCTANT_PLUGINSTUB_DIR)
-
-
-.PHONY: install-npm-modules
-install-npm-modules: $(NPX)
-	cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NPM) install) && cd ..
-
 
 .PHONY: test
 test: lint
@@ -174,7 +166,7 @@ docs:
 .PHONY: env
 
 .PHONY: lint
-lint: tidy $(LINTER)
+lint: tidy $(NPM) $(LINTER)
 	@echo "Performing linting steps..."
 	@echo "Running whitespace linting step..."
 	@./tools/whitespace_linter
@@ -197,7 +189,7 @@ $(LINTER):
 	@mkdir -p $(TOOLBINDIR)
 	./tools/install_go_linter
 
-$(NPX):
+$(NPM):
 	@mkdir -p $(TOOLBINDIR)
 	./tools/install_npm
 

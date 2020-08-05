@@ -28,7 +28,7 @@ func TestSendAlert(t *testing.T) {
 	defer client.Close()
 
 	// construct and send alert from server to client
-	SendAlert(configs.Error, "Test Alert", true)
+	SendAlert(configs.Error, "Test Alert")
 
 	var response configs.WsMessage
 	err = client.ReadJSON(&response)
@@ -38,7 +38,6 @@ func TestSendAlert(t *testing.T) {
 		Type:      configs.Alert,
 		Component: configs.Error,
 		Message:   "Test Alert",
-		Fade:      true,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -58,7 +57,7 @@ func TestSendAlertNoWebSocket(t *testing.T) {
 	// queue should be empty
 	Alerts = nil
 
-	SendAlert(configs.Info, "Test Alert", true)
+	SendAlert(configs.Info, "Test Alert")
 
 	// ws is nil, so the queue should now have 1 Alert
 	assert.Len(t, Alerts, 1)
@@ -67,7 +66,6 @@ func TestSendAlertNoWebSocket(t *testing.T) {
 		Type:      configs.Alert,
 		Component: configs.Info,
 		Message:   "Test Alert",
-		Fade:      true,
 		// don't fail on timestamp diff
 		Timestamp: Alerts[0].Timestamp,
 	}

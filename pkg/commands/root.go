@@ -77,7 +77,7 @@ func launch(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		log.Printf("config %s", err)
-		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err), true)
+		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err))
 	}
 
 	// start webservice and listen for the the ctl + c to exit

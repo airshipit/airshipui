@@ -88,7 +88,6 @@ func RunBinaryWithOptions(ctx context.Context, cmd string, args []string, wg *sy
 		webservice.SendAlert(
 			configs.Error,
 			fmt.Sprintf("Plugin '%s' failed to start: %v", cmd, err),
-			true,
 		)
 	}
 }

@@ -28,12 +28,11 @@ var Alerts []configs.WsMessage
 // SendAlert tests for the existence of an established websocket
 // and either sends the message over the websocket, or adds it
 // to the Alerts queue to be sent later
-func SendAlert(lvl configs.WsComponentType, msg string, fade bool) {
+func SendAlert(lvl configs.WsComponentType, msg string) {
 	alert := configs.WsMessage{
 		Type:      configs.Alert,
 		Component: lvl,
 		Message:   msg,
-		Fade:      fade,
 		Timestamp: time.Now().UnixNano() / 1000000,
 	}
 

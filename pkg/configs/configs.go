@@ -106,8 +106,6 @@ type WsMessage struct {
 
 	// additional conditional components that may or may not be involved in the request / response
 	Error           string      `json:"error,omitempty"`
-	Fade            bool        `json:"fade,omitempty"`
-	HTML            string      `json:"html,omitempty"`
 	IsAuthenticated bool        `json:"isAuthenticated,omitempty"`
 	Message         string      `json:"message,omitempty"`
 	Data            interface{} `json:"data,omitempty"`

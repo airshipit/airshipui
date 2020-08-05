@@ -34,8 +34,6 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	var message string
 	subComponent := request.SubComponent
 	switch subComponent {
-	case configs.GetDefaults:
-		response.HTML, err = GetBaremetalHTML()
 	case configs.GenerateISO:
 		// since this is long running cache it up
 		runningRequests[subComponent] = true
@@ -63,20 +61,4 @@ func (c *Client) generateIso() (string, error) {
 	}
 
 	return message, err
-}
-
-// GetBaremetalHTML will return the templated baremetal pagelet html
-func GetBaremetalHTML() (string, error) {
-	p := ctlPage{
-		Title:      "Baremetal",
-		Version:    getAirshipCTLVersion(),
-		ButtonText: "Generate ISO",
-	}
-
-	if _, ok := runningRequests[configs.GenerateISO]; ok {
-		p.Disabled = "disabled"
-		p.ButtonText = "In Progress"
-	}
-
-	return getHTML("/templates/baremetal.html", p)
 }
