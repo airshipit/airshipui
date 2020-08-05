@@ -16,8 +16,8 @@ export class WebsocketService {
   private static messageToObject(incomingMessage: string): WebsocketMessage {
     let json = JSON.parse(incomingMessage);
     let obj = new WebsocketMessage();
-
     Object.assign(obj, json);
+
     return obj;
   }
 

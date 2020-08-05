@@ -19,32 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"opendev.org/airship/airshipui/pkg/configs"
-	"opendev.org/airship/airshipui/util/utiltest"
 )
-
-func TestHandleDefaultDocumentRequest(t *testing.T) {
-	utiltest.InitConfig(t)
-
-	request := configs.WsMessage{
-		Type:         configs.AirshipCTL,
-		Component:    configs.Document,
-		SubComponent: configs.GetDefaults,
-	}
-
-	response := HandleDocumentRequest(request)
-
-	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
-		Component:    configs.Document,
-		SubComponent: configs.GetDefaults,
-		Data:         getGraphData(),
-	}
-
-	assert.Equal(t, expected.Type, response.Type)
-	assert.Equal(t, expected.Component, response.Component)
-	assert.Equal(t, expected.SubComponent, response.SubComponent)
-	assert.Equal(t, expected.Data, response.Data)
-}
 
 func TestHandleUnknownDocumentSubComponent(t *testing.T) {
 	request := configs.WsMessage{

@@ -19,9 +19,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
+	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipui/pkg/configs"
+)
+
+const (
+	targetPath = "workspace/airshipctl/manifests/site/test-site"
+)
+
+var (
+	index map[string]interface{}
 )
 
 // HandleDocumentRequest will flop between requests so we don't have to have them all mapped as function calls
@@ -36,15 +46,22 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	var message string
 	switch request.SubComponent {
 	case configs.GetDefaults:
-		response.Data = getGraphData()
+		message = request.Message
+		response.Data, err = MakeSourceTree()
 	case configs.DocPull:
 		message, err = c.docPull()
-	case configs.Yaml:
-		message = request.Message
-		response.YAML, err = getYaml(message)
 	case configs.YamlWrite:
 		message = request.Message
-		response.YAML, err = writeYaml(message, request.YAML)
+		response.Name, response.YAML, err = writeYamlFile(message, request.YAML)
+	case configs.GetYaml:
+		message = request.Message
+		response.Name, response.YAML, err = getYaml(message)
+	case configs.GetSource:
+		message = request.Message
+		response.Data, err = MakeSourceTree()
+	case configs.GetRendered:
+		message = request.Message
+		response.Data, err = MakeRenderedTree()
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -58,62 +75,66 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
-// network graphs have nodes and edges defined, just attempting to put some dynamically defined data in it
-func getGraphData() map[string]interface{} {
-	return map[string]interface{}{
-		"nodes": []map[string]string{
-			{"id": "1", "label": ".airshipui"},
-			{"id": "2", "label": c.settings.KubeConfigPath},
-			{"id": "3", "label": c.settings.AirshipConfigPath},
-		},
-		"edges": []map[string]int64{
-			{"from": 1, "to": 2},
-			{"from": 1, "to": 3},
-		},
+func getYaml(id string) (string, string, error) {
+	obj := index[id]
+	switch t := obj.(type) {
+	case string:
+		return getFileYaml(t)
+	case document.Document:
+		return getDocumentYaml(t)
+	default:
+		return "", "", fmt.Errorf("ID %s not found in index", id)
 	}
 }
 
-// getYaml reads the requested file and returns base64 encoded yaml for the front end to render
-func getYaml(yamlType string) (string, error) {
-	yamlFile, err := os.Open(getYamlFile(yamlType))
+func getDocumentYaml(doc document.Document) (string, string, error) {
+	title := doc.GetName()
+	bytes, err := doc.AsYAML()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	defer yamlFile.Close()
-
-	// TODO: determine if this needs to be parsed as YAML as a validation effort
-	bytes, err := ioutil.ReadAll(yamlFile)
-	return base64.StdEncoding.EncodeToString(bytes), err
+	return title, base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-// a way to do a sanity check on the yaml passed from the frontend
-func writeYaml(yamlType string, yaml64 string) (string, error) {
-	// base64 decode
+func getFileYaml(path string) (string, string, error) {
+	title, err := filepath.Rel(manifestsDir, path)
+	if err != nil {
+		return "", "", err
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return "", "", err
+	}
+
+	defer file.Close()
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", "", err
+	}
+
+	return title, base64.StdEncoding.EncodeToString(bytes), nil
+}
+
+func writeYamlFile(id, yaml64 string) (string, string, error) {
+	path, ok := index[id].(string)
+	if !ok {
+		return "", "", fmt.Errorf("ID %s not found", id)
+	}
+
 	yaml, err := base64.StdEncoding.DecodeString(yaml64)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	// TODO: determine if we need to backup the existing before overwrite
-	err = ioutil.WriteFile(getYamlFile(yamlType), yaml, 0600)
+	err = ioutil.WriteFile(path, yaml, 0600)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return getYaml(yamlType)
-}
-
-func getYamlFile(yamlType string) string {
-	var fileName string
-	switch yamlType {
-	case "kube":
-		fileName = c.settings.KubeConfigPath
-	case "airship":
-		fileName = c.settings.AirshipConfigPath
-	}
-
-	return fileName
+	return getFileYaml(path)
 }
 
 func (c *Client) docPull() (string, error) {

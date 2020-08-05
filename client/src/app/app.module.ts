@@ -27,7 +27,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { WebsocketService } from '../services/websocket/websocket.service';
 import { ToastrModule } from 'ngx-toastr';
 import {FormsModule} from '@angular/forms';
-
+import {MonacoEditorModule, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
+import {MatTreeModule} from '@angular/material/tree';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 @NgModule({
   declarations: [
@@ -57,7 +59,10 @@ import {FormsModule} from '@angular/forms';
     HttpClientModule,
     RouterModule,
     MatTabsModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    MonacoEditorModule.forRoot(),
+    MatTreeModule,
+    MatButtonToggleModule,
   ],
   providers: [WebsocketService],
   bootstrap: [AppComponent]

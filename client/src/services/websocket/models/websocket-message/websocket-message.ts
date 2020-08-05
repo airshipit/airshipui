@@ -9,6 +9,7 @@ export class WebsocketMessage {
   error: string;
   fade: boolean;
   html: string;
+  name: string;
   isAuthenticated: boolean;
   message: string;
   data: JSON;

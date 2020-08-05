@@ -27,8 +27,8 @@ import (
 
 // TODO: Determine if this should be broken out into it's own file
 const (
-	testKubeConfig    string = "../../../internal/configs/testdata/kubeconfig.yaml"
-	testAirshipConfig string = "../../../internal/configs/testdata/config.yaml"
+	testKubeConfig    string = "../../pkg/configs/testdata/kubeconfig.yaml"
+	testAirshipConfig string = "../../pkg/configs/testdata/config.yaml"
 )
 
 // TempDir creates a new temporary directory in the system's temporary file
