@@ -6,7 +6,7 @@ import {RouterModule} from '@angular/router';
 import {HttpClientModule} from '@angular/common/http';
 import {WebsocketService} from '../services/websocket/websocket.service';
 import {ToastrModule} from 'ngx-toastr';
-import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {MonacoEditorModule, NgxMonacoEditorConfig} from 'ngx-monaco-editor';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatIconModule} from '@angular/material/icon';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -17,13 +17,14 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatButtonModule} from '@angular/material/button';
 import {MatTabsModule} from '@angular/material/tabs';
 import {CtlModule} from './ctl/ctl.module';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import monacoConfig from './monaco-config';
+
 
 @NgModule({
   imports: [
     AppRoutingModule,
-
     CtlModule,
-
     BrowserModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
@@ -33,11 +34,12 @@ import {CtlModule} from './ctl/ctl.module';
     MatIconModule,
     MatExpansionModule,
     MatListModule,
+    MatProgressBarModule,
     MatToolbarModule,
     RouterModule,
     MatTabsModule,
     ToastrModule.forRoot(),
-    MonacoEditorModule.forRoot(),
+    MonacoEditorModule.forRoot(monacoConfig),
   ],
   declarations: [AppComponent],
   providers: [WebsocketService],

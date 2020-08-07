@@ -1,53 +1,78 @@
 <mat-tab-group>
-  <mat-tab label="Document Overview">
-    <div id="DocContainer">
-      <div id="SourceTab" class="tabcontent">
-        <div id="ViewType">
-          <mat-button-toggle-group name="viewSelector" aria-label="View Selector">
-            <mat-button-toggle value="source" (click)="getSource()" checked="true">Source</mat-button-toggle>
-            <mat-button-toggle value="rendered" (click)="getRendered()">Rendered</mat-button-toggle>
-          </mat-button-toggle-group>
-        </div>
-        <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="kustom-tree">
-          <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-            <li class="mat-tree-node">
-              <button mat-icon-button disabled></button>
-              <button (click)="getYaml(node.id)">{{node.name}}</button>
-            </li>
-          </mat-tree-node>
-          <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
-            <li>
-              <div class="mat-tree-node">
-                <button mat-icon-button matTreeNodeToggle
-                        [attr.aria-label]="'toggle ' + node.name">
-                  <mat-icon class="mat-icon-rtl-mirror">
-                    {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-                  </mat-icon>
-                </button>
-                {{node.name}}
-              </div>
-              <ul [class.kustom-tree-invisible]="!treeControl.isExpanded(node)">
-                <ng-container matTreeNodeOutlet></ng-container>
-              </ul>
-            </li>
-          </mat-nested-tree-node>
-        </mat-tree>
-        </div>
-      <div id="EditorDiv" class="tabcontent">
-        <div id="EditorHeader">
-          <div id="EditorTitle"><h5 id="doc-name">{{editorTitle}}</h5></div>
-          <div *ngIf="!hideButtons" id="EditorButtons">
-            <button type="button" class="editor-btn" id="SaveYamlBtn" (click)="saveYaml()" [disabled]="saveBtnDisabled">Save</button>
-            <button type="button" class="editor-btn" (click)="closeEditor()">Close</button>
+  <mat-tab label="Phase Explorer">
+    <div class="explorer-container">
+      <mat-card class="phase-tree-card">
+        <mat-card-header>
+          <mat-card-title>Phases</mat-card-title>
+          <mat-card-subtitle>Target: {{targetPath}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+        <mat-card-content class="phase-card-content">
+          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="phase-tree">
+            <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+              <li class="mat-tree-node">
+                <div class="mat-tree-node">
+                  <div *ngIf="!node.isPhaseNode">
+                    <button class="get-yaml-btn" mat-icon-button (click)="!node.isPhaseNode && getYaml(node.id)">
+                      <mat-icon class="grey-icon" svgIcon="doc"></mat-icon> {{node.name}}
+                    </button>
+                  </div>
+                  <div *ngIf="node.isPhaseNode && node.hasError" class="phase-error">
+                    <button mat-icon-button>
+                      <mat-icon *ngIf="node.isPhaseNode && node.hasError" class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
+                    </button>
+                  </div>
+                </div>
+              </li>
+            </mat-tree-node>
+            <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+              <li>
+                <div class="mat-tree-node">
+                  <button class="phase-tree-toggle" mat-button matTreeNodeToggle
+                          [attr.aria-label]="'toggle ' + node.name">
+                    <mat-icon class="mat-icon-rtl-mirror">
+                      {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                    </mat-icon>{{node.name}}
+                  </button>
+                  <button *ngIf="node.isPhaseNode && !node.hasError" class="doc-btn" mat-icon-button (click)="viewPhaseDocs(node.id)"
+                      matTooltip="View rendered documents"
+                      matTooltipPosition="above"
+                      matTooltipShowDelay="1000"
+                      matTooltipHideDelay="500">
+                    <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                  </button>
+                </div>
+                <ul class="nested-ul" [class.phase-tree-invisible]="!treeControl.isExpanded(node)">
+                  <ng-container matTreeNodeOutlet></ng-container>
+                </ul>
+              </li>
+            </mat-nested-tree-node>
+          </mat-tree>
+        </mat-card-content>
+      </mat-card>
+    <!-- EDITOR -->
+      <mat-card *ngIf="showEditor" class="editor-card">
+        <mat-card-header>
+          <mat-card-title>{{editorTitle}}</mat-card-title>
+          <mat-card-subtitle>{{editorSubtitle}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="editor-card-content">
+          <ngx-monaco-editor *ngIf="code !== undefined && code !== null" [options]="editorOptions" [(ngModel)]="code" (onInit)="onInit($event)"></ngx-monaco-editor>
+        </mat-card-content>
+        <mat-card-actions>
+          <div class="editor-button-grp">
+            <div class="editor-btns">
+              <button class="editor-btn" mat-raised-button color="primary" id="SaveYamlBtn" (click)="saveYaml()" [disabled]="saveBtnDisabled">Save</button>
+              <button class="editor-btn" mat-raised-button (click)="closeEditor()">Close</button>
+            </div>
           </div>
-        </div>
-        <ngx-monaco-editor *ngIf="code !== undefined && code !== null" [options]="editorOptions" [(ngModel)]="code" (onInit)="onInit($event)"></ngx-monaco-editor>
-      </div>
+        </mat-card-actions>
+      </mat-card>
     </div>
   </mat-tab>
   <mat-tab label="Document Pull">
     <br>
-    <button type="button" class="btn btn-info" id="DocPullBtn" (click)="documentPull()" style="width: 150px;">Document Pull</button>
-    <p>Response to Pull: {{obby}}</p>
+      <button type="button" class="btn btn-info" id="DocPullBtn" (click)="documentPull()" style="width: 150px;">Document Pull</button>
+    <p>Response to Pull: {{statusMsg}}</p>
   </mat-tab>
 </mat-tab-group>

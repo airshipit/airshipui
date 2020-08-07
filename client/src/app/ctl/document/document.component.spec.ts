@@ -9,6 +9,9 @@ import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
 import {ToastrModule} from 'ngx-toastr';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatCardModule} from '@angular/material/card';
+import {MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 describe('DocumentComponent', () => {
   let component: DocumentComponent;
@@ -25,7 +28,10 @@ describe('DocumentComponent', () => {
         MatIconModule,
         MonacoEditorModule,
         FormsModule,
-        ToastrModule.forRoot()
+        ToastrModule.forRoot(),
+        MatCardModule,
+        MatProgressBarModule,
+        MatTooltipModule,
       ],
       declarations: [DocumentComponent]
     })

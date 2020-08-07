@@ -6,7 +6,7 @@ import {BaremetalComponent} from './baremetal/baremetal.component';
 const routes: Routes = [{
     path: 'documents',
     component: DocumentComponent,
-}, {
+  }, {
     path: 'baremetal',
     component: BaremetalComponent
 }];

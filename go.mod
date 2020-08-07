@@ -15,4 +15,7 @@ require (
 	sigs.k8s.io/kustomize/api v0.5.1
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+replace (
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
+	k8s.io/kubectl => k8s.io/kubectl v0.0.0-20191219154910-1528d4eea6dd
+)

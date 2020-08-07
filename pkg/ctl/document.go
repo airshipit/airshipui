@@ -26,10 +26,6 @@ import (
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
-const (
-	targetPath = "workspace/airshipctl/manifests/site/test-site"
-)
-
 var (
 	index map[string]interface{}
 )
@@ -44,24 +40,27 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 
 	var err error
 	var message string
+	var id string
 	switch request.SubComponent {
-	case configs.GetDefaults:
-		message = request.Message
-		response.Data, err = MakeSourceTree()
 	case configs.DocPull:
 		message, err = c.docPull()
 	case configs.YamlWrite:
-		message = request.Message
-		response.Name, response.YAML, err = writeYamlFile(message, request.YAML)
+		id = request.ID
+		response.Name, response.YAML, err = writeYamlFile(id, request.YAML)
+		message = fmt.Sprintf("File '%s' saved successfully", response.Name)
 	case configs.GetYaml:
-		message = request.Message
-		response.Name, response.YAML, err = getYaml(message)
-	case configs.GetSource:
-		message = request.Message
-		response.Data, err = MakeSourceTree()
-	case configs.GetRendered:
-		message = request.Message
-		response.Data, err = MakeRenderedTree()
+		id = request.ID
+		response.Name, response.YAML, err = getYaml(id)
+	case configs.GetPhaseTree:
+		response.Data, err = GetPhaseTree()
+	case configs.GetPhaseDocuments:
+		id = request.ID
+		response.Data, err = GetPhaseDocuments(request.ID)
+	case configs.GetPhaseSourceFiles:
+		id = request.ID
+		response.Data, err = GetPhaseSourceFiles(request.ID)
+	case configs.GetTarget:
+		message = getTarget()
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -70,9 +69,19 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 		response.Error = err.Error()
 	} else {
 		response.Message = message
+		response.ID = id
 	}
 
 	return response
+}
+
+func getTarget() string {
+	m, err := c.settings.Config.CurrentContextManifest()
+	if err != nil {
+		return "unknown"
+	}
+
+	return filepath.Join(m.TargetPath, m.SubPath)
 }
 
 func getYaml(id string) (string, string, error) {
@@ -98,6 +107,18 @@ func getDocumentYaml(doc document.Document) (string, string, error) {
 }
 
 func getFileYaml(path string) (string, string, error) {
+	ccm, err := c.settings.Config.CurrentContextManifest()
+	if err != nil {
+		return "", "", err
+	}
+
+	sitePath := filepath.Join(ccm.TargetPath, ccm.SubPath)
+
+	// this path is making the assumption that the subPath
+	// in airship config is going to be pointing to a site
+	// in airshipctl/manifests/site/{SITENAME}
+	manifestsDir := filepath.Join(sitePath, "..", "..")
+
 	title, err := filepath.Rel(manifestsDir, path)
 	if err != nil {
 		return "", "", err

@@ -17,119 +17,153 @@ package ctl
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/google/uuid"
 	"opendev.org/airship/airshipctl/pkg/document"
+	"opendev.org/airship/airshipctl/pkg/phase"
+	"opendev.org/airship/airshipui/pkg/log"
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-var (
-	// TODO: retrieve this dynamically from airship config
-	manifestsDir = "/home/ubuntu/workspace/airshipctl/manifests"
-)
+var phaseIndex map[string]PhaseObj = buildPhaseIndex()
 
-// recursively collect all kustomization.yaml files starting from
-// targetDir
-// TODO: this will almost certainly go away when we use phase plans
-func collectKustomizations(targetDir string) ([]string, error) {
-	var kustomizations []string
-	pattern := "kustomization.yaml"
+// PhaseObj lightweight structure to hold the name and document
+// entrypoint for airshipctl phases
+type PhaseObj struct {
+	Group      string
+	Name       string
+	Entrypoint string
+}
 
-	var walkFunc filepath.WalkFunc = func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// only interested in files
-		if info.IsDir() {
-			return nil
-		}
-		if match, err := filepath.Match(pattern, filepath.Base(path)); err != nil {
-			return err
-		} else if match {
-			kustomizations = append(kustomizations, path)
-		}
+func buildPhaseIndex() map[string]PhaseObj {
+	idx := map[string]PhaseObj{}
+
+	// get target path from ctl settings
+	tp, err := c.settings.Config.CurrentContextTargetPath()
+	if err != nil {
+		log.Errorf("Error building phase index: %s", err)
 		return nil
 	}
 
-	err := filepath.Walk(targetDir, walkFunc)
+	cmd := phase.Cmd{AirshipCTLSettings: c.settings}
+
+	plan, err := cmd.Plan()
 	if err != nil {
-		return nil, err
+		log.Errorf("Error building phase index: %s", err)
+		return nil
 	}
 
-	return kustomizations, nil
+	for grp, phases := range plan {
+		for _, phase := range phases {
+			p, err := cmd.GetPhase(phase)
+			if err != nil {
+				log.Errorf("Error building phase index: %s", err)
+				return nil
+			}
+
+			entrypoint := fmt.Sprintf("%s/kustomization.yaml",
+				filepath.Join(tp, p.Config.DocumentEntryPoint))
+
+			idx[uuid.New().String()] = PhaseObj{
+				Group:      grp,
+				Name:       phase,
+				Entrypoint: entrypoint,
+			}
+		}
+	}
+	return idx
 }
 
-func MakeRenderedTree() ([]KustomNode, error) {
-	index = map[string]interface{}{}
+// GetPhaseTree builds the initial structure of the phase tree
+// consisting of phase Groups and Phases. Individual phase source
+// files or rendered documents will be lazy loaded as needed
+func GetPhaseTree() ([]KustomNode, error) {
+	nodes := []KustomNode{}
 
-	bundles := []KustomNode{}
+	grpMap := map[string][]KustomNode{}
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
+	if phaseIndex != nil {
+		for id, po := range phaseIndex {
+			pNode := KustomNode{
+				ID:          id,
+				Name:        fmt.Sprintf("Phase: %s", po.Name),
+				IsPhaseNode: true,
+			}
 
-	kusts, err := collectKustomizations(filepath.Join(home, targetPath))
-	if err != nil {
-		return nil, err
-	}
+			children, err := GetPhaseSourceFiles(id)
+			if err != nil {
+				// TODO(mfuller): push an error to UI so it can be handled by
+				// toastr service, pending refactor of webservice and configs pkgs
+				log.Errorf("Error building tree for phase '%s': %s", po.Name, err)
+				pNode.HasError = true
+			} else {
+				pNode.Children = children
+			}
 
-	for i, k := range kusts {
-		kn := KustomNode{
-			ID:       uuid.New().String(),
-			Name:     fmt.Sprintf("Phase %d", i),
-			Data:     k,
-			Children: []KustomNode{},
+			grpMap[po.Group] = append(grpMap[po.Group], pNode)
 		}
 
+		for name, phases := range grpMap {
+			gNode := KustomNode{
+				ID:       uuid.New().String(),
+				Name:     fmt.Sprintf("Group: %s", name),
+				Children: phases,
+			}
+			nodes = append(nodes, gNode)
+		}
+	}
+	return nodes, nil
+}
+
+// GetPhaseDocuments returns a slice of KustomNodes representing
+// all of the rendered documents making up a phase bundle.
+// Ordering is k8s Namespace -> k8s Kind -> document name
+func GetPhaseDocuments(id string) ([]KustomNode, error) {
+	if index == nil {
+		index = map[string]interface{}{}
+	}
+	nsNodes := []KustomNode{}
+
+	if p, ok := phaseIndex[id]; ok {
 		// get map of all docs associated with this bundle
-		docs, err := sortDocuments(k)
+		docs, err := sortDocuments(p.Entrypoint)
 		if err != nil {
 			return nil, err
 		}
-
+		// namespace node
 		for ns, kinds := range docs {
 			nsNode := KustomNode{
 				ID:       uuid.New().String(),
 				Name:     ns,
-				Data:     "",
 				Children: []KustomNode{},
 			}
-
+			// kind node
 			for kind, docs := range kinds {
 				kNode := KustomNode{
 					ID:       uuid.New().String(),
 					Name:     kind,
-					Data:     "",
 					Children: []KustomNode{},
 				}
-
+				// doc node
 				for _, d := range docs {
 					id := uuid.New().String()
 					dNode := KustomNode{
 						ID:   id,
 						Name: d.GetName(),
 					}
-
 					index[id] = d
-
 					kNode.Children = append(kNode.Children, dNode)
 				}
-
 				nsNode.Children = append(nsNode.Children, kNode)
 			}
-
-			kn.Children = append(kn.Children, nsNode)
+			nsNodes = append(nsNodes, nsNode)
 		}
-
-		bundles = append(bundles, kn)
 	}
-
-	return bundles, nil
+	return nsNodes, nil
 }
 
 // sort a bundle's docs into namespace, kind
@@ -163,79 +197,77 @@ func sortDocuments(path string) (map[string]map[string][]document.Document, erro
 	return docMap, nil
 }
 
-func MakeSourceTree() ([]KustomNode, error) {
-	index = map[string]interface{}{}
-
-	bundles := []KustomNode{}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+// GetPhaseSourceFiles returns a slice of KustomNodes representing
+// all of the directories that will be traversed when kustomize
+// builds the document bundle. The tree hierarchy is:
+// kustomize "type" (like function) -> directory name -> file name
+func GetPhaseSourceFiles(id string) ([]KustomNode, error) {
+	if index == nil {
+		index = map[string]interface{}{}
 	}
+	dirNodes := []KustomNode{}
 
-	kusts, err := collectKustomizations(filepath.Join(home, targetPath))
-	if err != nil {
-		return nil, err
-	}
-
-	for i, k := range kusts {
-		kn := KustomNode{
-			ID:       uuid.New().String(),
-			Name:     fmt.Sprintf("Phase %d", i),
-			Data:     k,
-			Children: []KustomNode{},
-		}
-
-		dirs, err := getKustomizeDirs(k)
+	if p, ok := phaseIndex[id]; ok {
+		dirs, err := getKustomizeDirs(p.Entrypoint)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, d := range dirs {
-			name, err := filepath.Rel(manifestsDir, d)
-			if err != nil {
-				name = d
-			}
-
-			n := KustomNode{
-				ID:       uuid.New().String(),
-				Name:     name,
-				Data:     d,
-				Children: []KustomNode{},
-			}
-
-			files, err := ioutil.ReadDir(d)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, f := range files {
-				if !f.IsDir() {
-					id := uuid.New().String()
-					path := filepath.Join(d, f.Name())
-					n.Children = append(n.Children,
-						KustomNode{
-							ID:   id,
-							Name: f.Name(),
-							Data: path,
-						})
-					index[id] = path
-				}
-			}
-
-			kn.Children = append(kn.Children, n)
+		dm, err := createDirsMap(dirs)
+		if err != nil {
+			return nil, err
 		}
-		bundles = append(bundles, kn)
-	}
 
-	return bundles, nil
+		// kustomize "type" node
+		for t, data := range dm {
+			tNode := KustomNode{
+				ID:   uuid.New().String(),
+				Name: t,
+			}
+
+			// directory node
+			for _, d := range data {
+				name := d[0]
+				abs := d[1]
+				dNode := KustomNode{
+					ID:       uuid.New().String(),
+					Name:     name,
+					Children: []KustomNode{},
+				}
+
+				files, err := ioutil.ReadDir(abs)
+				if err != nil {
+					return nil, err
+				}
+				// file (leaf) node
+				for _, f := range files {
+					if !f.IsDir() {
+						id := uuid.New().String()
+						path := filepath.Join(abs, f.Name())
+						dNode.Children = append(dNode.Children,
+							KustomNode{
+								ID:   id,
+								Name: f.Name(),
+							})
+						index[id] = path
+					}
+				}
+				tNode.Children = append(tNode.Children, dNode)
+			}
+			dirNodes = append(dirNodes, tNode)
+		}
+	}
+	return dirNodes, nil
 }
 
+// KustomNode structure to represent the kustomization tree for a given phase
+// bundle to be consumed by the UI frontend
 type KustomNode struct {
-	ID       string       `json:"id"`   // UUID, maybe not necessary; mainly for UI
-	Name     string       `json:"name"` // name used for display purposes (cli, ui)
-	Data     string       `json:"data"` // this could be a Kustomization object, or a string containing a file path
-	Children []KustomNode `json:"children"`
+	ID          string       `json:"id"`   // UUID for backend node index
+	Name        string       `json:"name"` // name used for display purposes (cli, ui)
+	IsPhaseNode bool         `json:"isPhaseNode"`
+	HasError    bool         `json:"hasError"`
+	Children    []KustomNode `json:"children"`
 }
 
 func contains(dirs []string, val string) bool {
@@ -272,7 +304,7 @@ func getKustomizeDirs(entrypoint string) ([]string, error) {
 		for _, s := range sources {
 			fi, err := os.Stat(s)
 			if err != nil {
-				log.Println(err)
+				log.Errorf("Error following kustomize tree: %s", err)
 				continue
 			}
 			if os.FileInfo.IsDir(fi) {
@@ -293,10 +325,64 @@ func getKustomizeDirs(entrypoint string) ([]string, error) {
 	return dirs, nil
 }
 
+// helper function to group kustomize dirs by type (i.e. function, composite, etc)
+func createDirsMap(dirs []string) (map[string][][]string, error) {
+	dm := map[string][][]string{}
+
+	tp, err := c.settings.Config.CurrentContextTargetPath()
+	if err != nil {
+		return nil, err
+	}
+
+	manifestsDir := filepath.Join(tp, "manifests")
+
+	for _, d := range dirs {
+		rel, err := filepath.Rel(manifestsDir, d)
+		if err != nil {
+			return nil, err
+		}
+		split := strings.SplitN(rel, string(os.PathSeparator), 2)
+		dm[split[0]] = append(dm[split[0]], []string{split[1], d})
+	}
+
+	return dm, nil
+}
+
+func kustomLoader(kfile string) ([]byte, error) {
+	bytes, err := ioutil.ReadFile(kfile)
+	if err != nil {
+		// annoyingly, the actual kustomization file may be nested one
+		// layer deeper than what's specified in its parent's kustomization
+		// file. For example,
+		//
+		// resources:
+		// - function/capm3
+		//
+		// may actually refer to function/capm3/v0.3.1/kustomization.yaml,
+		// so we'll try drilling down one more level to find it
+		dir := filepath.Dir(kfile)
+		contents, err := ioutil.ReadDir(dir)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(contents) == 0 || len(contents) > 1 || !os.FileInfo.IsDir(contents[0]) {
+			return nil, fmt.Errorf("no kustomization file found at %s", dir)
+		}
+
+		kfile = filepath.Join(dir, contents[0].Name(), "kustomization.yaml")
+		bytes, err = ioutil.ReadFile(kfile)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return bytes, nil
+}
+
 func makeResMap(kfile string) (map[string][]string, error) {
 	resMap := map[string][]string{}
 
-	bytes, err := ioutil.ReadFile(kfile)
+	bytes, err := kustomLoader(kfile)
 	if err != nil {
 		return nil, err
 	}
