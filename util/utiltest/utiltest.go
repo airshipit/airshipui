@@ -84,45 +84,20 @@ func InitConfig(t *testing.T) (conf *config.Config, configPath string,
 
 // DummyDashboardConfig returns a populated Dashboard struct
 func DummyDashboardConfig() configs.Dashboard {
-	e := DummyExecutableConfig()
 	return configs.Dashboard{
-		Name:       "dummy_dashboard",
-		BaseURL:    "http://dummyhost",
-		Path:       "fake/login/path",
-		Executable: e,
+		Name:    "dummy_dashboard",
+		BaseURL: "http://dummyhost",
+		Path:    "fake/login/path",
 	}
 }
 
 // DummyDashboardsConfig returns an array of populated Dashboard structs
 func DummyDashboardsConfig() []configs.Dashboard {
-	e := DummyExecutableConfig()
 	return []configs.Dashboard{
 		{
-			Name:       "dummy_dashboard",
-			BaseURL:    "http://dummyhost",
-			Path:       "fake/login/path",
-			Executable: e,
-		},
-		{
-			Name:       "dummy_plugin_no_dash",
-			Executable: e,
-		},
-		{
-			Name:    "dummy_dashboard_no_exe",
+			Name:    "dummy_dashboard",
 			BaseURL: "http://dummyhost",
 			Path:    "fake/login/path",
-		},
-	}
-}
-
-// DummyExecutableConfig returns a populated Executable struct
-func DummyExecutableConfig() *configs.Executable {
-	return &configs.Executable{
-		AutoStart: true,
-		Filepath:  "/fake/path/to/executable",
-		Args: []string{
-			"--fakeflag",
-			"fakevalue",
 		},
 	}
 }

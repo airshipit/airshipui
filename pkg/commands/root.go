@@ -15,13 +15,10 @@
 package commands
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"sync"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -51,33 +48,9 @@ func launch(cmd *cobra.Command, args []string) {
 		log.Printf("Error setting config path %s", err)
 	}
 
-	sigs := make(chan os.Signal)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	waitgrp := sync.WaitGroup{}
-
 	// Read AirshipUI config file
-	if err := configs.SetUIConfig(airshipUIConfigPath); err == nil {
-		// launch any plugins marked as autoStart: true in airshipui.json
-		for _, dashboard := range configs.UIConfig.Dashboards {
-			if dashboard.Executable != nil {
-				if dashboard.Executable.AutoStart {
-					waitgrp.Add(1)
-					go RunBinaryWithOptions(
-						ctx,
-						dashboard.Executable.Filepath,
-						dashboard.Executable.Args,
-						&waitgrp,
-						sigs,
-					)
-				}
-			}
-		}
-	} else {
+	if err := configs.SetUIConfig(airshipUIConfigPath); err != nil {
 		log.Printf("config %s", err)
-		webservice.SendAlert(configs.Info, fmt.Sprintf("%s", err))
 	}
 
 	// start webservice and listen for the the ctl + c to exit
@@ -89,10 +62,6 @@ func launch(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}()
 	webservice.WebServer()
-
-	// cancel running plugins and wait for shut down
-	cancel()
-	waitgrp.Wait()
 }
 
 // Execute is called from the main program and kicks this whole shindig off

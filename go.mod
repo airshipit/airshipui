@@ -9,10 +9,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
-	github.com/vmware-tanzu/octant v0.12.0
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
-	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
+	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
+	google.golang.org/grpc v1.27.0 // indirect
 	opendev.org/airship/airshipctl v0.0.0-20200518155418-7276dd68d8d0
 	sigs.k8s.io/kustomize/api v0.5.1
 )

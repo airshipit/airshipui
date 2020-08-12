@@ -55,30 +55,6 @@ To start the system cd to the root of the AirshipUI repository and execute:
 + The example auth server id is: **airshipui**
 + The example auth server password is: **Open Sesame!**
 
-## Plugins
-
-### Octant
-
-[Octant](https://github.com/vmware-tanzu/octant) is a tool for developers to understand how applications run on a
-Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity
-found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management
- along with a plugin system to further extend its capabilities.
-
-Octant needs to be pointed to a Kubernetes Cluster. It is recommended to use
-[Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) for development.
-
-#### Running the example
-Build the octant plugin executable
-
-    make install-octant-plugins
-
-When you run the octant binary, the plugin should show "Hello World just some text on the page" under the
-http://127.0.0.1:7777/#/airshipui-example-plugin url.
-
-#### How to get and build Octant
-If you are going to do serious Octant development you will need to adhere to
-[Octant's Hacking Guide](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md)
-which includes information on how to build Octant, and the steps to push changes to them.
 
 ## Behind the scenes
 

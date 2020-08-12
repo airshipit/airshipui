@@ -40,20 +40,12 @@ type AuthMethod struct {
 	URL   string   `json:"url,omitempty"`
 }
 
-// Executable structure to hold parameters for launching an executable plugin
-type Executable struct {
-	AutoStart bool     `json:"autoStart,omitempty"`
-	Filepath  string   `json:"filepath,omitempty"`
-	Args      []string `json:"args,omitempty"`
-}
-
 // Dashboard structure
 type Dashboard struct {
-	Name       string      `json:"name,omitempty"`
-	BaseURL    string      `json:"baseURL,omitempty"`
-	Path       string      `json:"path,omitempty"`
-	IsProxied  bool        `json:"isProxied,omitempty"`
-	Executable *Executable `json:"executable,omitempty"`
+	Name      string `json:"name,omitempty"`
+	BaseURL   string `json:"baseURL,omitempty"`
+	Path      string `json:"path,omitempty"`
+	IsProxied bool   `json:"isProxied,omitempty"`
 }
 
 // WsRequestType is used to set the specific types allowable for WsRequests
@@ -72,10 +64,6 @@ const (
 	Alert WsRequestType = "alert"
 
 	Authcomplete WsComponentType = "authcomplete"
-	Error        WsComponentType = "danger"  // Error corresponds to a red alert message if used as an alert
-	Info         WsComponentType = "info"    // Info corresponds to a blue alert message if used as an alert
-	Warning      WsComponentType = "warning" // Warning corresponds to an orange alert message if used as an alert
-	Success      WsComponentType = "success" // Success corresponds to a green alert message if used as an alert
 	SetConfig    WsComponentType = "setConfig"
 	Initialize   WsComponentType = "initialize"
 	Keepalive    WsComponentType = "keepalive"
@@ -124,7 +112,13 @@ type WsMessage struct {
 // airshipui.json, located at 'filename'
 // TODO: add watcher to the json file to reload conf on change
 func SetUIConfig(filename string) error {
-	bytes, err := getBytesFromFile(filename)
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
 	if err != nil {
 		return err
 	}
@@ -135,19 +129,4 @@ func SetUIConfig(filename string) error {
 	}
 
 	return nil
-}
-
-func getBytesFromFile(filename string) ([]byte, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	bytes, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
 }

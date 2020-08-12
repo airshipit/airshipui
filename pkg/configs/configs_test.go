@@ -26,34 +26,11 @@ const (
 	invalidTestFile string = "testdata/airshipui_invalid.json"
 )
 
-// DummyExecutableConfig returns a populated Executable struct
-func dummyExecutableConfig() *Executable {
-	return &Executable{
-		AutoStart: true,
-		Filepath:  "/fake/path/to/executable",
-		Args: []string{
-			"--fakeflag",
-			"fakevalue",
-		},
-	}
-}
-
 // DummyDashboardsConfig returns an array of populated Dashboard structs
 func dummyDashboardsConfig() []Dashboard {
-	e := dummyExecutableConfig()
 	return []Dashboard{
 		{
-			Name:       "dummy_dashboard",
-			BaseURL:    "http://dummyhost",
-			Path:       "fake/login/path",
-			Executable: e,
-		},
-		{
-			Name:       "dummy_plugin_no_dash",
-			Executable: e,
-		},
-		{
-			Name:    "dummy_dashboard_no_exe",
+			Name:    "dummy_dashboard",
 			BaseURL: "http://dummyhost",
 			Path:    "fake/login/path",
 		},

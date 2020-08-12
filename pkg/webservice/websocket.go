@@ -62,13 +62,6 @@ func onOpen(response http.ResponseWriter, request *http.Request) {
 	ws = wsConn
 	log.Printf("WebSocket established with %s\n", ws.RemoteAddr().String())
 
-	// send any initialization alerts to UI and clear the queue
-	for len(Alerts) > 0 {
-		sendAlertMessage(Alerts[0])
-		Alerts[0] = configs.WsMessage{}
-		Alerts = Alerts[1:]
-	}
-
 	go onMessage()
 	sendInit()
 }

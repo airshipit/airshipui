@@ -42,33 +42,6 @@ To add service dashboards, create a section at the top-level of airshipui.json a
 In the above example, the configuration for Horizon specifies a service dashboard available at
 'http://horizon/dashboard/auth/login'."
 
-The airshipui.json configuration file can also be used to launch external executables that server your dashboards,
-in the background as Airship UI starts. Any processes launched by Airship UI will be terminated when Airship UI exits,
-including any child processes started by the plugins. If the plugin launches a web dashboard, it can be also be
-included in the list of service dashboards within Airship UI. The following example demonstrates how to add a
-configuration to launch and use Octant within Airship UI:
-
-```
-"dashboards": [
-        {
-            "name": "Octant",
-            "baseURL": "http://localhost:7777",
-            "path": "",
-            "executable": {
-                "autoStart": true,
-                "filepath": "/usr/local/bin/octant",
-                "args": [
-                    "--disable-open-browser",
-                    "--kubeconfig",
-                    "/home/ubuntu/.airship/kubeconfig"
-                ]
-            }
-        }
-]
-```
-
-To prevent a dashboard executable from launching but retain its configuration for later use, simply set "autoStart" to
-false.
 
 ## Developer's Guide
 

@@ -6,30 +6,6 @@
         {
             "name": "dummy_dashboard",
             "baseURL": "http://dummyhost",
-            "path": "fake/login/path",
-            "executable": {
-                "autoStart": true,
-                "filepath": "/fake/path/to/executable",
-                "args": [
-                    "--fakeflag",
-                    "fakevalue"
-                ]
-            }
-        },
-        {
-            "name": "dummy_plugin_no_dash",
-            "executable": {
-                "autoStart": true,
-                "filepath": "/fake/path/to/executable",
-                "args": [
-                    "--fakeflag",
-                    "fakevalue"
-                ]
-            }
-        },
-        {
-            "name": "dummy_dashboard_no_exe",
-            "baseURL": "http://dummyhost",
             "path": "fake/login/path"
         }
     ]
