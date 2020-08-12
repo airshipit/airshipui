@@ -2,16 +2,19 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavInterface } from './models/nav.interface';
 import { environment } from '../environments/environment';
 import { IconService } from '../services/icon/icon.service';
-import { NotificationService } from '../services/notification/notification.service';
-import {WebsocketService} from '../services/websocket/websocket.service';
-import {Dashboard} from '../services/websocket/models/websocket-message/dashboard/dashboard';
+import { WebsocketService } from '../services/websocket/websocket.service';
+import { WSReceiver } from '../services/websocket/websocket.models';
+import { Dashboard } from '../services/websocket/models/websocket-message/dashboard/dashboard';
+import { WebsocketMessage } from 'src/services/websocket/models/websocket-message/websocket-message';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnDestroy, OnInit {
+export class AppComponent implements OnInit, WSReceiver {
+  type: string = "ui";
+  component: string = "any";
 
   currentYear: number;
   version: string;
@@ -23,11 +26,11 @@ export class AppComponent implements OnDestroy, OnInit {
       children: [
         {
           displayName: 'Bare Metal',
-          route: 'airship/bare-metal',
+          route: 'ctl/baremetal',
           iconName: 'server'
         }, {
           displayName: 'Documents',
-          route: 'airship/documents/overview',
+          route: 'ctl/documents',
           iconName: 'doc'
         }]
     }, {
@@ -36,18 +39,23 @@ export class AppComponent implements OnDestroy, OnInit {
     }];
 
   constructor(private iconService: IconService,
-              private notificationService: NotificationService,
               private websocketService: WebsocketService) {
     this.currentYear = new Date().getFullYear();
     this.version = environment.version;
-    this.websocketService.subject.subscribe(message => {
-      if (message.type === 'airshipui' && message.component === 'initialize' && message.dashboards !== undefined) {
-        this.updateDashboards(message.dashboards);
-      }
-    });
+    this.websocketService.registerFunctions(this);
   }
 
-  ngOnDestroy(): void {
+  async receiver(message: WebsocketMessage): Promise<void> {
+    if (message.hasOwnProperty("error")) {
+      this.websocketService.printIfToast(message);
+    } else {
+      if (message.hasOwnProperty("dashboards")) {
+        this.updateDashboards(message.dashboards);
+      } else {
+        // TODO (aschiefe): determine what should be notifications and what should be 86ed
+        console.log("Message received in app: ", message);
+      }
+    }
   }
 
   ngOnInit(): void {

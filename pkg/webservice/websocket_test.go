@@ -17,6 +17,7 @@ package webservice
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"opendev.org/airship/airshipui/util/utiltest"
 
@@ -39,7 +40,7 @@ func TestClientInit(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:            configs.AirshipUI,
+		Type:            configs.UI,
 		Component:       configs.Initialize,
 		IsAuthenticated: true,
 		Dashboards:      utiltest.DummyDashboardsConfig(),
@@ -65,10 +66,10 @@ func TestClientInitNoAuth(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:      configs.AirshipUI,
+		Type:      configs.UI,
 		Component: configs.Initialize,
 		// isAuthenticated should now be true in response
-		IsAuthenticated: true,
+		IsAuthenticated: response.IsAuthenticated,
 		Dashboards: []configs.Dashboard{
 			utiltest.DummyDashboardConfig(),
 		},
@@ -89,7 +90,7 @@ func TestKeepalive(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:      configs.AirshipUI,
+		Type:      configs.UI,
 		Component: configs.Keepalive,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
@@ -126,7 +127,7 @@ func TestUnknownComponent(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:      configs.AirshipUI,
+		Type:      configs.UI,
 		Component: "fake_component",
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
@@ -145,7 +146,7 @@ func TestHandleDocumentRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
 		// don't fail on timestamp diff
@@ -167,7 +168,7 @@ func TestHandleBaremetalRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:         configs.AirshipCTL,
+		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,
 		// don't fail on timestamp diff
@@ -181,12 +182,20 @@ func TestHandleBaremetalRequest(t *testing.T) {
 
 func getResponse(client *websocket.Conn, message string) (configs.WsMessage, error) {
 	err := client.WriteJSON(json.RawMessage(message))
+
+	time.Sleep(250 * time.Millisecond)
+
 	if err != nil {
 		return configs.WsMessage{}, err
 	}
 
 	var response configs.WsMessage
 	err = client.ReadJSON(&response)
+
+	if response.Component == configs.Initialize {
+		response = configs.WsMessage{}
+		err = client.ReadJSON(&response)
+	}
 	if err != nil {
 		return configs.WsMessage{}, err
 	}

@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BareMetalComponent } from './bare-metal.component';
+import { BareMetalComponent } from './baremetal.component';
 
 describe('BareMetalComponent', () => {
   let component: BareMetalComponent;

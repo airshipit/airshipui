@@ -29,23 +29,29 @@ import (
 var isAuthenticated bool
 
 const (
-	clientPath = "client/dist/airshipui-ui"
+	staticContent = "client/dist/airshipui"
 )
 
 // test if path and file exists, if it does send a page, else 404 for you
 func serveFile(w http.ResponseWriter, r *http.Request) {
-	filePath, filePathErr := utilfile.FilePath(clientPath, r.URL.Path)
+	filePath, filePathErr := utilfile.FilePath(staticContent, r.URL.Path)
 	if filePathErr != nil {
 		utilhttp.HandleErr(w, errors.WithStack(filePathErr), http.StatusInternalServerError)
 		return
 	}
+
 	fileExists, fileExistsErr := utilfile.Exists(filePath)
 	if fileExistsErr != nil {
 		utilhttp.HandleErr(w, errors.WithStack(fileExistsErr), http.StatusInternalServerError)
 		return
 	}
+
 	if fileExists {
 		http.ServeFile(w, r, filePath)
+	} else {
+		// this is in an else to prevent a: superfluous response.WriteHeader call
+		// TODO (aschie): Determine if this should do this on any 404, or if it should 404 a request
+		http.ServeFile(w, r, staticContent)
 	}
 }
 
@@ -53,7 +59,7 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 func handleAuth(http.ResponseWriter, *http.Request) {
 	// TODO: handle the response body to capture the credentials
 	err := ws.WriteJSON(configs.WsMessage{
-		Type:      configs.AirshipUI,
+		Type:      configs.UI,
 		Component: configs.Authcomplete,
 		Timestamp: time.Now().UnixNano() / 1000000,
 	})
@@ -77,6 +83,7 @@ func WebServer() {
 	webServerMux.HandleFunc("/ws", onOpen)
 
 	// establish routing to static angular client
+	log.Println("Attempting to serve static content from ", staticContent)
 	webServerMux.HandleFunc("/", serveFile)
 
 	// TODO: Figureout if we need to toggle the proxies on and off

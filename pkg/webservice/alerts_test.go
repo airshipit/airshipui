@@ -30,8 +30,7 @@ func TestSendAlert(t *testing.T) {
 	// construct and send alert from server to client
 	SendAlert(configs.Error, "Test Alert")
 
-	var response configs.WsMessage
-	err = client.ReadJSON(&response)
+	response, err := MessageReader(client)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{

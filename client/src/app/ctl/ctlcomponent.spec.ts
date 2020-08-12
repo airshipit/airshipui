@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DocumentOverviewComponent } from './document-overview.component';
+import { CTLComponent } from './ctl.component';
 
-describe('DocumentOverviewComponent', () => {
-  let component: DocumentOverviewComponent;
-  let fixture: ComponentFixture<DocumentOverviewComponent>;
+describe('CTLComponent', () => {
+  let component: CTLComponent;
+  let fixture: ComponentFixture<CTLComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DocumentOverviewComponent ]
+      declarations: [ CTLComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DocumentOverviewComponent);
+    fixture = TestBed.createComponent(CTLComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
