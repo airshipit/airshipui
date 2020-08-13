@@ -15,7 +15,6 @@
 package commands
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -24,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/log"
 	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
@@ -58,7 +58,7 @@ func launch(cmd *cobra.Command, args []string) {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		log.Println("Exiting the webservice")
+		log.Print("Exiting the webservice")
 		os.Exit(0)
 	}()
 	webservice.WebServer()
@@ -67,7 +67,7 @@ func launch(cmd *cobra.Command, args []string) {
 // Execute is called from the main program and kicks this whole shindig off
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Println(err)
+		log.Print(err)
 		os.Exit(1)
 	}
 }

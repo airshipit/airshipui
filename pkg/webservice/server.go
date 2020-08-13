@@ -15,18 +15,16 @@
 package webservice
 
 import (
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/pkg/errors"
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/log"
 	"opendev.org/airship/airshipui/util/utilfile"
 	"opendev.org/airship/airshipui/util/utilhttp"
 )
 
 // semaphore to signal the UI to authenticate
-var isAuthenticated bool
 
 const (
 	staticContent = "client/dist/airshipui"
@@ -58,17 +56,14 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 // handle an auth complete attempt
 func handleAuth(http.ResponseWriter, *http.Request) {
 	// TODO: handle the response body to capture the credentials
-	err := ws.WriteJSON(configs.WsMessage{
+	err := WebSocketSend(configs.WsMessage{
 		Type:      configs.UI,
 		Component: configs.Authcomplete,
-		Timestamp: time.Now().UnixNano() / 1000000,
 	})
 
 	// error sending the websocket request
 	if err != nil {
-		onError(err)
-	} else {
-		isAuthenticated = true
+		log.Fatal(err)
 	}
 }
 
@@ -83,7 +78,7 @@ func WebServer() {
 	webServerMux.HandleFunc("/ws", onOpen)
 
 	// establish routing to static angular client
-	log.Println("Attempting to serve static content from ", staticContent)
+	log.Debug("Attempting to serve static content from ", staticContent)
 	webServerMux.HandleFunc("/", serveFile)
 
 	// TODO: Figureout if we need to toggle the proxies on and off
@@ -91,6 +86,6 @@ func WebServer() {
 	startProxies()
 
 	// TODO: pull ports out into conf files
-	log.Println("Attempting to start webservice on localhost:8080")
+	log.Print("Attempting to start webservice on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", webServerMux))
 }

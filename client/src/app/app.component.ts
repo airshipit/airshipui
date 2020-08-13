@@ -1,16 +1,20 @@
-import {Component, OnInit} from '@angular/core';
-import {environment} from '../environments/environment';
-import {IconService} from '../services/icon/icon.service';
-import {WebsocketService} from '../services/websocket/websocket.service';
-import {Dashboard, WebsocketMessage, WSReceiver} from '../services/websocket/websocket.models';
-import {Nav} from './app.models';
+import { Component, OnInit } from '@angular/core';
+import { environment } from '../environments/environment';
+import { IconService } from '../services/icon/icon.service';
+import { WebsocketService } from '../services/websocket/websocket.service';
+import { Log } from '../services/log/log.service';
+import { LogMessage } from '../services/log/log-message';
+import { Dashboard, WSReceiver, WebsocketMessage } from '../services/websocket/websocket.models';
+import { Nav } from './app.models';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent implements OnInit, WSReceiver {
+  className = this.constructor.name;
   type = 'ui';
   component = 'any';
 
@@ -51,7 +55,7 @@ export class AppComponent implements OnInit, WSReceiver {
         this.updateDashboards(message.dashboards);
       } else {
         // TODO (aschiefe): determine what should be notifications and what should be 86ed
-        console.log('Message received in app: ', message);
+        Log.Debug(new LogMessage('Message received in app', this.className, message));
       }
     }
   }

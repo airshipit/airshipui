@@ -15,16 +15,28 @@
 package webservice
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"opendev.org/airship/airshipui/pkg/configs"
 	"opendev.org/airship/airshipui/pkg/ctl"
+	"opendev.org/airship/airshipui/pkg/log"
 )
+
+// session is a struct to hold information about a given session
+type session struct {
+	id         string
+	writeMutex sync.Mutex
+	ws         *websocket.Conn
+}
+
+// sessions keeps track of open websocket sessions
+var sessions = map[string]*session{}
 
 // gorilla ws specific HTTP upgrade to WebSockets
 var upgrader = websocket.Upgrader{
@@ -32,16 +44,11 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// websocket that'll be reused by several places
-var ws *websocket.Conn
-var writeMutex sync.Mutex
-
 // this is a way to allow for arbitrary messages to be processed by the backend
 // the message of a specifc component is shunted to that subsystem for further processing
 var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
 	configs.UI: {
-		configs.Keepalive:  keepaliveReply,
-		configs.Initialize: clientInit,
+		configs.Keepalive: keepaliveReply,
 	},
 	configs.CTL: ctl.CTLFunctionMap,
 }
@@ -59,23 +66,22 @@ func onOpen(response http.ResponseWriter, request *http.Request) {
 		http.Error(response, "Could not open websocket connection", http.StatusBadRequest)
 	}
 
-	ws = wsConn
-	log.Printf("WebSocket established with %s\n", ws.RemoteAddr().String())
+	session := newSession(wsConn)
+	log.Printf("WebSocket session %s established with %s\n", session.id, session.ws.RemoteAddr().String())
 
-	go onMessage()
-	sendInit()
+	go session.onMessage()
 }
 
 // handle messaging to the client
-func onMessage() {
+func (session *session) onMessage() {
 	// just in case clean up the websocket
-	defer onClose()
+	defer session.onClose()
 
 	for {
 		var request configs.WsMessage
-		err := ws.ReadJSON(&request)
+		err := session.ws.ReadJSON(&request)
 		if err != nil {
-			onError(err)
+			session.onError(err)
 			break
 		}
 
@@ -85,24 +91,21 @@ func onMessage() {
 			if reqType, ok := functionMap[request.Type]; ok {
 				// the function map may have a component (function) to process the request
 				if component, ok := reqType[request.Component]; ok {
-					// get the response and tag the timestamp so it's not repeated across all functions
-
 					response := component(request)
-					response.Timestamp = time.Now().UnixNano() / 1000000
-					if err = WebSocketSend(response); err != nil {
-						onError(err)
+					if err = session.webSocketSend(response); err != nil {
+						session.onError(err)
 					}
 				} else {
-					if err = WebSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
+					if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
 						request.Component), request)); err != nil {
-						onError(err)
+						session.onError(err)
 					}
 					log.Printf("Requested component: %s, not found\n", request.Component)
 				}
 			} else {
-				if err = WebSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
+				if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
 					request.Type), request)); err != nil {
-					onError(err)
+					session.onError(err)
 				}
 				log.Printf("Requested type: %s, not found\n", request.Type)
 			}
@@ -111,24 +114,17 @@ func onMessage() {
 }
 
 // common websocket close with logging
-func onClose() {
-	log.Printf("Closing websocket")
+func (session *session) onClose() {
+	log.Printf("Closing websocket for session %s", session.id)
+	session.ws.Close()
+	delete(sessions, session.id)
 }
 
 // common websocket error handling with logging
-func onError(err error) {
+func (session *session) onError(err error) {
 	log.Printf("Error receiving / sending message: %s\n", err)
 }
 
-// WebSocketSend allows for the sender to be thread safe, we cannot write to the websocket at the same time
-func WebSocketSend(response configs.WsMessage) error {
-	writeMutex.Lock()
-	defer writeMutex.Unlock()
-
-	return ws.WriteJSON(response)
-}
-
-// The keepalive response including a timestamp from the server
 // The UI will occasionally ping the server due to the websocket default timeout
 func keepaliveReply(configs.WsMessage) configs.WsMessage {
 	return configs.WsMessage{
@@ -142,35 +138,63 @@ func requestErrorHelper(err string, request configs.WsMessage) configs.WsMessage
 	return configs.WsMessage{
 		Type:      request.Type,
 		Component: request.Component,
-		Timestamp: time.Now().UnixNano() / 1000000,
 		Error:     err,
 	}
 }
 
-// sendInit is generated on the onOpen event and sends the information the UI needs to startup
-func sendInit() {
-	response := clientInit(configs.WsMessage{
-		Timestamp: time.Now().UnixNano() / 1000000,
-	})
+// newSession generates a new session
+func newSession(ws *websocket.Conn) *session {
+	id := uuid.New().String()
 
-	if err := WebSocketSend(response); err != nil {
-		onError(err)
+	session := &session{
+		id: id,
+		ws: ws,
+	}
+
+	// keep track of the session
+	sessions[id] = session
+
+	// send the init message to the client
+	go session.sendInit()
+
+	return session
+}
+
+// webSocketSend allows for the sender to be thread safe, we cannot write to the websocket at the same time
+func (session *session) webSocketSend(response configs.WsMessage) error {
+	session.writeMutex.Lock()
+	defer session.writeMutex.Unlock()
+	response.Timestamp = time.Now().UnixNano() / 1000000
+	response.SessionID = session.id
+
+	return session.ws.WriteJSON(response)
+}
+
+// WebSocketSend allows of other packages to send a request for the websocket
+func WebSocketSend(response configs.WsMessage) error {
+	if session, ok := sessions[response.SessionID]; ok {
+		return session.webSocketSend(response)
+	}
+
+	return errors.New("session id " + response.SessionID + "not found")
+}
+
+// sendInit is generated on the onOpen event and sends the information the UI needs to startup
+func (session *session) sendInit() {
+	if err := session.webSocketSend(configs.WsMessage{
+		Type:            configs.UI,
+		Component:       configs.Initialize,
+		IsAuthenticated: true,
+		Dashboards:      configs.UIConfig.Dashboards,
+		Authentication:  configs.UIConfig.AuthMethod,
+	}); err != nil {
+		log.Printf("Error receiving / sending init to session %s: %s\n", session.id, err)
 	}
 }
 
-// clientInit is in the function map if the client requests an init message this is the handler
-// TODO (asciefe): determine if this is still necessary
-func clientInit(configs.WsMessage) configs.WsMessage {
-	// if no auth method is supplied start with minimal functionality
-	if configs.UIConfig.AuthMethod == nil {
-		isAuthenticated = true
-	}
-
-	return configs.WsMessage{
-		Type:            configs.UI,
-		Component:       configs.Initialize,
-		IsAuthenticated: isAuthenticated,
-		Dashboards:      configs.UIConfig.Dashboards,
-		Authentication:  configs.UIConfig.AuthMethod,
+// CloseAllSessions is called when the system is exiting to cleanly close all the current connections
+func CloseAllSessions() {
+	for _, session := range sessions {
+		session.onClose()
 	}
 }

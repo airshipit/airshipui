@@ -87,6 +87,7 @@ const (
 // WsMessage is a request / return structure used for websockets
 type WsMessage struct {
 	// base components of a message
+	SessionID    string             `json:"sessionID,omitempty"`
 	Type         WsRequestType      `json:"type,omitempty"`
 	Component    WsComponentType    `json:"component,omitempty"`
 	SubComponent WsSubComponentType `json:"subComponent,omitempty"`

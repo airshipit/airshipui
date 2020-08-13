@@ -1,6 +1,8 @@
 import {Component} from '@angular/core';
 import {WebsocketService} from '../../../services/websocket/websocket.service';
-import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
+import { WebsocketMessage, WSReceiver } from '../../../services/websocket/websocket.models';
+import { Log } from '../../../services/log/log.service';
+import { LogMessage } from '../../../services/log/log-message';
 
 @Component({
   selector: 'app-bare-metal',
@@ -9,6 +11,7 @@ import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocke
 })
 
 export class BaremetalComponent implements WSReceiver {
+  className = this.constructor.name;
   // TODO (aschiefe): extract these strings to constants
   type = 'ctl';
   component = 'baremetal';
@@ -22,7 +25,7 @@ export class BaremetalComponent implements WSReceiver {
       this.websocketService.printIfToast(message);
     } else {
       // TODO (aschiefe): determine what should be notifications and what should be 86ed
-      console.log('Message received in baremetal: ', message);
+      Log.Debug(new LogMessage('Message received in baremetal', this.className, message));
     }
   }
 

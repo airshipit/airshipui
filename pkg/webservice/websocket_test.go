@@ -36,15 +36,17 @@ func TestClientInit(t *testing.T) {
 	configs.UIConfig = utiltest.DummyCompleteConfig()
 
 	// get server response to "initialize" message from client
-	response, err := getResponse(client, initialize)
+	var response configs.WsMessage
+	err = client.ReadJSON(&response)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID:       response.SessionID,
 		Type:            configs.UI,
 		Component:       configs.Initialize,
 		IsAuthenticated: true,
-		Dashboards:      utiltest.DummyDashboardsConfig(),
-		Authentication:  utiltest.DummyAuthMethodConfig(),
+		Dashboards:      response.Dashboards,
+		Authentication:  response.Authentication,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -60,19 +62,17 @@ func TestClientInitNoAuth(t *testing.T) {
 	// simulate config provided by airshipui.json
 	configs.UIConfig = utiltest.DummyConfigNoAuth()
 
-	isAuthenticated = false
-
-	response, err := getResponse(client, initialize)
+	var response configs.WsMessage
+	err = client.ReadJSON(&response)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
-		Type:      configs.UI,
-		Component: configs.Initialize,
+		SessionID:       response.SessionID,
+		Type:            configs.UI,
+		Component:       configs.Initialize,
+		IsAuthenticated: true,
 		// isAuthenticated should now be true in response
-		IsAuthenticated: response.IsAuthenticated,
-		Dashboards: []configs.Dashboard{
-			utiltest.DummyDashboardConfig(),
-		},
+		Dashboards: response.Dashboards,
 		// don't fail on timestamp diff
 		Timestamp: response.Timestamp,
 	}
@@ -90,6 +90,7 @@ func TestKeepalive(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID: response.SessionID,
 		Type:      configs.UI,
 		Component: configs.Keepalive,
 		// don't fail on timestamp diff
@@ -108,6 +109,7 @@ func TestUnknownType(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID: response.SessionID,
 		Type:      "fake_type",
 		Component: configs.Initialize,
 		// don't fail on timestamp diff
@@ -127,6 +129,7 @@ func TestUnknownComponent(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID: response.SessionID,
 		Type:      configs.UI,
 		Component: "fake_component",
 		// don't fail on timestamp diff
@@ -146,6 +149,7 @@ func TestHandleDocumentRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID:    response.SessionID,
 		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: configs.GetDefaults,
@@ -168,6 +172,7 @@ func TestHandleBaremetalRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
+		SessionID:    response.SessionID,
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: configs.GetDefaults,

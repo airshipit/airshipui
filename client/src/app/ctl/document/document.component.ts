@@ -3,6 +3,8 @@ import {WebsocketService} from '../../../services/websocket/websocket.service';
 import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
+import { Log } from '../../../services/log/log.service';
+import { LogMessage } from '../../../services/log/log-message';
 import {KustomNode} from './document.models';
 
 @Component({
@@ -12,6 +14,7 @@ import {KustomNode} from './document.models';
 })
 
 export class DocumentComponent implements WSReceiver {
+  className = this.constructor.name;
   obby: string;
 
   type = 'ctl';
@@ -80,7 +83,7 @@ export class DocumentComponent implements WSReceiver {
           this.obby = 'Message pull was a ' + message.message;
           break;
         default:
-          console.log('Document message sub component not handled: ', message);
+          Log.Error(new LogMessage('Document message sub component not handled', this.className, message));
           break;
       }
     }

@@ -9,7 +9,8 @@ import 'reflect-metadata';
 
 export class WebsocketService implements OnDestroy {
   private ws: WebSocket;
-  private timeout: number;
+  private timeout: any;
+  private sessionID: string;
 
   // functionMap is how we know where to send the direct messages
   // the structure of this map is: type -> component -> receiver
@@ -35,8 +36,15 @@ export class WebsocketService implements OnDestroy {
 
   // sendMessage will relay a WebsocketMessage to the go backend
   public async sendMessage(message: WebsocketMessage): Promise<void> {
-    message.timestamp = new Date().getTime();
-    this.ws.send(JSON.stringify(message));
+    try {
+      message.sessionID = this.sessionID;
+      message.timestamp = new Date().getTime();
+      this.ws.send(JSON.stringify(message));
+    } catch (err) {
+      // on a refresh it may fire a request before the backend is ready so give it ye'ol retry
+      // TODO (aschiefe): determine if there's a limit on retries
+      return new Promise( resolve => setTimeout(() => { this.sendMessage(message); }, 100));
+    }
   }
 
   // register initializes the websocket communication with the go backend
@@ -58,7 +66,7 @@ export class WebsocketService implements OnDestroy {
     this.ws.onopen = () => {
       console.log('Websocket established');
       // start up the keepalive so the websocket-message stays open
-      this.keepAlive();
+      this.timeout = setTimeout(() => { this.keepAlive(); }, 60000);
     };
 
     this.ws.onclose = (event) => {
@@ -122,6 +130,10 @@ export class WebsocketService implements OnDestroy {
 
   // Takes the WebsocketMessage and iterates through the function map to send a directed message when it shows up
   private async messageHandler(message: WebsocketMessage): Promise<void> {
+    if (this.sessionID === undefined && message.hasOwnProperty('sessionID')) {
+      this.sessionID = message.sessionID;
+    }
+
     switch (message.type) {
       case 'alert': this.toastrService.warning(message.message); break; // TODO (aschiefe): improve alert handling
       default:  if (this.functionMap.hasOwnProperty(message.type)) {
@@ -144,14 +156,13 @@ export class WebsocketService implements OnDestroy {
 
   // websockets time out after 5 minutes of inactivity, this keeps the backend engaged so it doesn't time
   private keepAlive(): void {
+    // clear the previously set timeout
+    window.clearTimeout(this.timeout);
+    window.clearInterval(this.timeout);
     if (this.ws !== undefined && this.ws !== null && this.ws.readyState !== this.ws.CLOSED) {
-      // clear the previously set timeout
-      window.clearTimeout(this.timeout);
-      window.clearInterval(this.timeout);
-      const json = { type: 'ui', component: 'keepalive' };
-      this.ws.send(JSON.stringify(json));
-      this.timeout = window.setTimeout(this.keepAlive, 60000);
+      this.sendMessage(new WebsocketMessage('ui', 'keepalive', null));
     }
+    this.timeout = setTimeout(() => { this.keepAlive(); }, 60000);
   }
 
   // registerFunctions is a is called out of the target's constructor so it can auto populate the function map

@@ -8,6 +8,7 @@ export interface WSReceiver {
 }
 
 export class WebsocketMessage {
+  sessionID: string;
   type: string;
   component: string;
   subComponent: string;

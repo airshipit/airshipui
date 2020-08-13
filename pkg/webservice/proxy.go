@@ -15,13 +15,13 @@
 package webservice
 
 import (
-	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/log"
 )
 
 // map of proxy targets which will be used based on the request
@@ -60,7 +60,7 @@ func handleProxy(response http.ResponseWriter, request *http.Request) {
 	if target == nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		if _, err := response.Write([]byte("500 - Unable to locate proxy for request!")); err != nil {
-			log.Println("Error writing response for proxy not found: ", err)
+			log.Print("Error writing response for proxy not found: ", err)
 		}
 
 		return
@@ -120,7 +120,7 @@ func startProxies() {
 		// cache up the target for the proxy url
 		target, err := url.Parse(dashboard.BaseURL)
 		if err != nil {
-			log.Println(err)
+			log.Debug(err)
 		}
 
 		// set the target for the proxied request to the original url
@@ -130,7 +130,7 @@ func startProxies() {
 		dashboard.BaseURL = "http://" + port
 
 		// kick off proxy
-		log.Printf("Attempting to start proxy for %s on: %s\n", dashboard.Name, port)
+		log.Debugf("Attempting to start proxy for %s on: %s\n", dashboard.Name, port)
 
 		// set the dashboard from this point on to go to the proxy
 		configs.UIConfig.Dashboards[index] = dashboard
