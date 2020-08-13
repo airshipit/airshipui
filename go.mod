@@ -11,8 +11,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
-	google.golang.org/grpc v1.27.0 // indirect
-	opendev.org/airship/airshipctl v0.0.0-20200518155418-7276dd68d8d0
+	opendev.org/airship/airshipctl v0.0.0-20200812155702-f61953bcf558
 	sigs.k8s.io/kustomize/api v0.5.1
 )
 

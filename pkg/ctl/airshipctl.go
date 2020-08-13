@@ -37,6 +37,8 @@ type Client struct {
 // NewClient initializes the airshipctl client for external usage.
 func NewClient() *Client {
 	settings := &environment.AirshipCTLSettings{}
+	// ensure no error if airship config doesn't exist
+	settings.Create = true
 	settings.InitConfig()
 
 	c := &Client{
@@ -49,5 +51,5 @@ func NewClient() *Client {
 	return c
 }
 
-// initilize the connection to airshipctl
+// initialize the connection to airshipctl
 var c *Client = NewClient()

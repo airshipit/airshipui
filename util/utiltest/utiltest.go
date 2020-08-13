@@ -76,7 +76,7 @@ func InitConfig(t *testing.T) (conf *config.Config, configPath string,
 
 	conf = config.NewConfig()
 
-	err = conf.LoadConfig(configPath, kubeConfigPath)
+	err = conf.LoadConfig(configPath, kubeConfigPath, false)
 	require.NoError(t, err)
 
 	return conf, configPath, kubeConfigPath, cleanup
