@@ -11,10 +11,9 @@ Clone the Airship UI repository and build.
     cd airshipui
     make # Note running behind a proxy can cause issues, notes on solving is in the Appendix
     make examples # (optional)
-    make install-octant-plugins # (if running with octant)
 
 **NOTE:** Make will install node.js-v12.16.3 into your tools directory and will use that as the node binary for the UI
-building, testing and linting.
+building, testing and linting.  For windows this can be done using [cygwin](https://www.cygwin.com/) make.
 
 Run the airshipui binary
 
@@ -70,6 +69,12 @@ the UI. Once the data is observed it can be transformed and moved to the UI asyn
 
 The UI will initiate the websocket and request data. The backend uses a function map to determine which subsystem is
 responsible for the request and responds with configuration information, alerts, files, and data.
+
+### Communication with the dashboards
+Dashboards may or may not be generally available for end users based on the cluster the AirshipUI is deployed to.  If access to the endpoint is controlled in a way that is not easy to manipulate or if a Single Sign On approach is necessary the AirhshipUI provides the ability to proxy the targeted dashboard.
+
+### AirshipUI proxy interaction
+![AirshipUI Interactions](../img/proxy.jpg "AirshipUI Interactions")
 
 ## Appendix
 
