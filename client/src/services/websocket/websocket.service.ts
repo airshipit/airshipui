@@ -1,7 +1,6 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { WebsocketMessage } from './models/websocket-message/websocket-message';
-import { WSReceiver } from './websocket.models';
-import { ToastrService } from 'ngx-toastr';
+import {Injectable, OnDestroy} from '@angular/core';
+import {WebsocketMessage, WSReceiver} from './websocket.models';
+import {ToastrService} from 'ngx-toastr';
 import 'reflect-metadata';
 
 @Injectable({
@@ -14,15 +13,14 @@ export class WebsocketService implements OnDestroy {
 
   // functionMap is how we know where to send the direct messages
   // the structure of this map is: type -> component -> receiver
-  private functionMap = new Map<string, Map<string,WSReceiver>>();
+  private functionMap = new Map<string, Map<string, WSReceiver>>();
 
   // messageToObject unmarshalls the incoming message into a WebsocketMessage object
   private static messageToObject(incomingMessage: string): WebsocketMessage {
-    let json = JSON.parse(incomingMessage);
-    let wsm = new WebsocketMessage();
-    Object.assign(wsm, json);
-
-    return wsm;
+    const json = JSON.parse(incomingMessage);
+    const obj = new WebsocketMessage();
+    Object.assign(obj, json);
+    return obj;
   }
 
   // when the WebsocketService is created the toast message is initialized and a websocket is registered
@@ -131,8 +129,8 @@ export class WebsocketService implements OnDestroy {
                     this.functionMap[message.type][message.component].receiver(message);
                   } else {
                     // special case where we want to handle all top level messages at a specific component
-                    if (this.functionMap[message.type].hasOwnProperty("any")) {
-                      this.functionMap[message.type]["any"].receiver(message);
+                    if (this.functionMap[message.type].hasOwnProperty('any')) {
+                      this.functionMap[message.type].any.receiver(message);
                     } else {
                       this.printIfToast(message);
                     }
@@ -158,12 +156,12 @@ export class WebsocketService implements OnDestroy {
 
   // registerFunctions is a is called out of the target's constructor so it can auto populate the function map
   public registerFunctions(target: WSReceiver): void {
-    let type = target.type;
-    let component = target.component;
+    const type = target.type;
+    const component = target.component;
     if (this.functionMap.hasOwnProperty(type)) {
       this.functionMap[type][component] = target;
     } else {
-      let components = new Map<string,WSReceiver>();
+      const components = new Map<string, WSReceiver>();
       components[component] = target;
       this.functionMap[type] = components;
     }

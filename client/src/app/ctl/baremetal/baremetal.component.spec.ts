@@ -1,20 +1,27 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {BaremetalComponent} from './baremetal.component';
+import {MatButtonModule} from '@angular/material/button';
+import {ToastrModule} from 'ngx-toastr';
 
-import { BareMetalComponent } from './baremetal.component';
-
-describe('BareMetalComponent', () => {
-  let component: BareMetalComponent;
-  let fixture: ComponentFixture<BareMetalComponent>;
+describe('BaremetalComponent', () => {
+  let component: BaremetalComponent;
+  let fixture: ComponentFixture<BaremetalComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ BareMetalComponent ]
+      imports: [
+        MatButtonModule,
+        ToastrModule.forRoot()
+      ],
+      declarations: [
+        BaremetalComponent
+      ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(BareMetalComponent);
+    fixture = TestBed.createComponent(BaremetalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

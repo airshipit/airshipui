@@ -44,16 +44,14 @@ if [[ ! -d $tools_bin_dir/node-$node_version ]]; then
     export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
   fi
 
-  # npm will write to a node_modules even with the --directory flag it's better to be in the root of where you want this to live
-  cd client
-  npm config set user "${npm_user}"
-  if ! npm install eslint-plugin-html@latest --save-dev --production; then
-    printf "Something went wrong while installing eslint-plugin-html\n" 1>&2
+  # angular-cli is required by angular build
+  if ! npm i -g @angular/cli; then
+    printf "Something went wrong while installing Angular CLI (ng)\n" 1>&2
     exit 1
   fi
-  # angular-cli is required by angular build
-  if ! npm i -g @angular/cli --production; then
-    printf "Something went wrong while installing ng\n" 1>&2
+  # yarn is required by angular build
+  if ! npm i -g yarn; then
+    printf "Something went wrong while installing yarn\n" 1>&2
     exit 1
   fi
   cd ..

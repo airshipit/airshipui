@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component} from '@angular/core';
 import {WebsocketService} from '../../../services/websocket/websocket.service';
-import { WSReceiver } from '../../../services/websocket/websocket.models';
-import {WebsocketMessage} from '../../../services/websocket/models/websocket-message/websocket-message';
-import {KustomNode} from './kustom-node';
+import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
+import {KustomNode} from './document.models';
 
 @Component({
   selector: 'app-document',
@@ -15,29 +14,30 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 export class DocumentComponent implements WSReceiver {
   obby: string;
 
-  type: string = 'ctl';
-  component: string = 'document';
+  type = 'ctl';
+  component = 'document';
 
   activeLink = 'overview';
 
   obj: KustomNode[] = [];
   currentDocId: string;
 
-  saveBtnDisabled: boolean = true;
-  hideButtons: boolean = true;
-  isRendered: boolean = false;
+  saveBtnDisabled = true;
+  hideButtons = true;
+  isRendered = false;
 
   editorOptions = {language: 'yaml', automaticLayout: true, value: ''};
   code: string;
   editorTitle: string;
-  onInit(editor) {
-    editor.onDidChangeModelContent(() => {
-      this.saveBtnDisabled = false;
-  });
-  }
 
   treeControl = new NestedTreeControl<KustomNode>(node => node.children);
   dataSource = new MatTreeNestedDataSource<KustomNode>();
+
+  onInit(editor): void {
+    editor.onDidChangeModelContent(() => {
+      this.saveBtnDisabled = false;
+    });
+  }
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.registerFunctions(this);
@@ -47,7 +47,7 @@ export class DocumentComponent implements WSReceiver {
   hasChild = (_: number, node: KustomNode) => !!node.children && node.children.length > 0;
 
   public async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty("error")) {
+    if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
@@ -69,11 +69,7 @@ export class DocumentComponent implements WSReceiver {
           this.changeEditorContents((message.yaml));
           this.editorTitle = message.name;
           this.currentDocId = message.message;
-          if (!this.isRendered) {
-            this.hideButtons = false;
-          } else {
-            this.hideButtons = true;
-          }
+          this.hideButtons = this.isRendered;
           break;
         case 'yamlWrite':
           this.changeEditorContents((message.yaml));
@@ -81,10 +77,10 @@ export class DocumentComponent implements WSReceiver {
           this.currentDocId = message.message;
           break;
         case 'docPull':
-          this.obby = "Message pull was a " + message.message;
+          this.obby = 'Message pull was a ' + message.message;
           break;
         default:
-          console.log("Document message sub component not handled: ", message);
+          console.log('Document message sub component not handled: ', message);
           break;
       }
     }
@@ -92,7 +88,7 @@ export class DocumentComponent implements WSReceiver {
 
   getYaml(id: string): void {
     this.code = null;
-    const websocketMessage = this.constructDocumentWsMessage("getYaml");
+    const websocketMessage = this.constructDocumentWsMessage('getYaml');
     websocketMessage.message = id;
     this.websocketService.sendMessage(websocketMessage);
   }
@@ -102,7 +98,7 @@ export class DocumentComponent implements WSReceiver {
   }
 
   saveYaml(): void {
-    const websocketMessage = this.constructDocumentWsMessage("yamlWrite");
+    const websocketMessage = this.constructDocumentWsMessage('yamlWrite');
     websocketMessage.message = this.currentDocId;
     websocketMessage.name = this.editorTitle;
     websocketMessage.yaml = btoa(this.code);
@@ -111,13 +107,13 @@ export class DocumentComponent implements WSReceiver {
 
   getSource(): void {
     this.isRendered = false;
-    const websocketMessage = this.constructDocumentWsMessage("getSource");
+    const websocketMessage = this.constructDocumentWsMessage('getSource');
     this.websocketService.sendMessage(websocketMessage);
   }
 
   getRendered(): void {
     this.isRendered = true;
-    const websocketMessage = this.constructDocumentWsMessage("getRendered");
+    const websocketMessage = this.constructDocumentWsMessage('getRendered');
     this.websocketService.sendMessage(websocketMessage);
   }
 
@@ -127,12 +123,12 @@ export class DocumentComponent implements WSReceiver {
 
   closeEditor(): void {
     this.code = null;
-    this.editorTitle = "";
+    this.editorTitle = '';
     this.hideButtons = true;
   }
 
   documentPull(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, "docPull"));
+    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'docPull'));
   }
 }
 

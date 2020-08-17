@@ -1,31 +1,17 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { DashboardsComponent } from './dashboards/dashboards.component';
-import { CTLComponent } from './ctl/ctl.component';
-import { BareMetalComponent } from './ctl/baremetal/baremetal.component';
-import { DocumentComponent } from './ctl/document/document.component';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {HomeComponent} from './home/home.component';
+import {CtlComponent} from './ctl/ctl.component';
 
-const routes: Routes = [
-  {
+
+const routes: Routes = [{
     path: 'ctl',
-    component: CTLComponent,
-    children: [
-      {
-        path: 'baremetal',
-        component: BareMetalComponent
-      }, {
-        path: 'documents',
-        component: DocumentComponent
-      }]
-  }, {
-    path: 'dashboard',
-    component: DashboardsComponent
-  }, {
+    component: CtlComponent,
+    loadChildren: './ctl/ctl.module#CtlModule',
+}, {
     path: '',
     component: HomeComponent
-  },
-];
+}];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

@@ -1,11 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NavInterface } from './models/nav.interface';
-import { environment } from '../environments/environment';
-import { IconService } from '../services/icon/icon.service';
-import { WebsocketService } from '../services/websocket/websocket.service';
-import { WSReceiver } from '../services/websocket/websocket.models';
-import { Dashboard } from '../services/websocket/models/websocket-message/dashboard/dashboard';
-import { WebsocketMessage } from 'src/services/websocket/models/websocket-message/websocket-message';
+import {Component, OnInit} from '@angular/core';
+import {environment} from '../environments/environment';
+import {IconService} from '../services/icon/icon.service';
+import {WebsocketService} from '../services/websocket/websocket.service';
+import {Dashboard, WebsocketMessage, WSReceiver} from '../services/websocket/websocket.models';
+import {Nav} from './app.models';
 
 @Component({
   selector: 'app-root',
@@ -13,13 +11,13 @@ import { WebsocketMessage } from 'src/services/websocket/models/websocket-messag
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, WSReceiver {
-  type: string = "ui";
-  component: string = "any";
+  type = 'ui';
+  component = 'any';
 
   currentYear: number;
   version: string;
 
-  menu: NavInterface [] = [
+  menu: Nav [] = [
     {
       displayName: 'Airship',
       iconName: 'airplane',
@@ -46,14 +44,14 @@ export class AppComponent implements OnInit, WSReceiver {
   }
 
   async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty("error")) {
+    if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
     } else {
-      if (message.hasOwnProperty("dashboards")) {
+      if (message.hasOwnProperty('dashboards')) {
         this.updateDashboards(message.dashboards);
       } else {
         // TODO (aschiefe): determine what should be notifications and what should be 86ed
-        console.log("Message received in app: ", message);
+        console.log('Message received in app: ', message);
       }
     }
   }
@@ -67,7 +65,7 @@ export class AppComponent implements OnInit, WSReceiver {
       this.menu[1].children = [];
     }
     dashboards.forEach((dashboard) => {
-      const navInterface = new NavInterface();
+      const navInterface = new Nav();
       navInterface.displayName = dashboard.name;
       navInterface.route = dashboard.baseURL;
       navInterface.external = true;

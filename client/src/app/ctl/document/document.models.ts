@@ -3,4 +3,4 @@ export class KustomNode {
     name: string;
     data: string;
     children: KustomNode[];
-  }
+}
