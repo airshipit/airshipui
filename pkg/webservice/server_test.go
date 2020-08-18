@@ -15,81 +15,28 @@
 package webservice
 
 import (
-	"net/url"
+	"net/http"
+	"testing"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
 	serverAddr string = "localhost:8080"
-
-	// client messages
-	keepalive        string = `{"type":"ui","component":"keepalive"}`
-	unknownType      string = `{"type":"fake_type","component":"initialize"}`
-	unknownComponent string = `{"type":"ui","component":"fake_component"}`
-	document         string = `{"type":"ctl","component":"document","subcomponent":"getDefaults"}`
-	baremetal        string = `{"type":"ctl","component":"baremetal","subcomponent":"getDefaults"}`
 )
 
 func init() {
 	go WebServer()
+	// wait for the webserver to come up
+	time.Sleep(250 * time.Millisecond)
 }
 
-// func TestHandleAuth(t *testing.T) {
-// 	client, err := NewTestClient()
-// 	require.NoError(t, err)
-// 	defer client.Close()
-
-// 	isAuthenticated = false
-
-// 	// trigger web server's handleAuth function
-// 	_, err = http.Get("http://localhost:8080/auth")
-// 	require.NoError(t, err)
-
-// 	response, err := MessageReader(client)
-// 	require.NoError(t, err)
-
-// 	expected := configs.WsMessage{
-// 		SessionID: response.SessionID,
-// 		Type:      configs.UI,
-// 		Component: configs.Authcomplete,
-// 		Timestamp: response.Timestamp,
-// 	}
-
-// 	// isAuthenticated should now be true after auth complete
-// 	assert.Equal(t, isAuthenticated, true)
-// 	assert.Equal(t, expected, response)
-// }
-
-func NewTestClient() (*websocket.Conn, error) {
-	var err error
-	var client *websocket.Conn
-	u := url.URL{Scheme: "ws", Host: serverAddr, Path: "/ws"}
-	// allow multiple attempts to establish websocket in case server isn't ready
-	for i := 0; i < 5; i++ {
-		client, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
-		if err == nil {
-			return client, nil
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-
-	return nil, err
+func TestRootURI(t *testing.T) {
+	resp, err := http.Get("http://" + serverAddr)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	// this will be not found because of where the webservice starts
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
-
-// func MessageReader(client *websocket.Conn) (configs.WsMessage, error) {
-// 	var response configs.WsMessage
-// 	err := client.ReadJSON(&response)
-
-// 	// dump the initialize message that comes immediately from the backend
-// 	if response.Component == configs.Initialize {
-// 		response = configs.WsMessage{}
-// 		err = client.ReadJSON(&response)
-// 	}
-
-// 	if err != nil {
-// 		return response, err
-// 	}
-// 	return response, err
-// }

@@ -16,77 +16,46 @@ package webservice
 
 import (
 	"encoding/json"
+	"net/url"
 	"testing"
 	"time"
-
-	"opendev.org/airship/airshipui/util/utiltest"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/log"
 )
 
-func TestClientInit(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
+const (
+	// client messages
+	keepalive        string = `{"type":"ui","component":"keepalive"}`
+	unknownType      string = `{"type":"fake_type","component":"initialize"}`
+	unknownComponent string = `{"type":"ui","component":"fake_component"}`
+)
 
-	// simulate config provided by airshipui.json
-	configs.UIConfig = utiltest.DummyCompleteConfig()
+var client *websocket.Conn
 
-	// get server response to "initialize" message from client
-	var response configs.WsMessage
-	err = client.ReadJSON(&response)
-	require.NoError(t, err)
-
-	expected := configs.WsMessage{
-		SessionID:       response.SessionID,
-		Type:            configs.UI,
-		Component:       configs.Initialize,
-		IsAuthenticated: true,
-		Dashboards:      response.Dashboards,
-		Authentication:  response.Authentication,
-		// don't fail on timestamp diff
-		Timestamp: response.Timestamp,
+func init() {
+	u := url.URL{Scheme: "ws", Host: serverAddr, Path: "/ws"}
+	var err error
+	client, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	assert.Equal(t, expected, response)
-}
-
-func TestClientInitNoAuth(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	// simulate config provided by airshipui.json
-	configs.UIConfig = utiltest.DummyConfigNoAuth()
-
+	time.Sleep(10 * time.Millisecond)
+	// get server response to "initialize" message from client which is sent by default
 	var response configs.WsMessage
 	err = client.ReadJSON(&response)
-	require.NoError(t, err)
-
-	expected := configs.WsMessage{
-		SessionID:       response.SessionID,
-		Type:            configs.UI,
-		Component:       configs.Initialize,
-		IsAuthenticated: true,
-		// isAuthenticated should now be true in response
-		Dashboards: response.Dashboards,
-		// don't fail on timestamp diff
-		Timestamp: response.Timestamp,
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	assert.Equal(t, expected, response)
 }
 
 func TestKeepalive(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
 	// get server response to "keepalive" message from client
-	response, err := getResponse(client, keepalive)
+	response, err := getResponse(keepalive)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
@@ -101,11 +70,7 @@ func TestKeepalive(t *testing.T) {
 }
 
 func TestUnknownType(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	response, err := getResponse(client, unknownType)
+	response, err := getResponse(unknownType)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
@@ -121,11 +86,7 @@ func TestUnknownType(t *testing.T) {
 }
 
 func TestUnknownComponent(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	response, err := getResponse(client, unknownComponent)
+	response, err := getResponse(unknownComponent)
 	require.NoError(t, err)
 
 	expected := configs.WsMessage{
@@ -140,55 +101,10 @@ func TestUnknownComponent(t *testing.T) {
 	assert.Equal(t, expected, response)
 }
 
-func TestHandleDocumentRequest(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	response, err := getResponse(client, document)
-	require.NoError(t, err)
-
-	expected := configs.WsMessage{
-		SessionID:    response.SessionID,
-		Type:         configs.CTL,
-		Component:    configs.Document,
-		SubComponent: configs.GetDefaults,
-		// don't fail on timestamp diff
-		Timestamp: response.Timestamp,
-	}
-
-	// the non typed interface requires us to break up the checking otherwise the 2 will never be equal
-	assert.Equal(t, expected.Type, response.Type)
-	assert.Equal(t, expected.Component, response.Component)
-	assert.Equal(t, expected.SubComponent, response.SubComponent)
-}
-
-func TestHandleBaremetalRequest(t *testing.T) {
-	client, err := NewTestClient()
-	require.NoError(t, err)
-	defer client.Close()
-
-	response, err := getResponse(client, baremetal)
-	require.NoError(t, err)
-
-	expected := configs.WsMessage{
-		SessionID:    response.SessionID,
-		Type:         configs.CTL,
-		Component:    configs.Baremetal,
-		SubComponent: configs.GetDefaults,
-		// don't fail on timestamp diff
-		Timestamp: response.Timestamp,
-	}
-
-	assert.Equal(t, expected.Type, response.Type)
-	assert.Equal(t, expected.Component, response.Component)
-	assert.Equal(t, expected.SubComponent, response.SubComponent)
-}
-
-func getResponse(client *websocket.Conn, message string) (configs.WsMessage, error) {
+func getResponse(message string) (configs.WsMessage, error) {
 	err := client.WriteJSON(json.RawMessage(message))
 
-	time.Sleep(250 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	if err != nil {
 		return configs.WsMessage{}, err
@@ -196,11 +112,6 @@ func getResponse(client *websocket.Conn, message string) (configs.WsMessage, err
 
 	var response configs.WsMessage
 	err = client.ReadJSON(&response)
-
-	if response.Component == configs.Initialize {
-		response = configs.WsMessage{}
-		err = client.ReadJSON(&response)
-	}
 	if err != nil {
 		return configs.WsMessage{}, err
 	}
