@@ -22,7 +22,7 @@
             "assets": [
               "src/airship-icon.svg",
               "src/assets",
-              { "glob": "**/*", "input": "node_modules/monaco-editor/min", "output": "./assets/monaco/" }
+              { "glob": "**/*", "input": "node_modules/ngx-monaco-editor/assets/monaco", "output": "./assets/monaco/" }
             ],
             "styles": [
               "src/styles.css",
