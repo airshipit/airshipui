@@ -1,0 +1,15 @@
+{
+    "webservice": {
+        "host": "<host>",
+        "port": <port>,
+        "publicKey": "<path>/<cert.pem>",
+        "privateKey": "<path>/<key.pem>"
+    },
+    "dashboards": [
+        {
+            "name": "Dash",
+			"baseURL": "https://<FQDN>",
+			"path": "/<example>/<path>"
+        }
+    ]
+}

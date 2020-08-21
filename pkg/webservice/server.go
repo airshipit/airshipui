@@ -16,6 +16,7 @@ package webservice
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"opendev.org/airship/airshipui/pkg/configs"
@@ -85,7 +86,11 @@ func WebServer() {
 	// start proxies for web based use
 	startProxies()
 
-	// TODO: pull ports out into conf files
-	log.Info("Attempting to start webservice on localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", webServerMux))
+	// Calculate the address and start on the host and port specified in the config
+	addr := configs.UIConfig.WebService.Host + ":" + strconv.Itoa(configs.UIConfig.WebService.Port)
+	log.Infof("Attempting to start webservice on %s", addr)
+	log.Fatal(http.ListenAndServeTLS(addr,
+		configs.UIConfig.WebService.PublicKey,
+		configs.UIConfig.WebService.PrivateKey,
+		webServerMux))
 }
