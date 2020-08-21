@@ -17,6 +17,7 @@ package log_test
 import (
 	"bytes"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,38 +26,54 @@ import (
 	"opendev.org/airship/airshipui/pkg/log"
 )
 
-var logFormatRegex = regexp.MustCompile(`^\[airshipui\] \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} .*`)
+var logFormatRegex = regexp.MustCompile(`^\[airshipui\] \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[.*\] \[.*\] .*`)
 
-const prefixLength = len("[airshipui] 2001/02/03 16:05:06 ")
-
-func TestLoggingPrintf(t *testing.T) {
+func TestLoggingTrace(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	t.Run("Print", func(t *testing.T) {
+	t.Run("TraceViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(false, output)
+		log.Init(6, output)
 
-		log.Print("Print args ", 5)
+		log.Debug("TraceViewable args ", 5)
 		actual := output.String()
 
-		expected := "Print args 5\n"
+		expected := "TraceViewable args 5"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
 		assert.Equal(expected, actual)
 	})
 
-	t.Run("Printf", func(t *testing.T) {
+	t.Run("TracefViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(false, output)
+		log.Init(6, output)
 
-		log.Printf("%s %d", "Printf args", 5)
+		log.Debugf("%s %d", "TracefViewable args", 5)
 		actual := output.String()
 
-		expected := "Printf args 5\n"
+		expected := "TracefViewable args 5"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
 		assert.Equal(expected, actual)
+	})
+
+	t.Run("TraceNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Debug("TraceNotViewable args ", 5)
+		assert.Equal("", output.String())
+	})
+
+	t.Run("TracefNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Debugf("%s %d", "TracefNotViewable args", 5)
+		assert.Equal("", output.String())
 	})
 }
 
@@ -64,45 +81,194 @@ func TestLoggingDebug(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	t.Run("DebugTrue", func(t *testing.T) {
+	t.Run("DebugViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(true, output)
+		log.Init(5, output)
 
-		log.Debug("DebugTrue args ", 5)
+		log.Debug("DebugViewable args ", 5)
 		actual := output.String()
 
-		expected := "DebugTrue args 5\n"
+		expected := "DebugViewable args 5"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
 		assert.Equal(expected, actual)
 	})
 
-	t.Run("DebugfTrue", func(t *testing.T) {
+	t.Run("DebugfViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(true, output)
+		log.Init(5, output)
 
-		log.Debugf("%s %d", "DebugfTrue args", 5)
+		log.Debugf("%s %d", "DebugfViewable args", 5)
 		actual := output.String()
 
-		expected := "DebugfTrue args 5\n"
+		expected := "DebugfViewable args 5"
 		require.Regexp(logFormatRegex, actual)
-		actual = actual[prefixLength:]
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
 		assert.Equal(expected, actual)
 	})
 
-	t.Run("DebugFalse", func(t *testing.T) {
+	t.Run("DebugNotViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(false, output)
+		log.Init(1, output)
 
-		log.Debug("DebugFalse args ", 5)
+		log.Debug("DebugNotViewable args ", 5)
 		assert.Equal("", output.String())
 	})
 
-	t.Run("DebugfFalse", func(t *testing.T) {
+	t.Run("DebugfNotViewable", func(t *testing.T) {
 		output := new(bytes.Buffer)
-		log.Init(false, output)
+		log.Init(1, output)
 
-		log.Debugf("%s %d", "DebugFalse args", 5)
+		log.Debugf("%s %d", "DebugfNotViewable args", 5)
+		assert.Equal("", output.String())
+	})
+}
+
+func TestLoggingInfo(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	t.Run("InfoViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(4, output)
+
+		log.Info("InfoViewable args ", 5)
+		actual := output.String()
+
+		expected := "InfoViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("InfofViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(4, output)
+
+		log.Infof("%s %d", "InfofViewable args", 5)
+		actual := output.String()
+
+		expected := "InfofViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("InfoNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Info("InfoNotViewable args ", 5)
+		assert.Equal("", output.String())
+	})
+
+	t.Run("InfofNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Infof("%s %d", "InfofNotViewable args", 5)
+		assert.Equal("", output.String())
+	})
+}
+
+func TestLoggingWarn(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	t.Run("WarnViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(3, output)
+
+		log.Warn("WarnViewable args ", 5)
+		actual := output.String()
+
+		expected := "WarnViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("WarnfViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(3, output)
+
+		log.Warnf("%s %d", "WarnfViewable args", 5)
+		actual := output.String()
+
+		expected := "WarnfViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("WarnNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Warn("WarnNotViewable args ", 5)
+		assert.Equal("", output.String())
+	})
+
+	t.Run("WarnfNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Warnf("%s %d", "WarnfNotViewable args", 5)
+		assert.Equal("", output.String())
+	})
+}
+
+func TestLoggingError(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	t.Run("ErrorViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(2, output)
+
+		log.Error("ErrorViewable args ", 5)
+		actual := output.String()
+
+		expected := "ErrorViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("ErrorfViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(2, output)
+
+		log.Errorf("%s %d", "ErrorfViewable args", 5)
+		actual := output.String()
+
+		expected := "ErrorfViewable args 5"
+		require.Regexp(logFormatRegex, actual)
+		actualArray := strings.Split(actual, "]")
+		actual = strings.TrimSpace(actualArray[len(actualArray)-1])
+		assert.Equal(expected, actual)
+	})
+
+	t.Run("ErrorNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Warn("ErrorNotViewable args ", 5)
+		assert.Equal("", output.String())
+	})
+
+	t.Run("ErrorfNotViewable", func(t *testing.T) {
+		output := new(bytes.Buffer)
+		log.Init(1, output)
+
+		log.Warnf("%s %d", "ErrorfNotViewable args", 5)
 		assert.Equal("", output.String())
 	})
 }

@@ -59,15 +59,14 @@ func onOpen(response http.ResponseWriter, request *http.Request) {
 	// upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// upgrade to websocket protocol over http
-	log.Printf("Establishing the websocket")
 	wsConn, err := upgrader.Upgrade(response, request, nil)
 	if err != nil {
-		log.Printf("Could not open websocket connection from: %s\n", request.Host)
+		log.Errorf("Could not open websocket connection from: %s\n", request.Host)
 		http.Error(response, "Could not open websocket connection", http.StatusBadRequest)
 	}
 
 	session := newSession(wsConn)
-	log.Printf("WebSocket session %s established with %s\n", session.id, session.ws.RemoteAddr().String())
+	log.Debugf("WebSocket session %s established with %s\n", session.id, session.ws.RemoteAddr().String())
 
 	go session.onMessage()
 }
@@ -100,14 +99,14 @@ func (session *session) onMessage() {
 						request.Component), request)); err != nil {
 						session.onError(err)
 					}
-					log.Printf("Requested component: %s, not found\n", request.Component)
+					log.Errorf("Requested component: %s, not found\n", request.Component)
 				}
 			} else {
 				if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
 					request.Type), request)); err != nil {
 					session.onError(err)
 				}
-				log.Printf("Requested type: %s, not found\n", request.Type)
+				log.Errorf("Requested type: %s, not found\n", request.Type)
 			}
 		}()
 	}
@@ -115,14 +114,14 @@ func (session *session) onMessage() {
 
 // common websocket close with logging
 func (session *session) onClose() {
-	log.Printf("Closing websocket for session %s", session.id)
+	log.Debugf("Closing websocket for session %s", session.id)
 	session.ws.Close()
 	delete(sessions, session.id)
 }
 
 // common websocket error handling with logging
 func (session *session) onError(err error) {
-	log.Printf("Error receiving / sending message: %s\n", err)
+	log.Errorf("Error receiving / sending message: %s\n", err)
 }
 
 // The UI will occasionally ping the server due to the websocket default timeout
@@ -188,7 +187,7 @@ func (session *session) sendInit() {
 		Dashboards:      configs.UIConfig.Dashboards,
 		Authentication:  configs.UIConfig.AuthMethod,
 	}); err != nil {
-		log.Printf("Error receiving / sending init to session %s: %s\n", session.id, err)
+		log.Errorf("Error receiving / sending init to session %s: %s\n", session.id, err)
 	}
 }
 

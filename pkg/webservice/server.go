@@ -86,6 +86,6 @@ func WebServer() {
 	startProxies()
 
 	// TODO: pull ports out into conf files
-	log.Print("Attempting to start webservice on localhost:8080")
+	log.Info("Attempting to start webservice on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", webServerMux))
 }

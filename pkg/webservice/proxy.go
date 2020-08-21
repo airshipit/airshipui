@@ -60,7 +60,7 @@ func handleProxy(response http.ResponseWriter, request *http.Request) {
 	if target == nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		if _, err := response.Write([]byte("500 - Unable to locate proxy for request!")); err != nil {
-			log.Print("Error writing response for proxy not found: ", err)
+			log.Error("Error writing response for proxy not found: ", err)
 		}
 
 		return

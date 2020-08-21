@@ -38,6 +38,18 @@ var rootCmd = &cobra.Command{
 func init() {
 	// Add a 'version' command, in addition to the '--version' option that is auto created
 	rootCmd.AddCommand(newVersionCmd())
+	rootCmd.Flags().IntVar(
+		&log.LogLevel,
+		"loglevel",
+		6,
+		"This well set the log level, anything at or below that level will be viewed, all others suppressed\n"+
+			"  6 -- Trace\n"+
+			"  5 -- Debug\n"+
+			"  4 -- Info\n"+
+			"  3 -- Warn\n"+
+			"  2 -- Error\n"+
+			"  1 -- Fatal\n",
+	)
 }
 
 func launch(cmd *cobra.Command, args []string) {
@@ -45,12 +57,12 @@ func launch(cmd *cobra.Command, args []string) {
 	// TODO: do we want to make this a flag that can be passed in?
 	airshipUIConfigPath, err := getDefaultConfigPath()
 	if err != nil {
-		log.Printf("Error setting config path %s", err)
+		log.Errorf("Error setting config path %s", err)
 	}
 
 	// Read AirshipUI config file
 	if err := configs.SetUIConfig(airshipUIConfigPath); err != nil {
-		log.Printf("config %s", err)
+		log.Errorf("config %s", err)
 	}
 
 	// start webservice and listen for the the ctl + c to exit
@@ -58,7 +70,7 @@ func launch(cmd *cobra.Command, args []string) {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		log.Print("Exiting the webservice")
+		log.Info("Exiting the webservice")
 		os.Exit(0)
 	}()
 	webservice.WebServer()
@@ -67,7 +79,7 @@ func launch(cmd *cobra.Command, args []string) {
 // Execute is called from the main program and kicks this whole shindig off
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Print(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }

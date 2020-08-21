@@ -15,57 +15,116 @@
 package log
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"runtime"
+	"strings"
+	"sync"
 )
 
+const logSep = "airshipui/"
+
 var (
-	debug      = false
+	// LogLevel can specify what level the system runs at
+	LogLevel = 6
+	levels   = map[int]string{
+		6: "TRACE",
+		5: "DEBUG",
+		4: "INFO",
+		3: "WARN",
+		2: "ERROR",
+		1: "FATAL",
+	}
 	airshipLog = log.New(os.Stderr, "[airshipui] ", log.LstdFlags)
+	writeMutex sync.Mutex
 )
 
 // Init initializes settings related to logging
-func Init(debugFlag bool, out io.Writer) {
-	debug = debugFlag
+func Init(levelSet int, out io.Writer) {
+	LogLevel = levelSet
 	airshipLog.SetOutput(out)
+}
+
+// Trace is a wrapper for log.Trace
+func Trace(v ...interface{}) {
+	writeLog(6, v...)
+}
+
+// Tracef is a wrapper for log.Tracef
+func Tracef(format string, v ...interface{}) {
+	writeLog(6, fmt.Sprintf(format, v...))
 }
 
 // Debug is a wrapper for log.Debug
 func Debug(v ...interface{}) {
-	if debug {
-		airshipLog.Print(v...)
-	}
+	writeLog(5, v...)
 }
 
 // Debugf is a wrapper for log.Debugf
 func Debugf(format string, v ...interface{}) {
-	if debug {
-		airshipLog.Printf(format, v...)
-	}
+	writeLog(5, fmt.Sprintf(format, v...))
 }
 
-// Print is a wrapper for log.Print
-func Print(v ...interface{}) {
-	airshipLog.Print(v...)
+// Info is a wrapper for log.Info
+func Info(v ...interface{}) {
+	writeLog(4, v...)
 }
 
-// Printf is a wrapper for log.Printf
-func Printf(format string, v ...interface{}) {
-	airshipLog.Printf(format, v...)
+// Infof is a wrapper for log.Infof
+func Infof(format string, v ...interface{}) {
+	writeLog(4, fmt.Sprintf(format, v...))
+}
+
+// Warn is a wrapper for log.Warn
+func Warn(v ...interface{}) {
+	writeLog(3, v...)
+}
+
+// Warnf is a wrapper for log.Warnf
+func Warnf(format string, v ...interface{}) {
+	writeLog(3, fmt.Sprintf(format, v...))
+}
+
+// Error is a wrapper for log.Error
+func Error(v ...interface{}) {
+	writeLog(2, v...)
+}
+
+// Errorf is a wrapper for log.Errorf
+func Errorf(format string, v ...interface{}) {
+	writeLog(2, fmt.Sprintf(format, v...))
 }
 
 // Fatal is a wrapper for log.Fatal
 func Fatal(v ...interface{}) {
-	airshipLog.Fatal(v...)
+	writeLog(1, v...)
+	os.Exit(-1)
 }
 
 // Fatalf is a wrapper for log.Fatalf
 func Fatalf(format string, v ...interface{}) {
-	airshipLog.Fatalf(format, v...)
+	writeLog(1, fmt.Sprintf(format, v...))
+	os.Exit(-1)
 }
 
 // Writer returns log output writer object
 func Writer() io.Writer {
 	return airshipLog.Writer()
+}
+
+func writeLog(level int, v ...interface{}) {
+	// determine if we need to display the logs
+	if level <= LogLevel {
+		_, file, line, _ := runtime.Caller(2)
+		sa := strings.SplitAfter(file, logSep)
+		if len(sa) == 2 {
+			file = sa[1]
+		}
+
+		writeMutex.Lock()
+		defer writeMutex.Unlock()
+		airshipLog.Printf("[%s] [%s:%d] %v", levels[level], file, line, fmt.Sprint(v...))
+	}
 }
