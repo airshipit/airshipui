@@ -16,6 +16,8 @@ package configs
 
 import (
 	"crypto/rsa"
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -36,9 +38,10 @@ var (
 
 // Config basic structure to hold configuration params for Airship UI
 type Config struct {
-	WebService *WebService `json:"webservice,omitempty"`
-	AuthMethod *AuthMethod `json:"authMethod,omitempty"`
-	Dashboards []Dashboard `json:"dashboards,omitempty"`
+	WebService *WebService       `json:"webservice,omitempty"`
+	AuthMethod *AuthMethod       `json:"authMethod,omitempty"`
+	Dashboards []Dashboard       `json:"dashboards,omitempty"`
+	Users      map[string]string `json:"users,omitempty"`
 }
 
 // AuthMethod structure to hold authentication parameters
@@ -54,6 +57,12 @@ type WebService struct {
 	Port       int    `json:"port,omitempty"`
 	PublicKey  string `json:"publicKey,omitempty"`
 	PrivateKey string `json:"privateKey,omitempty"`
+}
+
+// Authentication structure to hold authentication parameters
+type Authentication struct {
+	ID       string `json:"id,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // Dashboard structure
@@ -86,15 +95,24 @@ const (
 	CTLConfig    WsComponentType = "config"
 	Baremetal    WsComponentType = "baremetal"
 	Document     WsComponentType = "document"
+	Auth         WsComponentType = "auth"
 
-	SetContext          WsSubComponentType = "context"
-	SetCluster          WsSubComponentType = "cluster"
-	SetCredential       WsSubComponentType = "credential"
+	// auth sub components
+	Approved     WsSubComponentType = "approved"
+	Authenticate WsSubComponentType = "authenticate"
+	Denied       WsSubComponentType = "denied"
+	Refresh      WsSubComponentType = "refresh"
+	Validate     WsSubComponentType = "validate"
+
+	// ctl components
+	GetDefaults         WsSubComponentType = "getDefaults"
 	GenerateISO         WsSubComponentType = "generateISO"
 	DocPull             WsSubComponentType = "docPull"
 	Yaml                WsSubComponentType = "yaml"
 	YamlWrite           WsSubComponentType = "yamlWrite"
 	GetYaml             WsSubComponentType = "getYaml"
+	GetSource           WsSubComponentType = "getSource"
+	GetRendered         WsSubComponentType = "getRendered"
 	GetPhaseTree        WsSubComponentType = "getPhaseTree"
 	GetPhaseSourceFiles WsSubComponentType = "getPhaseSource"
 	GetPhaseDocuments   WsSubComponentType = "getPhaseDocs"
@@ -118,10 +136,14 @@ type WsMessage struct {
 	YAML            string      `json:"yaml,omitempty"`
 	Name            string      `json:"name,omitempty"`
 	ID              string      `json:"id,omitempty"`
+	Token           *string     `json:"token,omitempty"`
+
+	// used for auth
+	Authentication *Authentication `json:"authentication,omitempty"`
 
 	// information related to the init of the UI
 	Dashboards      []Dashboard             `json:"dashboards,omitempty"`
-	Authentication  *AuthMethod             `json:"authentication,omitempty"`
+	AuthMethod      *AuthMethod             `json:"authMethod,omitempty"`
 	AuthInfoOptions *config.AuthInfoOptions `json:"authInfoOptions,omitempty"`
 	ContextOptions  *config.ContextOptions  `json:"contextOptions,omitempty"`
 	ClusterOptions  *config.ClusterOptions  `json:"clusterOptions,omitempty"`
@@ -151,7 +173,9 @@ func SetUIConfig() error {
 }
 
 func checkConfigs() error {
+	writeFile := false
 	if UIConfig.WebService == nil {
+		writeFile = true
 		log.Debug("No UI config found, generating ssl keys & host & port info")
 		err := setEtcDir()
 		if err != nil {
@@ -176,16 +200,32 @@ func checkConfigs() error {
 		if err != nil {
 			return err
 		}
-
-		bytes, err := json.Marshal(UIConfig)
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(UIConfigFile, bytes, 0440)
+	}
+	if UIConfig.Users == nil {
+		writeFile = true
+		err := createDefaultUser()
 		if err != nil {
 			return err
 		}
 	}
+
+	if writeFile {
+		bytes, err := json.Marshal(UIConfig)
+		if err != nil {
+			return err
+		}
+		return ioutil.WriteFile(UIConfigFile, bytes, 0600)
+	}
+	return nil
+}
+
+func createDefaultUser() error {
+	hash := sha512.New()
+	_, err := hash.Write([]byte("admin"))
+	if err != nil {
+		return err
+	}
+	UIConfig.Users = map[string]string{"admin": hex.EncodeToString(hash.Sum(nil))}
 	return nil
 }
 

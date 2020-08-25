@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-
 import { Log } from './log.service';
 
 describe('LogService', () => {

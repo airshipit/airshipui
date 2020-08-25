@@ -31,6 +31,7 @@ import (
 // session is a struct to hold information about a given session
 type session struct {
 	id         string
+	jwt        string
 	writeMutex sync.Mutex
 	ws         *websocket.Conn
 }
@@ -49,6 +50,7 @@ var upgrader = websocket.Upgrader{
 var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
 	configs.UI: {
 		configs.Keepalive: keepaliveReply,
+		configs.Auth:      handleAuth,
 	},
 	configs.CTL: ctl.CTLFunctionMap,
 }
@@ -86,27 +88,49 @@ func (session *session) onMessage() {
 
 		// this has to be a go routine otherwise it will block any incoming messages waiting for a command return
 		go func() {
-			// look through the function map to find the type to handle the request
-			if reqType, ok := functionMap[request.Type]; ok {
-				// the function map may have a component (function) to process the request
-				if component, ok := reqType[request.Component]; ok {
-					response := component(request)
-					if err = session.webSocketSend(response); err != nil {
-						session.onError(err)
-					}
+			// test the auth token for request validity on non auth requests
+			// TODO (aschiefe): this will need to be amended when refresh tokens are implemented
+			if request.Type != configs.UI && request.Component != configs.Auth && request.SubComponent != configs.Authenticate {
+				if request.Token != nil {
+					err = validateToken(*request.Token)
 				} else {
-					if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
-						request.Component), request)); err != nil {
-						session.onError(err)
-					}
-					log.Errorf("Requested component: %s, not found\n", request.Component)
+					err = errors.New("No authentication token found")
 				}
-			} else {
-				if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
-					request.Type), request)); err != nil {
+			}
+			if err != nil {
+				// deny the request if we get a bad token, this will force the UI to a login screen
+				response := configs.WsMessage{
+					Type:         configs.UI,
+					Component:    configs.Auth,
+					SubComponent: configs.Denied,
+					Error:        "Invalid token, authentication denied",
+				}
+				if err = session.webSocketSend(response); err != nil {
 					session.onError(err)
 				}
-				log.Errorf("Requested type: %s, not found\n", request.Type)
+			} else {
+				// look through the function map to find the type to handle the request
+				if reqType, ok := functionMap[request.Type]; ok {
+					// the function map may have a component (function) to process the request
+					if component, ok := reqType[request.Component]; ok {
+						response := component(request)
+						if err = session.webSocketSend(response); err != nil {
+							session.onError(err)
+						}
+					} else {
+						if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
+							request.Component), request)); err != nil {
+							session.onError(err)
+						}
+						log.Errorf("Requested component: %s, not found\n", request.Component)
+					}
+				} else {
+					if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
+						request.Type), request)); err != nil {
+						session.onError(err)
+					}
+					log.Errorf("Requested type: %s, not found\n", request.Type)
+				}
 			}
 		}()
 	}
@@ -181,11 +205,10 @@ func WebSocketSend(response configs.WsMessage) error {
 // sendInit is generated on the onOpen event and sends the information the UI needs to startup
 func (session *session) sendInit() {
 	if err := session.webSocketSend(configs.WsMessage{
-		Type:            configs.UI,
-		Component:       configs.Initialize,
-		IsAuthenticated: true,
-		Dashboards:      configs.UIConfig.Dashboards,
-		Authentication:  configs.UIConfig.AuthMethod,
+		Type:       configs.UI,
+		Component:  configs.Initialize,
+		Dashboards: configs.UIConfig.Dashboards,
+		AuthMethod: configs.UIConfig.AuthMethod,
 	}); err != nil {
 		log.Errorf("Error receiving / sending init to session %s: %s\n", session.id, err)
 	}

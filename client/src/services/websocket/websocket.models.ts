@@ -7,6 +7,7 @@ export interface WSReceiver {
     receiver(message: WebsocketMessage): Promise<void>;
 }
 
+// WebsocketMessage is the structure for the json that is used to talk to the backend
 export class WebsocketMessage {
   sessionID: string;
   type: string;
@@ -20,8 +21,10 @@ export class WebsocketMessage {
   id: string;
   isAuthenticated: boolean;
   message: string;
+  token: string;
   data: JSON;
   yaml: string;
+  authentication: Authentication;
 
   // this constructor looks like this in case anyone decides they want just a raw message with no data predefined
   // or an easy way to specify the defaults
@@ -32,9 +35,21 @@ export class WebsocketMessage {
   }
 }
 
+// Dashboard has the urls of the links that will pop out new dashboard tabs on the left hand side
 export class Dashboard {
   name: string;
   baseURL: string;
   path: string;
   isProxied: boolean;
+}
+
+// AuthMessage is used to send and auth request and hold the token if it's authenticated
+export class Authentication {
+  id: string;
+  password: string;
+
+  constructor(id?: string | undefined, password?: string | undefined) {
+    this.id = id;
+    this.password = password;
+  }
 }

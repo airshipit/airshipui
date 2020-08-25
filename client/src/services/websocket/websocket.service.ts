@@ -1,5 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {WebsocketMessage, WSReceiver} from './websocket.models';
+import {WebsocketMessage, WSReceiver, Authentication} from './websocket.models';
 import {ToastrService} from 'ngx-toastr';
 import 'reflect-metadata';
 
@@ -8,6 +8,10 @@ import 'reflect-metadata';
 })
 
 export class WebsocketService implements OnDestroy {
+  // to avoid circular includes this has to go here
+  public static token: string;
+  public static tokenExpiration: number;
+
   private ws: WebSocket;
   private timeout: any;
   private sessionID: string;
@@ -39,11 +43,14 @@ export class WebsocketService implements OnDestroy {
     try {
       message.sessionID = this.sessionID;
       message.timestamp = new Date().getTime();
+      if (WebsocketService.token !== undefined) { message.token = WebsocketService.token; }
+      // TODO (aschiefe): determine if this debug statement is a good thing (tm)
+      // Log.Debug(new LogMessage('Sending WebSocket Message', this.className, message));
       this.ws.send(JSON.stringify(message));
     } catch (err) {
       // on a refresh it may fire a request before the backend is ready so give it ye'ol retry
       // TODO (aschiefe): determine if there's a limit on retries
-      return new Promise( resolve => setTimeout(() => { this.sendMessage(message); }, 100));
+      return new Promise(() => setTimeout(() => { this.sendMessage(message); }, 100));
     }
   }
 

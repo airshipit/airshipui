@@ -54,26 +54,9 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handle an auth complete attempt
-func handleAuth(http.ResponseWriter, *http.Request) {
-	// TODO: handle the response body to capture the credentials
-	err := WebSocketSend(configs.WsMessage{
-		Type:      configs.UI,
-		Component: configs.Authcomplete,
-	})
-
-	// error sending the websocket request
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 // WebServer will run the handler functions for WebSockets
 func WebServer() {
 	webServerMux := http.NewServeMux()
-
-	// some things may need a redirect so we'll give them a url to do that with
-	webServerMux.HandleFunc("/auth", handleAuth)
 
 	// hand off the websocket upgrade over http
 	webServerMux.HandleFunc("/ws", onOpen)

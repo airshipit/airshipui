@@ -1,0 +1,29 @@
+<div class="container">
+    <p></p>
+    <table class="table">
+        <tbody>
+            <tr>
+                <td>
+                    <label for="uname"><b>Username</b></label>
+                </td>
+                <td>
+                    <input type="text" id="userName" placeholder="Enter Username" name="uname" #id required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="psw"><b>Password</b></label>
+                </td>
+                <td>
+                    <input type="password" id="passwd" placeholder="Enter Password" name="psw" #passwd required>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td style="text-align:right">
+                    <button type="submit" id="loginSubmit" (click)="formSubmit(id.value,passwd.value)">Login</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

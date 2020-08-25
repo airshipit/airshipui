@@ -7,7 +7,6 @@ import { LogMessage } from '../../../services/log/log-message';
 @Component({
   selector: 'app-bare-metal',
   templateUrl: './baremetal.component.html',
-  styleUrls: ['./baremetal.component.css']
 })
 
 export class BaremetalComponent implements WSReceiver {

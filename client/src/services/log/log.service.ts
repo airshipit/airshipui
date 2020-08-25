@@ -34,7 +34,7 @@ export class Log {
     if (level <= this.Level) {
       console.log(
         '[airshipui][' + LogLevel[level] + '] ' + new Date().toLocaleString() + ' - ' +
-          message.className + ' - ' + message.message + ': ', message.wsMessage);
+          message.className + ' - ' + message.message + ': ', message.logMessage);
     }
   }
 }
