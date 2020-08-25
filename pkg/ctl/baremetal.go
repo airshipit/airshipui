@@ -36,8 +36,10 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 	switch subComponent {
 	case configs.GenerateISO:
 		// since this is long running cache it up
+		// TODO: Test before running the geniso
 		runningRequests[subComponent] = true
-		message, err = c.generateIso()
+		client := NewClient(request)
+		message, err = client.generateIso()
 		// now that we're done forget we did anything
 		delete(runningRequests, subComponent)
 	default:

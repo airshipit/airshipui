@@ -61,6 +61,16 @@
       </mat-toolbar>
       <router-outlet></router-outlet>
       <span class="page-body"></span>
+      <mat-accordion class="logs-headers-align" style="display:none" id="logAccordion">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Logs
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div id="logPanel" class="log-panel"></div>
+        </mat-expansion-panel>
+      </mat-accordion>
       <mat-toolbar class="toolbar-footer">
         <h3>Airship UI &copy; {{ this.currentYear }}</h3>
         <span class="spacer"></span>

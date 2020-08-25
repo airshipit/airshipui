@@ -24,11 +24,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"opendev.org/airship/airshipui/pkg/configs"
-	"opendev.org/airship/airshipui/pkg/ctl"
 	"opendev.org/airship/airshipui/pkg/log"
 )
 
-// session is a struct to hold information about a given session
+// Session is a struct to hold information about a given session
 type session struct {
 	id         string
 	jwt        string
@@ -52,7 +51,14 @@ var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(con
 		configs.Keepalive: keepaliveReply,
 		configs.Auth:      handleAuth,
 	},
-	configs.CTL: ctl.CTLFunctionMap,
+}
+
+// AppendToFunctionMap allows us to break up the circular reference from the other packages
+// It does however require them to implement an init function to append them
+// TODO: maybe some form of an interface to enforce this may be necessary?
+func AppendToFunctionMap(requestType configs.WsRequestType,
+	functions map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage) {
+	functionMap[requestType] = functions
 }
 
 // handle the origin request & upgrade to websocket

@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/ctl"
 	"opendev.org/airship/airshipui/pkg/log"
 	"opendev.org/airship/airshipui/pkg/webservice"
 )
@@ -67,6 +68,10 @@ func launch(cmd *cobra.Command, args []string) {
 	if err := configs.SetUIConfig(); err != nil {
 		log.Fatalf("config %s", err)
 	}
+
+	// allows for the circular reference to the webservice package to be broken and allow for the sending
+	// of arbitrary messages from any package to the websocket
+	ctl.Init()
 
 	// start webservice and listen for the the ctl + c to exit
 	c := make(chan os.Signal)
