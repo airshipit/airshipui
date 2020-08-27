@@ -19,12 +19,8 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
-	"strings"
 	"sync"
 )
-
-const logSep = "airshipui/"
 
 var (
 	// LogLevel can specify what level the system runs at
@@ -37,7 +33,7 @@ var (
 		2: "ERROR",
 		1: "FATAL",
 	}
-	airshipLog = log.New(os.Stderr, "[airshipui] ", log.LstdFlags)
+	airshipLog = log.New(os.Stderr, "[airshipui] ", log.LstdFlags|log.Llongfile)
 	writeMutex sync.Mutex
 )
 
@@ -117,14 +113,13 @@ func Writer() io.Writer {
 func writeLog(level int, v ...interface{}) {
 	// determine if we need to display the logs
 	if level <= LogLevel {
-		_, file, line, _ := runtime.Caller(2)
-		sa := strings.SplitAfter(file, logSep)
-		if len(sa) == 2 {
-			file = sa[1]
-		}
-
 		writeMutex.Lock()
 		defer writeMutex.Unlock()
-		airshipLog.Printf("[%s] [%s:%d] %v", levels[level], file, line, fmt.Sprint(v...))
+		// the origionall caller of this is 3 steps back, the output will display who called it
+		err := airshipLog.Output(3, fmt.Sprintf("[%s] %v", levels[level], fmt.Sprint(v...)))
+		if err != nil {
+			airshipLog.Print(v...)
+			airshipLog.Print(err)
+		}
 	}
 }

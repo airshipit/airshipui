@@ -43,7 +43,7 @@ COVER_EXCLUDE       ?= (zz_generated)
 
 # Override the value of the version variable in main.go
 LD_FLAGS= '-X opendev.org/airship/airshipui/pkg/commands.version=$(GIT_VERSION)'
-GO_FLAGS  := -ldflags=$(LD_FLAGS)
+GO_FLAGS  := -ldflags=$(LD_FLAGS) -trimpath
 BUILD_DIR := bin
 
 # Find all main.go files under cmd, excluding airshipui itself

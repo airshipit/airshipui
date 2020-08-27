@@ -26,7 +26,7 @@ import (
 	"opendev.org/airship/airshipui/pkg/log"
 )
 
-var logFormatRegex = regexp.MustCompile(`^\[airshipui\] \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[.*\] \[.*\] .*`)
+var logFormatRegex = regexp.MustCompile(`^\[airshipui\] .*`)
 
 func TestLoggingTrace(t *testing.T) {
 	assert := assert.New(t)
