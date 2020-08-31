@@ -32,6 +32,7 @@ export class WebsocketMessage {
   error: string;
   html: string;
   name: string;
+  details: string;
   id: string;
   isAuthenticated: boolean;
   message: string;

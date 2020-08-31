@@ -26,6 +26,9 @@ import {CommonModule} from '@angular/common';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatCardModule} from '@angular/material/card';
 import {MatTooltipModule} from '@angular/material/tooltip/';
+import {DocumentViewerModule} from './document-viewer/document-viewer.module';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -43,7 +46,10 @@ import {MatTooltipModule} from '@angular/material/tooltip/';
     ToastrModule,
     MatProgressBarModule,
     MatCardModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DocumentViewerModule,
+    MatDialogModule,
+    MatListModule,
   ],
   providers: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

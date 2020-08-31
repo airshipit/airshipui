@@ -20,6 +20,8 @@ import {LogMessage} from '../../../services/log/log-message';
 import {KustomNode} from './document.models';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { DocumentViewerComponent } from './document-viewer/document-viewer.component';
 
 @Component({
   selector: 'app-document',
@@ -31,6 +33,7 @@ export class DocumentComponent implements WSReceiver {
   className = this.constructor.name;
   statusMsg: string;
   loading: boolean;
+  dialogRef: MatDialogRef<DocumentViewerComponent, any>;
 
   type = 'ctl';
   component = 'document';
@@ -38,7 +41,6 @@ export class DocumentComponent implements WSReceiver {
 
   targetPath: string;
   phaseTree: KustomNode[] = [];
-  cache = new Map<string, KustomNode[]>();
 
   treeControl = new NestedTreeControl<KustomNode>(node => node.children);
   dataSource = new MatTreeNestedDataSource<KustomNode>();
@@ -47,12 +49,10 @@ export class DocumentComponent implements WSReceiver {
 
   showEditor: boolean;
   saveBtnDisabled = true;
-  hideButtons = true;
   editorOptions = {language: 'yaml', automaticLayout: true, value: '', theme: 'airshipTheme'};
   code: string;
   editorTitle: string;
   editorSubtitle: string;
-  docType: string;
 
   hasChild = (_: number, node: KustomNode) => !!node.children && node.children.length > 0;
 
@@ -62,7 +62,7 @@ export class DocumentComponent implements WSReceiver {
     });
   }
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WebsocketService, public dialog: MatDialog) {
     this.websocketService.registerFunctions(this);
     this.getTarget();
     this.getPhaseTree(); // load the source first
@@ -83,8 +83,17 @@ export class DocumentComponent implements WSReceiver {
         case 'getPhaseTree':
           this.handleGetPhaseTree(message.data);
           break;
+        case 'getPhase':
+          this.handleGetPhase(message);
+          break;
         case 'getYaml':
           this.handleGetYaml(message);
+          break;
+        case 'getDocumentsBySelector':
+          this.handleGetDocumentsBySelector(message);
+          break;
+        case 'getExecutorDoc':
+          this.handleGetExecutorDoc(message);
           break;
         case 'yamlWrite':
           this.handleYamlWrite(message);
@@ -102,11 +111,34 @@ export class DocumentComponent implements WSReceiver {
     this.dataSource.data = this.phaseTree;
   }
 
+  handleGetPhase(message: WebsocketMessage): void {
+    this.loading = false;
+    let yaml = '';
+    if (message.yaml !== '' && message.yaml !== undefined) {
+      yaml = atob(message.yaml);
+    }
+    this.dialogRef = this.openDialog(message.id, message.name, message.details, yaml);
+  }
+
+  handleGetExecutorDoc(message: WebsocketMessage): void {
+    this.dialogRef.componentInstance.executorYaml = atob(message.yaml);
+  }
+
+  handleGetDocumentsBySelector(message: WebsocketMessage): void {
+    this.dialogRef.componentInstance.loading = false;
+    Object.assign(this.dialogRef.componentInstance.results, message.data);
+    this.dialogRef.componentInstance.resultsMsg = `Matches: ${this.dialogRef.componentInstance.results.length}`;
+  }
+
   handleGetYaml(message: WebsocketMessage): void {
-    this.changeEditorContents((message.yaml));
-    this.setTitle(message.name);
-    this.showEditor = true;
-    this.currentDocId = message.id;
+    if (message.message === 'rendered') {
+      this.dialogRef.componentInstance.yaml = atob(message.yaml);
+    } else {
+      this.changeEditorContents((message.yaml));
+      this.setTitle(message.name);
+      this.showEditor = true;
+      this.currentDocId = message.id;
+    }
   }
 
   handleYamlWrite(message: WebsocketMessage): void {
@@ -140,14 +172,50 @@ export class DocumentComponent implements WSReceiver {
     this.websocketService.sendMessage(websocketMessage);
   }
 
-  viewPhaseDocs(id: string): void {
-    // show document viewer
+  openDialog(id: string, name: string, details: string, yaml: string): MatDialogRef<DocumentViewerComponent, any> {
+    const dialogRef = this.dialog.open(DocumentViewerComponent, {
+      width: '80vw',
+      height: '90vh',
+    });
+
+    dialogRef.componentInstance.id = id;
+    dialogRef.componentInstance.name = name;
+    dialogRef.componentInstance.yaml = yaml;
+
+    if (details === '' || details === undefined) {
+      details = '(Phase details not provided)';
+    }
+
+    dialogRef.componentInstance.phaseDetails = details;
+
+    this.getExecutorDoc(JSON.parse(id));
+    return dialogRef;
+  }
+
+  getPhaseDetails(id: object): void {
+    const msg = this.constructDocumentWsMessage('getPhaseDetails');
+    msg.id = JSON.stringify(id);
+    this.websocketService.sendMessage(msg);
+  }
+
+  getPhase(id: object): void {
+    this.loading = true;
+    const msg = this.constructDocumentWsMessage('getPhase');
+    msg.id = JSON.stringify(id);
+    this.websocketService.sendMessage(msg);
   }
 
   getYaml(id: string): void {
     this.code = null;
     const msg = new WebsocketMessage('ctl', 'document', 'getYaml');
     msg.id = id;
+    msg.message = 'source';
+    this.websocketService.sendMessage(msg);
+  }
+
+  getExecutorDoc(id: object): void {
+    const msg = this.constructDocumentWsMessage('getExecutorDoc');
+    msg.id = JSON.stringify(id);
     this.websocketService.sendMessage(msg);
   }
 

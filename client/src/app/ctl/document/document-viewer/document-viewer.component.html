@@ -1,0 +1,92 @@
+<mat-toolbar>
+  <button mat-icon-button>
+    <mat-icon (click)="sidenav.toggle()" svgIcon="filter"
+      matTooltip="Filter documents"
+      matTooltipPosition="above"
+      matTooltipShowDelay="1000"
+      matTooltipHideDelay="500"></mat-icon>
+  </button>
+  <span class="spacer"></span>
+  <span>Phase '{{name}}'</span>
+  <span class="spacer"></span>
+  <button mat-button class="close-icon" (click)="onClose()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-toolbar>
+<mat-sidenav-container class="filter-container">
+  <mat-sidenav #sidenav mode="push">
+    <form [formGroup]="filterOptions" (ngSubmit)="onSubmit(filterOptions.value)">
+      <div class="filter-options">
+        <fieldset>
+          <p>Filter documents by:</p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="name">
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>Namespace</mat-label>
+              <input matInput formControlName="namespace">
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>GVK</mat-label>
+              <input matInput formControlName="gvk" placeholder="group version kind">
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>Kind</mat-label>
+              <input matInput formControlName="kind">
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>Label</mat-label>
+              <input matInput formControlName="label">
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field class="filter-param" appearance="standard">
+              <mat-label>Annotation</mat-label>
+              <input matInput formControlName="annotation">
+            </mat-form-field>
+          </p>
+          <div class="apply-div">
+            <button mat-raised-button color="primary" type="submit">Apply</button>
+            <mat-spinner class="spinner" [diameter]="30" *ngIf="loading"></mat-spinner>
+          </div>
+        </fieldset>
+      </div>
+    </form>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="rendered-container">
+      <div class="result-items">
+        <mat-action-list dense>
+          <button mat-list-item (click)="setModel('details')">
+            <h4>Phase Details</h4>
+          </button>
+          <button *ngIf="bundleYaml !== ''" mat-list-item (click)="setModel('bundle')">
+            <h4>Phase Bundle</h4>
+          </button>
+          <button mat-list-item (click)="setModel('executor')">
+            <h4>Executor Document</h4>
+          </button>
+          <span *ngFor="let node of results">
+            <button mat-list-item (click)="getYaml(node.id)">
+              <h4 matLine> {{node.name.split("/")[2]}} </h4>
+              <h6 matLine>Namespace: {{node.name.split("/")[0]}} Kind: {{node.name.split("/")[1]}}</h6>
+            </button>
+          </span>
+        </mat-action-list>
+      </div>
+      <div class="viewer-editor">
+        <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="yaml"></ngx-monaco-editor>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
