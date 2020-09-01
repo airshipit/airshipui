@@ -11,6 +11,10 @@ dist
 /build
 *.exe
 
+# local conf files
+etc/*.pem
+etc/*.json
+
 # Only exists if Bazel was run
 /bazel-out
 

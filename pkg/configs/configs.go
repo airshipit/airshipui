@@ -15,20 +15,28 @@
 package configs
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
 
 	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipui/pkg/cryptography"
+	"opendev.org/airship/airshipui/pkg/log"
 )
 
 // variables related to UI config
 var (
-	UIConfig Config
+	UIConfig     Config
+	UIConfigFile string
+	etcDir       *string
 )
 
 // Config basic structure to hold configuration params for Airship UI
 type Config struct {
+	WebService *WebService `json:"webservice,omitempty"`
 	AuthMethod *AuthMethod `json:"authMethod,omitempty"`
 	Dashboards []Dashboard `json:"dashboards,omitempty"`
 }
@@ -38,6 +46,14 @@ type AuthMethod struct {
 	Type  string   `json:"type,omitempty"`
 	Value []string `json:"values,omitempty"`
 	URL   string   `json:"url,omitempty"`
+}
+
+// WebService describes the things we need to know to start the web container
+type WebService struct {
+	Host       string `json:"host,omitempty"`
+	Port       int    `json:"port,omitempty"`
+	PublicKey  string `json:"publicKey,omitempty"`
+	PrivateKey string `json:"privateKey,omitempty"`
 }
 
 // Dashboard structure
@@ -111,11 +127,11 @@ type WsMessage struct {
 
 // SetUIConfig sets the UIConfig object with values obtained from
 // airshipui.json, located at 'filename'
-// TODO: add watcher to the json file to reload conf on change
-func SetUIConfig(filename string) error {
-	f, err := os.Open(filename)
+// TODO: add watcher to the json file to reload conf on change (maybe not needed)
+func SetUIConfig() error {
+	f, err := os.Open(UIConfigFile)
 	if err != nil {
-		return err
+		return checkConfigs()
 	}
 	defer f.Close()
 
@@ -129,5 +145,101 @@ func SetUIConfig(filename string) error {
 		return err
 	}
 
+	return checkConfigs()
+}
+
+func checkConfigs() error {
+	if UIConfig.WebService == nil {
+		log.Debug("No UI config found, generating ssl keys & host & port info")
+		err := setEtcDir()
+		if err != nil {
+			return err
+		}
+
+		privateKeyFile := filepath.Join(*etcDir, "key.pem")
+		publicKeyFile := filepath.Join(*etcDir, "cert.pem")
+
+		err = writeTestSSL(privateKeyFile, publicKeyFile)
+		if err != nil {
+			return err
+		}
+
+		UIConfig.WebService = &WebService{
+			Host:       "localhost",
+			Port:       10443,
+			PublicKey:  publicKeyFile,
+			PrivateKey: privateKeyFile,
+		}
+		err = cryptography.TestCertValidity(publicKeyFile)
+		if err != nil {
+			return err
+		}
+
+		bytes, err := json.Marshal(UIConfig)
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(UIConfigFile, bytes, 0440)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeTestSSL(privateKeyFile string, publicKeyFile string) error {
+	// get and write out private key
+	log.Warnf("Generating private key %s.  DO NOT USE THIS FOR PRODUCTION", privateKeyFile)
+	privateKey, err := getAndWritePrivateKey(privateKeyFile)
+	if err != nil {
+		return err
+	}
+
+	// get and write out public key
+	log.Warnf("Generating public key %s.  DO NOT USE THIS FOR PRODUCTION", publicKeyFile)
+	err = getAndWritePublicKey(publicKeyFile, privateKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getAndWritePrivateKey(fileName string) (*rsa.PrivateKey, error) {
+	privateKeyBytes, privateKey, err := cryptography.GeneratePrivateKey()
+	if err != nil {
+		return nil, err
+	}
+	err = ioutil.WriteFile(fileName, privateKeyBytes, 0600)
+	if err != nil {
+		return nil, err
+	}
+	return privateKey, nil
+}
+
+func getAndWritePublicKey(fileName string, privateKey *rsa.PrivateKey) error {
+	publicKeyBytes, err := cryptography.GeneratePublicKey(privateKey)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(fileName, publicKeyBytes, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func setEtcDir() error {
+	if etcDir == nil {
+		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			return err
+		}
+		dir, err = filepath.Abs(filepath.Join(path.Dir(dir), "etc"))
+		if err != nil {
+			return err
+		}
+		etcDir = &dir
+	}
 	return nil
 }

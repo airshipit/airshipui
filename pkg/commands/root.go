@@ -17,7 +17,6 @@ package commands
 import (
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -38,11 +37,22 @@ var rootCmd = &cobra.Command{
 func init() {
 	// Add a 'version' command, in addition to the '--version' option that is auto created
 	rootCmd.AddCommand(newVersionCmd())
+
+	// Add the config file Flag
+	rootCmd.Flags().StringVarP(
+		&configs.UIConfigFile,
+		"conf",
+		"c",
+		"etc/airshipui.json",
+		"This will set the location of the conf file needed to start the UI",
+	)
+
+	// Add the logging level flag
 	rootCmd.Flags().IntVar(
 		&log.LogLevel,
 		"loglevel",
 		6,
-		"This well set the log level, anything at or below that level will be viewed, all others suppressed\n"+
+		"This will set the log level, anything at or below that level will be viewed, all others suppressed\n"+
 			"  6 -- Trace\n"+
 			"  5 -- Debug\n"+
 			"  4 -- Info\n"+
@@ -53,16 +63,9 @@ func init() {
 }
 
 func launch(cmd *cobra.Command, args []string) {
-	// set default config path
-	// TODO: do we want to make this a flag that can be passed in?
-	airshipUIConfigPath, err := getDefaultConfigPath()
-	if err != nil {
-		log.Errorf("Error setting config path %s", err)
-	}
-
 	// Read AirshipUI config file
-	if err := configs.SetUIConfig(airshipUIConfigPath); err != nil {
-		log.Errorf("config %s", err)
+	if err := configs.SetUIConfig(); err != nil {
+		log.Fatalf("config %s", err)
 	}
 
 	// start webservice and listen for the the ctl + c to exit
@@ -82,13 +85,4 @@ func Execute() {
 		log.Error(err)
 		os.Exit(1)
 	}
-}
-
-func getDefaultConfigPath() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash(home + "/.airship/airshipui.json"), nil
 }

@@ -53,7 +53,7 @@ export class WebsocketService implements OnDestroy {
       this.ws.close();
     }
 
-    this.ws = new WebSocket('ws://localhost:8080/ws');
+    this.ws = new WebSocket('wss://localhost:10443/ws');
 
     this.ws.onmessage = (event) => {
       this.messageHandler(WebsocketService.messageToObject(event.data));

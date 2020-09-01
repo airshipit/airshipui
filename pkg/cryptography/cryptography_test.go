@@ -12,31 +12,35 @@
  limitations under the License.
 */
 
-package webservice
+package cryptography
 
 import (
-	"net/http"
 	"testing"
-	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	serverAddr string = "localhost:8080"
-)
-
-func init() {
-	go WebServer()
-	// wait for the webserver to come up
-	time.Sleep(250 * time.Millisecond)
+func TestGeneratePrivateKey(t *testing.T) {
+	pem, key, err := GeneratePrivateKey()
+	require.NoError(t, err)
+	require.NotNil(t, key)
+	require.NotNil(t, pem)
 }
 
-func TestRootURI(t *testing.T) {
-	resp, err := http.Get("http://" + serverAddr)
+func TestGeneratePublicKey(t *testing.T) {
+	_, privateKey, err := GeneratePrivateKey()
 	require.NoError(t, err)
-	defer resp.Body.Close()
-	// this will be not found because of where the webservice starts
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+
+	cert, err := GeneratePublicKey(privateKey)
+	require.NoError(t, err)
+	require.NotNil(t, cert)
+}
+
+func TestTestCertValidity(t *testing.T) {
+	_, privateKey, err := GeneratePrivateKey()
+	require.NoError(t, err)
+
+	cert, err := GeneratePublicKey(privateKey)
+	require.NoError(t, err)
+	require.NotNil(t, cert)
 }
