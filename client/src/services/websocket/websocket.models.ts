@@ -15,9 +15,9 @@ export class WebsocketMessage {
   timestamp: number;
   dashboards: Dashboard[];
   error: string;
-  fade: boolean;
   html: string;
   name: string;
+  id: string;
   isAuthenticated: boolean;
   message: string;
   data: JSON;

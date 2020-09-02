@@ -1,6 +1,8 @@
 export class KustomNode {
     id: string;
     name: string;
-    data: string;
+    canLoadChildren: boolean;
     children: KustomNode[];
+    isPhaseNode: boolean;
+    hasError: boolean;
 }

@@ -87,17 +87,18 @@ const (
 	Baremetal    WsComponentType = "baremetal"
 	Document     WsComponentType = "document"
 
-	GetDefaults   WsSubComponentType = "getDefaults"
-	SetContext    WsSubComponentType = "context"
-	SetCluster    WsSubComponentType = "cluster"
-	SetCredential WsSubComponentType = "credential"
-	GenerateISO   WsSubComponentType = "generateISO"
-	DocPull       WsSubComponentType = "docPull"
-	Yaml          WsSubComponentType = "yaml"
-	YamlWrite     WsSubComponentType = "yamlWrite"
-	GetYaml       WsSubComponentType = "getYaml"
-	GetSource     WsSubComponentType = "getSource"
-	GetRendered   WsSubComponentType = "getRendered"
+	SetContext          WsSubComponentType = "context"
+	SetCluster          WsSubComponentType = "cluster"
+	SetCredential       WsSubComponentType = "credential"
+	GenerateISO         WsSubComponentType = "generateISO"
+	DocPull             WsSubComponentType = "docPull"
+	Yaml                WsSubComponentType = "yaml"
+	YamlWrite           WsSubComponentType = "yamlWrite"
+	GetYaml             WsSubComponentType = "getYaml"
+	GetPhaseTree        WsSubComponentType = "getPhaseTree"
+	GetPhaseSourceFiles WsSubComponentType = "getPhaseSource"
+	GetPhaseDocuments   WsSubComponentType = "getPhaseDocs"
+	GetTarget           WsSubComponentType = "getTarget"
 )
 
 // WsMessage is a request / return structure used for websockets
@@ -116,6 +117,7 @@ type WsMessage struct {
 	Data            interface{} `json:"data,omitempty"`
 	YAML            string      `json:"yaml,omitempty"`
 	Name            string      `json:"name,omitempty"`
+	ID              string      `json:"id,omitempty"`
 
 	// information related to the init of the UI
 	Dashboards      []Dashboard             `json:"dashboards,omitempty"`

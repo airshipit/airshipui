@@ -19,30 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"opendev.org/airship/airshipui/pkg/configs"
-	"opendev.org/airship/airshipui/util/utiltest"
 )
-
-func TestHandleDefaultBaremetalRequest(t *testing.T) {
-	utiltest.InitConfig(t)
-
-	request := configs.WsMessage{
-		Type:         configs.CTL,
-		Component:    configs.Baremetal,
-		SubComponent: configs.GetDefaults,
-	}
-
-	response := HandleBaremetalRequest(request)
-
-	expected := configs.WsMessage{
-		Type:         configs.CTL,
-		Component:    configs.Baremetal,
-		SubComponent: configs.GetDefaults,
-	}
-
-	assert.Equal(t, expected.Type, response.Type)
-	assert.Equal(t, expected.Component, response.Component)
-	assert.Equal(t, expected.SubComponent, response.SubComponent)
-}
 
 func TestHandleUnknownBaremetalSubComponent(t *testing.T) {
 	request := configs.WsMessage{

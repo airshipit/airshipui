@@ -1,51 +1,94 @@
-@import '~material-design-icons/iconfont/material-icons.css';
-
-#DocContainer {
+.explorer-container {
   display: flex;
-  height: 75vh;
+  flex-direction: row;
+  height: 100%;
 }
 
-#SourceTab {
-  width: 40%;
-  overflow-y: auto;
+/* Phase Tree styles */
+
+.grey-icon {
+  color: grey;
+  height: 20px;
+  width: 20px;
 }
 
-button {
-    border: none;
-    background: none;
+.error-icon {
+  padding-left: 20px;
+  color: red;
+  height: 20px;
+  width: 20px;
 }
 
-#ViewType {
-  padding: 5px;
+.phase-tree-invisible {
+  display: none;
 }
 
-.kustom-tree-invisible {
-    display: none;
+.mat-tree-node {
+  min-height: 25px;
 }
 
-.kustom-tree ul,
-.kustom-tree li {
+.nested-ul {
+  padding-left: 0px;
+}
+
+.phase-tree ul,
+.phase-tree li {
+  padding-left: 20px;
   margin-top: 0;
   margin-bottom: 0;
   list-style-type: none;
 }
 
-#EditorDiv {
+.phase-tree {
   height: 100%;
-  width: 60%;
-  padding-left: 5px
 }
 
-#EditorHeader {
+.phase-tree-card {
+  height: calc(100vh - 176px);
+  width: 40%;
+  box-sizing: border-box;
+}
+
+.phase-card-content {
+  max-height: 90%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.phase-tree-progress-bar {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.phase-tree-toggle {
+  padding-right: 0px;
+}
+
+/* Editor styles */
+.editor-btn {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.editor-button-grp {
   display: flex;
 }
 
-#EditorButtons {
+.editor-btns {
   margin-left: auto;
+  margin-right: 30px;
 }
 
-.editor-btn {
-  padding: 5px;
+.editor-card {
+  height: calc(100vh - 176px);
+  width: 60%;
+  box-sizing: border-box;
+}
+
+.editor-card-content {
+  height: 85%;
+  width: 100%;
+  margin-bottom: 0px;
 }
 
 ngx-monaco-editor {

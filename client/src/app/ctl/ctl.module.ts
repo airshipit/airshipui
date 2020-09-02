@@ -11,7 +11,7 @@ import {CtlRoutingModule} from './ctl-routing.module';
 
     RouterModule,
     DocumentModule,
-    BaremetalModule
+    BaremetalModule,
   ],
   declarations: [ CtlComponent ],
   providers: []

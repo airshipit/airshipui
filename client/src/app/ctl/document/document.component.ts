@@ -1,11 +1,11 @@
 import {Component} from '@angular/core';
 import {WebsocketService} from '../../../services/websocket/websocket.service';
 import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
+import {Log} from '../../../services/log/log.service';
+import {LogMessage} from '../../../services/log/log-message';
+import {KustomNode} from './document.models';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
-import { Log } from '../../../services/log/log.service';
-import { LogMessage } from '../../../services/log/log-message';
-import {KustomNode} from './document.models';
 
 @Component({
   selector: 'app-document',
@@ -15,26 +15,32 @@ import {KustomNode} from './document.models';
 
 export class DocumentComponent implements WSReceiver {
   className = this.constructor.name;
-  obby: string;
+  statusMsg: string;
+  loading: boolean;
 
   type = 'ctl';
   component = 'document';
-
   activeLink = 'overview';
 
-  obj: KustomNode[] = [];
-  currentDocId: string;
-
-  saveBtnDisabled = true;
-  hideButtons = true;
-  isRendered = false;
-
-  editorOptions = {language: 'yaml', automaticLayout: true, value: ''};
-  code: string;
-  editorTitle: string;
+  targetPath: string;
+  phaseTree: KustomNode[] = [];
+  cache = new Map<string, KustomNode[]>();
 
   treeControl = new NestedTreeControl<KustomNode>(node => node.children);
   dataSource = new MatTreeNestedDataSource<KustomNode>();
+
+  currentDocId: string;
+
+  showEditor: boolean;
+  saveBtnDisabled = true;
+  hideButtons = true;
+  editorOptions = {language: 'yaml', automaticLayout: true, value: '', theme: 'airshipTheme'};
+  code: string;
+  editorTitle: string;
+  editorSubtitle: string;
+  docType: string;
+
+  hasChild = (_: number, node: KustomNode) => !!node.children && node.children.length > 0;
 
   onInit(editor): void {
     editor.onDidChangeModelContent(() => {
@@ -44,43 +50,33 @@ export class DocumentComponent implements WSReceiver {
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.registerFunctions(this);
-    this.getSource(); // load the source first
+    this.getTarget();
+    this.getPhaseTree(); // load the source first
   }
-
-  hasChild = (_: number, node: KustomNode) => !!node.children && node.children.length > 0;
 
   public async receiver(message: WebsocketMessage): Promise<void> {
     if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
+      this.loading = false;
     } else {
       switch (message.subComponent) {
-        case 'getDefaults':
-          Object.assign(this.obj, message.data);
-          this.dataSource.data = this.obj;
-          break;
-        case 'getSource':
-          this.closeEditor();
-          Object.assign(this.obj, message.data);
-          this.dataSource.data = this.obj;
-          break;
-        case 'getRendered':
-          this.closeEditor();
-          Object.assign(this.obj, message.data);
-          this.dataSource.data = this.obj;
-          break;
-        case 'getYaml':
-          this.changeEditorContents((message.yaml));
-          this.editorTitle = message.name;
-          this.currentDocId = message.message;
-          this.hideButtons = this.isRendered;
-          break;
-        case 'yamlWrite':
-          this.changeEditorContents((message.yaml));
-          this.editorTitle = message.name;
-          this.currentDocId = message.message;
+        case 'getTarget':
+          this.targetPath = message.message;
           break;
         case 'docPull':
-          this.obby = 'Message pull was a ' + message.message;
+          this.statusMsg = 'Message pull was a ' + message.message;
+          break;
+        case 'getPhaseTree':
+          this.handleGetPhaseTree(message.data);
+          break;
+        case 'getPhaseDocs':
+          this.handleGetPhaseDocs(message);
+          break;
+        case 'getYaml':
+          this.handleGetYaml(message);
+          break;
+        case 'yamlWrite':
+          this.handleYamlWrite(message);
           break;
         default:
           Log.Error(new LogMessage('Document message sub component not handled', this.className, message));
@@ -89,11 +85,43 @@ export class DocumentComponent implements WSReceiver {
     }
   }
 
-  getYaml(id: string): void {
-    this.code = null;
-    const websocketMessage = this.constructDocumentWsMessage('getYaml');
-    websocketMessage.message = id;
-    this.websocketService.sendMessage(websocketMessage);
+  handleGetPhaseTree(data: JSON): void {
+    this.loading = false;
+    Object.assign(this.phaseTree, data);
+    this.dataSource.data = this.phaseTree;
+  }
+
+  handleGetPhaseDocs(message: WebsocketMessage): void {
+    const tmp: KustomNode[] = [];
+    Object.assign(tmp, message.data);
+    this.cache[message.id] = tmp;
+    console.dir(this.cache[message.id]);
+  }
+
+  handleGetYaml(message: WebsocketMessage): void {
+    this.changeEditorContents((message.yaml));
+    this.setTitle(message.name);
+    this.showEditor = true;
+    this.currentDocId = message.id;
+  }
+
+  handleYamlWrite(message: WebsocketMessage): void {
+    this.changeEditorContents((message.yaml));
+    this.setTitle(message.name);
+    this.currentDocId = message.id;
+    this.websocketService.printIfToast(message);
+  }
+
+  setTitle(name: string): void {
+    this.editorSubtitle = name;
+    const str = name.split('/');
+    this.editorTitle = str[str.length - 1];
+  }
+
+  refreshTreeData(): void {
+    const tmpdata = this.dataSource.data;
+    this.dataSource.data = null;
+    this.dataSource.data = tmpdata;
   }
 
   changeEditorContents(yaml: string): void {
@@ -102,21 +130,42 @@ export class DocumentComponent implements WSReceiver {
 
   saveYaml(): void {
     const websocketMessage = this.constructDocumentWsMessage('yamlWrite');
-    websocketMessage.message = this.currentDocId;
+    websocketMessage.id = this.currentDocId;
     websocketMessage.name = this.editorTitle;
     websocketMessage.yaml = btoa(this.code);
     this.websocketService.sendMessage(websocketMessage);
   }
 
-  getSource(): void {
-    this.isRendered = false;
-    const websocketMessage = this.constructDocumentWsMessage('getSource');
+  getPhaseTree(): void {
+    this.loading = true;
+    const websocketMessage = this.constructDocumentWsMessage('getPhaseTree');
     this.websocketService.sendMessage(websocketMessage);
   }
 
-  getRendered(): void {
-    this.isRendered = true;
-    const websocketMessage = this.constructDocumentWsMessage('getRendered');
+  getPhaseDocs(id: string): void {
+    const websocketMessage = this.constructDocumentWsMessage('getPhaseDocs');
+    websocketMessage.id = id;
+    this.websocketService.sendMessage(websocketMessage);
+  }
+
+  viewPhaseDocs(id: string): void {
+    // show document viewer
+  }
+
+  getYaml(id: string): void {
+    this.code = null;
+    const msg = new WebsocketMessage('ctl', 'document', 'getYaml');
+    msg.id = id;
+    this.websocketService.sendMessage(msg);
+  }
+
+  closeEditor(): void {
+    this.code = null;
+    this.showEditor = false;
+  }
+
+  getTarget(): void {
+    const websocketMessage = this.constructDocumentWsMessage('getTarget');
     this.websocketService.sendMessage(websocketMessage);
   }
 
@@ -124,14 +173,7 @@ export class DocumentComponent implements WSReceiver {
     return new WebsocketMessage(this.type, this.component, subComponent);
   }
 
-  closeEditor(): void {
-    this.code = null;
-    this.editorTitle = '';
-    this.hideButtons = true;
-  }
-
   documentPull(): void {
     this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'docPull'));
   }
 }
-
