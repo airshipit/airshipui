@@ -15,12 +15,14 @@ to go to a separate url or application.
 git clone https://opendev.org/airship/airshipui
 cd airshipui
 make # Note running behind a proxy can cause issues, notes on solving is in the Appendix of the Developer's Guide
+bin/airshipui
 ```
+Once AirshipUI has started you should be able to browse to it at https://localhost:10443
 
 ## Adding Additional Functionality
 
 Airship UI can be seamlessly integrated with service dashboards and other web-based tools by providing the necessary
-configuration in $HOME/.airship/airshipui.json.
+configuration in etc/airshipui.json.
 
 To add service dashboards, create a section at the top-level of airshipui.json as follows:
 

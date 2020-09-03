@@ -47,19 +47,11 @@ GO_FLAGS  := -ldflags=$(LD_FLAGS) -trimpath
 BUILD_DIR := bin
 
 # Find all main.go files under cmd, excluding airshipui itself
-EXAMPLE_NAMES := $(notdir $(subst /main.go,,$(wildcard examples/*/main.go)))
-EXAMPLES   := $(addprefix $(BUILD_DIR)/, $(EXAMPLE_NAMES))
 MAIN      := $(BUILD_DIR)/airshipui
 EXTENSION :=
 
-ifdef XDG_CONFIG_HOME
-	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
-# Determine if on windows
-else ifeq ($(OS),Windows_NT)
-	OCTANT_PLUGINSTUB_DIR ?= $(subst \,/,${LOCALAPPDATA}/octant/plugins)
+ifeq ($(OS),Windows_NT)
 	EXTENSION=.exe
-else
-	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
 endif
 
 DIRS = internal

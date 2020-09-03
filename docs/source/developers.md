@@ -10,7 +10,6 @@ Clone the Airship UI repository and build.
     git clone https://opendev.org/airship/airshipui
     cd airshipui
     make # Note running behind a proxy can cause issues, notes on solving is in the Appendix
-    make examples # (optional)
 
 **NOTE:** Make will install node.js-v12.16.3 into your tools directory and will use that as the node binary for the UI
 building, testing and linting.  For windows this can be done using [cygwin](https://www.cygwin.com/) make.
@@ -19,41 +18,51 @@ Run the airshipui binary
 
     ./bin/airshipui
 
-## Authentication
+## Security
 
-### Pluggable authentication methods
-The AirshipUI is not designed to create authentication credentials but to have them supplied to it either by a
-configuration or by an external entity. The expectation is that there will be an external URL that will handle
-authentication for the system which may need to be modified or created. The endpoint will need to be able to
-forward a
-[bearer token](https://oauth.net/2/bearer-tokens/),
-[basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication)
-or cookie data to the Airship UI backend service.
+### Transport Layer Security
+The UI will need to send sensitive / receive information therefore all channels of communication will need to be encrypted.  The main protocol for this is [HTTPS](https://en.wikipedia.org/wiki/HTTPS), and the websocket communication is also over the secured channel ([wss](https://tools.ietf.org/html/rfc6455#page-55))
 
-To configure the pluggable authentication the following must be added to the $HOME/.airshipui/airshipui.json file:
+The airshipui stores the public and private key location in the etc/airshipui.json by default.  If one is not present at the time of the airshipui is started a self signed certificate and private key will be generated and stored in etc/airshipui.json for the server to start in a developer's mode.  This will cause an SSL error on your browser that 
+you will need to click past to get to the UI.  It is assumed the server will have access to the proper key & certificate in production.  Both the private key and certificate need to be ASCII PEM formatted.
 
-    "authMethod": {
-        "url": "<protocol>://<host:port>/<path>/<method>"
+Example webservice definition in etc/airshipui.json:
+```
+    "webservice": {
+        "host": "<host, default is localhost>",
+        "port": <port, default is 10443>,
+        "publicKey": "<path>/<cert>.pem",
+        "privateKey": "<path>/<private_key>.pem"
+    },
+```
+### User Authentication
+The UI uses Json Web Tokens ([JWT](https://tools.ietf.org/html/rfc7519)) to control access to the UI.  The default method of generation is based on a userid and password enforcement
+that the user is required to enter the first time accessing the UI.  The UI will store the token locally and use it to authenticate the communication with the backend on every 
+transaction.  
+
+The airshipui stores the user and password in etc/airshipui.json by default.  The userid is clear text but the password is an non reversible sha512 hash of the password which is used to compare the supplied password with the expected password.  No clear text passwords are stored.
+
+If no id and password is supplied the airshipui will create a default userid and password and store it in the etc/airshipui.json file so there will be no ability to use the UI
+without a base id / password challenge authentication.  
+
+The default userid is: admin  The default password is: admin
+
+To generate a password you can run the password.go program in the tools directory:
+```
+$ go run tools/password.go test_password
+c8afeec4e9d29fa6307bc246965fe136a95bc47a9cfdedba0df256358eaa45ec0bf8d7a4333a4b13dc9a5508137d0f4d212272b27e64e41d4745a66b5f480759
+```
+
+Example user definition in etc/airshipui.json:
+``` 
+    "users": {
+        "test": "c8afeec4e9d29fa6307bc246965fe136a95bc47a9cfdedba0df256358eaa45ec0bf8d7a4333a4b13dc9a5508137d0f4d212272b27e64e41d4745a66b5f480759"
     }
+```
+After the user is defined in the etc/airshipui.json file the user can be used for authentication going forward.
 
-Note: By default the system will start correctly without any authentication urls supplied to the configuration.
-The expectation is that AirshipUI will be running in a minimal least authorized configuration.
-
-### Example Auth Server
-There is an example authentication server in examples/authentication/main.go. These endpoints can be added to the
-$HOME/.airshipui/airshipui.json and will allow the system to show a basic authentication test.
-1. Basic auth on http://127.0.0.1:12321/basic-auth
-2. Cookie based auth on http://127.0.0.1:12321/cookie
-3. OAuth JWT (JSON Web Token) on http://127.0.0.1:12321/oauth
-
-To start the system cd to the root of the AirshipUI repository and execute:
-
-    go run examples/authentication/main.go
-
-#### Example Auth Server Credentials
-+ The example auth server id is: **airshipui**
-+ The example auth server password is: **Open Sesame!**
-
+### Authentication decision tree
+![AirshipUI Interactions](../img/authentication.jpg "AirshipUI Authentication Decision Tree")
 
 ## Behind the scenes
 
