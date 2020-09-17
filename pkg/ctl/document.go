@@ -41,26 +41,29 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	var err error
 	var message string
 	var id string
+
+	client := NewClient(request)
+
 	switch request.SubComponent {
 	case configs.DocPull:
-		message, err = c.docPull()
+		message, err = client.docPull()
 	case configs.YamlWrite:
 		id = request.ID
-		response.Name, response.YAML, err = writeYamlFile(id, request.YAML)
+		response.Name, response.YAML, err = client.writeYamlFile(id, request.YAML)
 		message = fmt.Sprintf("File '%s' saved successfully", response.Name)
 	case configs.GetYaml:
 		id = request.ID
-		response.Name, response.YAML, err = getYaml(id)
+		response.Name, response.YAML, err = client.getYaml(id)
 	case configs.GetPhaseTree:
-		response.Data, err = GetPhaseTree()
+		response.Data, err = client.GetPhaseTree()
 	case configs.GetPhaseDocuments:
 		id = request.ID
 		response.Data, err = GetPhaseDocuments(request.ID)
 	case configs.GetPhaseSourceFiles:
 		id = request.ID
-		response.Data, err = GetPhaseSourceFiles(request.ID)
+		response.Data, err = client.GetPhaseSourceFiles(request.ID)
 	case configs.GetTarget:
-		message = getTarget()
+		message = client.getTarget()
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -75,7 +78,7 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
-func getTarget() string {
+func (c *Client) getTarget() string {
 	m, err := c.settings.Config.CurrentContextManifest()
 	if err != nil {
 		return "unknown"
@@ -84,11 +87,11 @@ func getTarget() string {
 	return filepath.Join(m.TargetPath, m.SubPath)
 }
 
-func getYaml(id string) (string, string, error) {
+func (c *Client) getYaml(id string) (string, string, error) {
 	obj := index[id]
 	switch t := obj.(type) {
 	case string:
-		return getFileYaml(t)
+		return c.getFileYaml(t)
 	case document.Document:
 		return getDocumentYaml(t)
 	default:
@@ -106,7 +109,7 @@ func getDocumentYaml(doc document.Document) (string, string, error) {
 	return title, base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-func getFileYaml(path string) (string, string, error) {
+func (c *Client) getFileYaml(path string) (string, string, error) {
 	ccm, err := c.settings.Config.CurrentContextManifest()
 	if err != nil {
 		return "", "", err
@@ -139,7 +142,7 @@ func getFileYaml(path string) (string, string, error) {
 	return title, base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-func writeYamlFile(id, yaml64 string) (string, string, error) {
+func (c *Client) writeYamlFile(id, yaml64 string) (string, string, error) {
 	path, ok := index[id].(string)
 	if !ok {
 		return "", "", fmt.Errorf("ID %s not found", id)
@@ -155,7 +158,7 @@ func writeYamlFile(id, yaml64 string) (string, string, error) {
 		return "", "", err
 	}
 
-	return getFileYaml(path)
+	return c.getFileYaml(path)
 }
 
 func (c *Client) docPull() (string, error) {

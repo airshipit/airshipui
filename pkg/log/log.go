@@ -110,6 +110,11 @@ func Writer() io.Writer {
 	return airshipLog.Writer()
 }
 
+// Logger is used by things like net/http to overwrite their standard logging
+func Logger() *log.Logger {
+	return airshipLog
+}
+
 func writeLog(level int, v ...interface{}) {
 	// determine if we need to display the logs
 	if level <= LogLevel {

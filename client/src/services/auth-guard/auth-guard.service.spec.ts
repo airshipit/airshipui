@@ -1,7 +1,7 @@
 import { async, TestBed } from '@angular/core/testing';
 import { AuthGuard } from './auth-guard.service';
 import { RouterTestingModule } from '@angular/router/testing';
-import {ToastrModule} from 'ngx-toastr';
+import { ToastrModule } from 'ngx-toastr';
 
 describe('AuthGuardService', () => {
   let service: AuthGuard;

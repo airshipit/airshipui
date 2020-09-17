@@ -40,16 +40,21 @@ type PhaseObj struct {
 }
 
 func buildPhaseIndex() map[string]PhaseObj {
+	client := NewDefaultClient()
+	return client.buildPhaseIndex()
+}
+
+func (client *Client) buildPhaseIndex() map[string]PhaseObj {
 	idx := map[string]PhaseObj{}
 
 	// get target path from ctl settings
-	tp, err := c.settings.Config.CurrentContextTargetPath()
+	tp, err := client.settings.Config.CurrentContextTargetPath()
 	if err != nil {
 		log.Errorf("Error building phase index: %s", err)
 		return nil
 	}
 
-	cmd := phase.Cmd{AirshipCTLSettings: c.settings}
+	cmd := phase.Cmd{AirshipCTLSettings: client.settings}
 
 	plan, err := cmd.Plan()
 	if err != nil {
@@ -81,41 +86,39 @@ func buildPhaseIndex() map[string]PhaseObj {
 // GetPhaseTree builds the initial structure of the phase tree
 // consisting of phase Groups and Phases. Individual phase source
 // files or rendered documents will be lazy loaded as needed
-func GetPhaseTree() ([]KustomNode, error) {
+func (client *Client) GetPhaseTree() ([]KustomNode, error) {
 	nodes := []KustomNode{}
 
 	grpMap := map[string][]KustomNode{}
-
-	if phaseIndex != nil {
-		for id, po := range phaseIndex {
-			pNode := KustomNode{
-				ID:          id,
-				Name:        fmt.Sprintf("Phase: %s", po.Name),
-				IsPhaseNode: true,
-			}
-
-			children, err := GetPhaseSourceFiles(id)
-			if err != nil {
-				// TODO(mfuller): push an error to UI so it can be handled by
-				// toastr service, pending refactor of webservice and configs pkgs
-				log.Errorf("Error building tree for phase '%s': %s", po.Name, err)
-				pNode.HasError = true
-			} else {
-				pNode.Children = children
-			}
-
-			grpMap[po.Group] = append(grpMap[po.Group], pNode)
+	for id, po := range phaseIndex {
+		pNode := KustomNode{
+			ID:          id,
+			Name:        fmt.Sprintf("Phase: %s", po.Name),
+			IsPhaseNode: true,
 		}
 
-		for name, phases := range grpMap {
-			gNode := KustomNode{
-				ID:       uuid.New().String(),
-				Name:     fmt.Sprintf("Group: %s", name),
-				Children: phases,
-			}
-			nodes = append(nodes, gNode)
+		children, err := client.GetPhaseSourceFiles(id)
+		if err != nil {
+			// TODO(mfuller): push an error to UI so it can be handled by
+			// toastr service, pending refactor of webservice and configs pkgs
+			log.Errorf("Error building tree for phase '%s': %s", po.Name, err)
+			pNode.HasError = true
+		} else {
+			pNode.Children = children
 		}
+
+		grpMap[po.Group] = append(grpMap[po.Group], pNode)
 	}
+
+	for name, phases := range grpMap {
+		gNode := KustomNode{
+			ID:       uuid.New().String(),
+			Name:     fmt.Sprintf("Group: %s", name),
+			Children: phases,
+		}
+		nodes = append(nodes, gNode)
+	}
+
 	return nodes, nil
 }
 
@@ -201,7 +204,7 @@ func sortDocuments(path string) (map[string]map[string][]document.Document, erro
 // all of the directories that will be traversed when kustomize
 // builds the document bundle. The tree hierarchy is:
 // kustomize "type" (like function) -> directory name -> file name
-func GetPhaseSourceFiles(id string) ([]KustomNode, error) {
+func (client *Client) GetPhaseSourceFiles(id string) ([]KustomNode, error) {
 	if index == nil {
 		index = map[string]interface{}{}
 	}
@@ -213,7 +216,7 @@ func GetPhaseSourceFiles(id string) ([]KustomNode, error) {
 			return nil, err
 		}
 
-		dm, err := createDirsMap(dirs)
+		dm, err := client.createDirsMap(dirs)
 		if err != nil {
 			return nil, err
 		}
@@ -326,10 +329,10 @@ func getKustomizeDirs(entrypoint string) ([]string, error) {
 }
 
 // helper function to group kustomize dirs by type (i.e. function, composite, etc)
-func createDirsMap(dirs []string) (map[string][][]string, error) {
+func (client *Client) createDirsMap(dirs []string) (map[string][][]string, error) {
 	dm := map[string][][]string{}
 
-	tp, err := c.settings.Config.CurrentContextTargetPath()
+	tp, err := client.settings.Config.CurrentContextTargetPath()
 	if err != nil {
 		return nil, err
 	}

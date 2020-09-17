@@ -15,6 +15,7 @@
 package webservice
 
 import (
+	"crypto/tls"
 	"net/http"
 	"strconv"
 
@@ -54,6 +55,17 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getCertificates returns the cert chain in a way that the net/http server struct expects
+func getCertificates() []tls.Certificate {
+	cert, err := tls.LoadX509KeyPair(configs.UIConfig.WebService.PublicKey, configs.UIConfig.WebService.PrivateKey)
+	if err != nil {
+		log.Fatal("Unable to load certificates, check the definition in etc/airshipui.json")
+	}
+	var certSlice []tls.Certificate
+	certSlice = append(certSlice, cert)
+	return certSlice
+}
+
 // WebServer will run the handler functions for WebSockets
 func WebServer() {
 	webServerMux := http.NewServeMux()
@@ -72,8 +84,19 @@ func WebServer() {
 	// Calculate the address and start on the host and port specified in the config
 	addr := configs.UIConfig.WebService.Host + ":" + strconv.Itoa(configs.UIConfig.WebService.Port)
 	log.Infof("Attempting to start webservice on %s", addr)
-	log.Fatal(http.ListenAndServeTLS(addr,
-		configs.UIConfig.WebService.PublicKey,
-		configs.UIConfig.WebService.PrivateKey,
-		webServerMux))
+
+	// configure logging & TLS for the http server
+	server := &http.Server{
+		Addr: addr,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ServerName:         configs.UIConfig.WebService.Host,
+			Certificates:       getCertificates(),
+		},
+		Handler:  webServerMux,
+		ErrorLog: log.Logger(),
+	}
+
+	// kick off the server, and good luck
+	log.Fatal(server.ListenAndServeTLS("", ""))
 }

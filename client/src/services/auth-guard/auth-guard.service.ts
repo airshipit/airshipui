@@ -1,9 +1,9 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Router, CanActivate, Event as RouterEvent, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { Log } from 'src/services/log/log.service';
 import { LogMessage } from 'src/services/log/log-message';
 import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WSReceiver, WebsocketMessage, Authentication } from 'src/services/websocket/websocket.models';
+import { WSReceiver, WebsocketMessage } from 'src/services/websocket/websocket.models';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +28,21 @@ export class AuthGuard implements WSReceiver, CanActivate {
     // blank out the local storage so we can't get re authenticate
     localStorage.removeItem('airshipUI-token');
 
+    // turn off the log panel, no logs for you!
+    AuthGuard.toggleLogPanel(false);
+
     // best to begin at the beginning so send the user back to /login
     this.router.navigate(['/login']);
+  }
+
+  // flip the log panel according to where we are in the world
+  public static toggleLogPanel(authenticated): void {
+    const accordion = document.getElementById('logAccordion');
+    if (authenticated && accordion.style.display === 'none') {
+      accordion.style.display = '';
+    } else if (!authenticated) {
+      accordion.style.display = 'none';
+    }
   }
 
   constructor(private websocketService: WebsocketService, private router: Router) {
@@ -101,6 +114,9 @@ export class AuthGuard implements WSReceiver, CanActivate {
     // flip the link if we're in or out of the fold
     this.toggleAuthButton(authenticated);
 
+    // flip the visibility of the log panel depending on the disposition of the user
+    AuthGuard.toggleLogPanel(authenticated);
+
     return authenticated;
   }
 
@@ -114,6 +130,8 @@ export class AuthGuard implements WSReceiver, CanActivate {
       button.innerText = 'Login';
     }
   }
+
+
 
   // test the auth token to see if we can let the user see the page
   // TODO: maybe RBAC type of stuff may need to go here

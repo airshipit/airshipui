@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatAccordion } from '@angular/material/expansion';
 import { environment } from 'src/environments/environment';
 import { IconService } from 'src/services/icon/icon.service';
 import { WebsocketService } from 'src/services/websocket/websocket.service';
@@ -15,6 +16,8 @@ import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 })
 
 export class AppComponent implements OnInit, WSReceiver {
+  @ViewChild(MatAccordion) accordion: MatAccordion;
+
   className = this.constructor.name;
   type = 'ui';
   component = 'any';
@@ -52,11 +55,22 @@ export class AppComponent implements OnInit, WSReceiver {
     if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
     } else {
-      if (message.hasOwnProperty('dashboards')) {
-        this.updateDashboards(message.dashboards);
-      } else {
-        // TODO (aschiefe): determine what should be notifications and what should be 86ed
-        Log.Debug(new LogMessage('Message received in app', this.className, message));
+      switch (message.component) {
+        case 'log':
+          Log.Debug(new LogMessage('Log message received in app', this.className, message));
+          const panel = document.getElementById('logPanel');
+          panel.appendChild(document.createTextNode(message.message));
+          panel.appendChild(document.createElement('br'));
+          break;
+        case 'initialize':
+          Log.Debug(new LogMessage('Initialize message received in app', this.className, message));
+          if (message.hasOwnProperty('dashboards')) {
+            this.updateDashboards(message.dashboards);
+          }
+          break;
+        default:
+          Log.Debug(new LogMessage('Uncategorized message received in app', this.className, message));
+          break;
       }
     }
   }

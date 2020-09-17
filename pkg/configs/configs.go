@@ -96,6 +96,7 @@ const (
 	Baremetal    WsComponentType = "baremetal"
 	Document     WsComponentType = "document"
 	Auth         WsComponentType = "auth"
+	Log          WsComponentType = "log"
 
 	// auth sub components
 	Approved     WsSubComponentType = "approved"
