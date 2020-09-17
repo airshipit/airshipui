@@ -128,7 +128,7 @@ frontend-build:
 frontend-unit-test: $(YARN)
 frontend-unit-test:
 	@echo "Performing frontend unit test step..."
-	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) test) && cd ..
+	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) test --detect-open-handles --bail --force-exit) && cd ..
 	@echo "Frontend unit tests completed successfully"
 
 .PHONY: frontend-coverage
