@@ -76,8 +76,13 @@
 }
 
 .logs-headers-align .mat-expansion-panel-header-description {
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+}
+
+.footer-panel-header-right {
+  align-items: right;
+  padding-right: 15px;
 }
 
 .logs-headers-align .mat-form-field + .mat-form-field {
@@ -86,7 +91,7 @@
 
 .log-panel {
   height: 20vh !important;
-  overflow: scroll;
+  overflow: auto;
   display: flex;
   flex-direction: column-reverse;
 }

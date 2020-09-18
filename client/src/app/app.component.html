@@ -65,17 +65,15 @@
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              Logs
+              Airship UI Version: {{ this.version }} &copy; {{ this.currentYear }}
             </mat-panel-title>
+            <div class="footer-panel-header-right">
+              Logs
+            </div>
           </mat-expansion-panel-header>
           <div id="logPanel" class="log-panel"></div>
         </mat-expansion-panel>
       </mat-accordion>
-      <mat-toolbar class="toolbar-footer">
-        <h3>Airship UI &copy; {{ this.currentYear }}</h3>
-        <span class="spacer"></span>
-        <h3>Version: {{ this.version }}</h3>
-      </mat-toolbar>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>
