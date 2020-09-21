@@ -28,6 +28,12 @@ func TestHandleUnknownBaremetalSubComponent(t *testing.T) {
 		SubComponent: "fake_subcomponent",
 	}
 
+	acp := "testdata/testairshipconfig"
+	kcp := "testdata/testkubeconfig"
+
+	AirshipConfigPath = &acp
+	KubeConfigPath = &kcp
+
 	response := HandleBaremetalRequest(request)
 
 	expected := configs.WsMessage{

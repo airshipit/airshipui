@@ -19,6 +19,15 @@
   width: 20px;
 }
 
+.docless-phase {
+  padding-left: 20px;
+}
+
+.docless-phase-btn {
+  padding-left: 20px;
+  padding-right: 0px;
+}
+
 .phase-tree-invisible {
   display: none;
 }

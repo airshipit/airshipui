@@ -17,10 +17,20 @@
                       <mat-icon class="grey-icon" svgIcon="doc"></mat-icon> {{node.name}}
                     </button>
                   </div>
-                  <div *ngIf="node.isPhaseNode && node.hasError" class="phase-error">
-                    <button mat-icon-button>
-                      <mat-icon *ngIf="node.isPhaseNode && node.hasError" class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
+                  <div *ngIf="node.isPhaseNode && (node.hasError || node.children.length === 0)" class="phase-error">
+                    <button *ngIf="node.hasError" mat-icon-button>
+                      <mat-icon class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
                     </button>
+                    <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
+                      <button mat-button class="docless-phase-btn">{{node.name}}</button>
+                      <button  class="doc-btn" mat-icon-button (click)="viewPhaseDocs(node.id)"
+                        matTooltip="View rendered documents"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="1000"
+                        matTooltipHideDelay="500">
+                        <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </li>

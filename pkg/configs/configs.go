@@ -106,18 +106,16 @@ const (
 	Validate     WsSubComponentType = "validate"
 
 	// ctl components
-	GetDefaults         WsSubComponentType = "getDefaults"
-	GenerateISO         WsSubComponentType = "generateISO"
-	DocPull             WsSubComponentType = "docPull"
-	Yaml                WsSubComponentType = "yaml"
-	YamlWrite           WsSubComponentType = "yamlWrite"
-	GetYaml             WsSubComponentType = "getYaml"
-	GetSource           WsSubComponentType = "getSource"
-	GetRendered         WsSubComponentType = "getRendered"
-	GetPhaseTree        WsSubComponentType = "getPhaseTree"
-	GetPhaseSourceFiles WsSubComponentType = "getPhaseSource"
-	GetPhaseDocuments   WsSubComponentType = "getPhaseDocs"
-	GetTarget           WsSubComponentType = "getTarget"
+	GetDefaults  WsSubComponentType = "getDefaults"
+	GenerateISO  WsSubComponentType = "generateISO"
+	DocPull      WsSubComponentType = "docPull"
+	Yaml         WsSubComponentType = "yaml"
+	YamlWrite    WsSubComponentType = "yamlWrite"
+	GetYaml      WsSubComponentType = "getYaml"
+	GetSource    WsSubComponentType = "getSource"
+	GetRendered  WsSubComponentType = "getRendered"
+	GetPhaseTree WsSubComponentType = "getPhaseTree"
+	GetTarget    WsSubComponentType = "getTarget"
 )
 
 // WsMessage is a request / return structure used for websockets
@@ -143,11 +141,9 @@ type WsMessage struct {
 	Authentication *Authentication `json:"authentication,omitempty"`
 
 	// information related to the init of the UI
-	Dashboards      []Dashboard             `json:"dashboards,omitempty"`
-	AuthMethod      *AuthMethod             `json:"authMethod,omitempty"`
-	AuthInfoOptions *config.AuthInfoOptions `json:"authInfoOptions,omitempty"`
-	ContextOptions  *config.ContextOptions  `json:"contextOptions,omitempty"`
-	ClusterOptions  *config.ClusterOptions  `json:"clusterOptions,omitempty"`
+	Dashboards     []Dashboard            `json:"dashboards,omitempty"`
+	AuthMethod     *AuthMethod            `json:"authMethod,omitempty"`
+	ContextOptions *config.ContextOptions `json:"contextOptions,omitempty"`
 }
 
 // SetUIConfig sets the UIConfig object with values obtained from

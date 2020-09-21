@@ -15,12 +15,20 @@
 package ctl
 
 import (
-	"opendev.org/airship/airshipctl/pkg/environment"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipui/pkg/configs"
 	uiLog "opendev.org/airship/airshipui/pkg/log"
 	"opendev.org/airship/airshipui/pkg/webservice"
 )
+
+// AirshipConfigPath location of airship config (default $HOME/.airship.config)
+// TODO(mfuller): are we going to retrieve these from the environment / cli options?
+// leaving them both unset (nil) for now so that the default locations will be used
+var AirshipConfigPath *string
+
+// KubeConfigPath location of kubeconfig used by airshipctl (default $HOME/.airship/kubeconfig)
+var KubeConfigPath *string
 
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
 var CTLFunctionMap = map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
@@ -34,7 +42,8 @@ var runningRequests map[configs.WsSubComponentType]bool = make(map[configs.WsSub
 // Client provides a library of functions that enable external programs (e.g. Airship UI) to perform airshipctl
 // functionality in exactly the same manner as the CLI.
 type Client struct {
-	settings *environment.AirshipCTLSettings
+	Config *config.Config
+	Debug  bool // this is a placeholder until I figure out how / where to set this in airshipctl
 }
 
 // LogInterceptor is just a struct to hold a pointer to the remote channel
@@ -52,31 +61,36 @@ func Init() {
 }
 
 // NewDefaultClient initializes the airshipctl client for external usage with default logging.
-func NewDefaultClient() *Client {
-	settings := &environment.AirshipCTLSettings{}
-	// ensure no error if airship config doesn't exist
-	settings.Create = true
-	settings.InitConfig()
+func NewDefaultClient(airshipConfigPath, kubeConfigPath *string) (*Client, error) {
+	cfgFactory := config.CreateFactory(airshipConfigPath, kubeConfigPath)
 
-	client := &Client{
-		settings: settings,
+	conf, err := cfgFactory()
+	if err != nil {
+		return nil, err
 	}
 
-	// set verbosity to true
-	client.settings.Debug = true
+	client := &Client{
+		Config: conf,
+	}
 
-	return client
+	// TODO(mfuller): how do you do this now?
+	// set verbosity to true
+
+	return client, nil
 }
 
 // NewClient initializes the airshipctl client for external usage with the logging overridden.
-func NewClient(request configs.WsMessage) *Client {
-	client := NewDefaultClient()
+func NewClient(airshipConfigPath, kubeConfigPath *string, request configs.WsMessage) (*Client, error) {
+	client, err := NewDefaultClient(airshipConfigPath, kubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
 
 	// init the interceptor to send messages to the UI
 	// TODO: Unsure how this will be handled with overlapping runs
-	log.Init(client.settings.Debug, NewLogInterceptor(request))
+	log.Init(client.Debug, NewLogInterceptor(request))
 
-	return client
+	return client, nil
 }
 
 // NewLogInterceptor will construct a channel writer for use with the logger

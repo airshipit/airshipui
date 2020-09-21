@@ -9,11 +9,12 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
-	opendev.org/airship/airshipctl v0.0.0-20200812155702-f61953bcf558
+	opendev.org/airship/airshipctl v0.0.0-20200917132506-1660efc23150
 	sigs.k8s.io/kustomize/api v0.5.1
 )
 
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
 	k8s.io/kubectl => k8s.io/kubectl v0.0.0-20191219154910-1528d4eea6dd
+	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.4.1
 )

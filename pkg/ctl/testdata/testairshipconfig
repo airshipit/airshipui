@@ -1,0 +1,37 @@
+apiVersion: airshipit.org/v1alpha1
+contexts:
+  dummy_context:
+    contextKubeconf: dummy_cluster_ephemeral
+    encryptionConfig: dummy_encryption_config
+    managementConfiguration: dummy_management_config
+    manifest: dummy_manifest
+currentContext: dummy_context
+encryptionConfigs:
+  dummy_encryption_config:
+    decryptionKeyPath: /tmp/decryption.pub
+    encryptionKeyPath: /tmp/encryption.key
+kind: Config
+managementConfiguration:
+  dummy_management_config:
+    insecure: true
+    type: redfish
+manifests:
+  dummy_manifest:
+    metadataPath: manifests/site/test-site/metadata.yaml
+    primaryRepositoryName: primary
+    repositories:
+      primary:
+        auth:
+          sshKey: testdata/test-key.pem
+          type: ssh-key
+        checkout:
+          branch: ""
+          commitHash: ""
+          force: false
+          tag: v1.0.1
+        url: http://dummy.url.com/manifests.git
+    subPath: manifests/site/test-site
+    targetPath: /var/tmp/
+permissions:
+  DirectoryPermission: 488
+  FilePermission: 416

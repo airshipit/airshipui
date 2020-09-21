@@ -69,9 +69,6 @@ export class DocumentComponent implements WSReceiver {
         case 'getPhaseTree':
           this.handleGetPhaseTree(message.data);
           break;
-        case 'getPhaseDocs':
-          this.handleGetPhaseDocs(message);
-          break;
         case 'getYaml':
           this.handleGetYaml(message);
           break;
@@ -89,13 +86,6 @@ export class DocumentComponent implements WSReceiver {
     this.loading = false;
     Object.assign(this.phaseTree, data);
     this.dataSource.data = this.phaseTree;
-  }
-
-  handleGetPhaseDocs(message: WebsocketMessage): void {
-    const tmp: KustomNode[] = [];
-    Object.assign(tmp, message.data);
-    this.cache[message.id] = tmp;
-    console.dir(this.cache[message.id]);
   }
 
   handleGetYaml(message: WebsocketMessage): void {
@@ -118,12 +108,6 @@ export class DocumentComponent implements WSReceiver {
     this.editorTitle = str[str.length - 1];
   }
 
-  refreshTreeData(): void {
-    const tmpdata = this.dataSource.data;
-    this.dataSource.data = null;
-    this.dataSource.data = tmpdata;
-  }
-
   changeEditorContents(yaml: string): void {
     this.code = atob(yaml);
   }
@@ -139,12 +123,6 @@ export class DocumentComponent implements WSReceiver {
   getPhaseTree(): void {
     this.loading = true;
     const websocketMessage = this.constructDocumentWsMessage('getPhaseTree');
-    this.websocketService.sendMessage(websocketMessage);
-  }
-
-  getPhaseDocs(id: string): void {
-    const websocketMessage = this.constructDocumentWsMessage('getPhaseDocs');
-    websocketMessage.id = id;
     this.websocketService.sendMessage(websocketMessage);
   }
 

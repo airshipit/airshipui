@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
@@ -32,13 +33,19 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 
 	var err error
 	var message string
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		response.Error = err.Error()
+		return response
+	}
+
 	subComponent := request.SubComponent
 	switch subComponent {
 	case configs.GenerateISO:
 		// since this is long running cache it up
 		// TODO: Test before running the geniso
 		runningRequests[subComponent] = true
-		client := NewClient(request)
 		message, err = client.generateIso()
 		// now that we're done forget we did anything
 		delete(runningRequests, subComponent)
@@ -57,7 +64,8 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 
 func (c *Client) generateIso() (string, error) {
 	var message string
-	err := isogen.GenerateBootstrapIso(c.settings)
+	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
+	err := isogen.GenerateBootstrapIso(cfgFactory)
 	if err == nil {
 		message = fmt.Sprintf("Success")
 	}

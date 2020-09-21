@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/document"
 	"opendev.org/airship/airshipctl/pkg/document/pull"
 	"opendev.org/airship/airshipui/pkg/configs"
@@ -42,7 +43,11 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	var message string
 	var id string
 
-	client := NewClient(request)
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		response.Error = err.Error()
+		return response
+	}
 
 	switch request.SubComponent {
 	case configs.DocPull:
@@ -56,12 +61,6 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 		response.Name, response.YAML, err = client.getYaml(id)
 	case configs.GetPhaseTree:
 		response.Data, err = client.GetPhaseTree()
-	case configs.GetPhaseDocuments:
-		id = request.ID
-		response.Data, err = GetPhaseDocuments(request.ID)
-	case configs.GetPhaseSourceFiles:
-		id = request.ID
-		response.Data, err = client.GetPhaseSourceFiles(request.ID)
 	case configs.GetTarget:
 		message = client.getTarget()
 	default:
@@ -79,7 +78,7 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 }
 
 func (c *Client) getTarget() string {
-	m, err := c.settings.Config.CurrentContextManifest()
+	m, err := c.Config.CurrentContextManifest()
 	if err != nil {
 		return "unknown"
 	}
@@ -110,7 +109,7 @@ func getDocumentYaml(doc document.Document) (string, string, error) {
 }
 
 func (c *Client) getFileYaml(path string) (string, string, error) {
-	ccm, err := c.settings.Config.CurrentContextManifest()
+	ccm, err := c.Config.CurrentContextManifest()
 	if err != nil {
 		return "", "", err
 	}
@@ -163,8 +162,8 @@ func (c *Client) writeYamlFile(id, yaml64 string) (string, string, error) {
 
 func (c *Client) docPull() (string, error) {
 	var message string
-	settings := pull.Settings{AirshipCTLSettings: c.settings}
-	err := settings.Pull()
+	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
+	err := pull.Pull(cfgFactory)
 	if err == nil {
 		message = fmt.Sprintf("Success")
 	}

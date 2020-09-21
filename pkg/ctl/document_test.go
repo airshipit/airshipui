@@ -28,6 +28,12 @@ func TestHandleUnknownDocumentSubComponent(t *testing.T) {
 		SubComponent: "fake_subcomponent",
 	}
 
+	acp := "testdata/testairshipconfig"
+	kcp := "testdata/testkubeconfig"
+
+	AirshipConfigPath = &acp
+	KubeConfigPath = &kcp
+
 	response := HandleDocumentRequest(request)
 
 	expected := configs.WsMessage{
