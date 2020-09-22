@@ -10,6 +10,8 @@ GIT_VERSION=$(shell git describe --match 'v*' --always)
 
 TOOLBINDIR    := tools/bin
 WEBDIR        := client
+UI_DISTDIR    := $(WEBDIR)/dist/airshipui
+UI_CONFI_FILE := etc/airshipui.json
 LINTER        := $(TOOLBINDIR)/golangci-lint
 LINTER_CONFIG := .golangci.yaml
 NODEJS_BIN    := $(realpath tools)/node-v12.16.3/bin
@@ -122,6 +124,22 @@ frontend-build: $(YARN)
 frontend-build:
 	@echo "Executing frontend build steps..."
 	@cd $(WEBDIR) && (PATH="$(PATH):$(NODEJS_BIN)"; $(NG) build) && cd ..
+	@if [ -f $(UI_CONFI_FILE) ]; then \
+		HOST=""; \
+		PORT=""; \
+		if [ `wc -l $(UI_CONFI_FILE) | cut -d ' ' -f 1` -gt 1 ]; then \
+			HOST=`grep -Po "\"host\":\s*\"[a-zA-Z]*\"" $(UI_CONFI_FILE) | cut -d '"' -f4`; \
+			PORT=`grep -Po '"port":\s*[0-9]*' $(UI_CONFI_FILE) | cut -d ':' -f 2| sed -e 's?\s??g'`; \
+		else \
+			HOST=`grep -oP '(?<="host":)[^ ]*' $(UI_CONFI_FILE) | cut -d ',' -f 1 | sed -e 's?"??g'`; \
+			PORT=`grep -oP '(?<="port":)[^ ]*' $(UI_CONFI_FILE) | cut -d ',' -f 1`; \
+		fi; \
+		if [ `echo $$HOST | wc -c` -gt 1 ] && [ `echo $$PORT | wc -c` -gt 1 ]; then \
+			echo "Replacing localhost:10443 with $$HOST:$$PORT as the websocket address"; \
+			sed -i s?localhost:10443?$$HOST:$$PORT? $(UI_DISTDIR)/main.js; \
+			sed -i s?localhost:10443?$$HOST:$$PORT? $(UI_DISTDIR)/main.js.map; \
+		fi; \
+	fi
 	@echo "Frontend build completed successfully"
 
 .PHONY: frontend-unit-test

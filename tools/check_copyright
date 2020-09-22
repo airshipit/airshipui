@@ -15,28 +15,25 @@
 declare FILES_MISSING_COPYRIGHT=()
 
 # Find all files of given format and add license if missing
-check_license() {
-  ext=$1
-  # skipping license for testdata and manifests folders
-   FILES=$(find -L . -name "*.${ext}" | grep -v "testdata" | grep -v "manifests" | grep -v "tools/*node*" | grep -v "client/node_modules" | grep -v "client/dist")
+FILES=$(find -L . -type f \( -iname \*.go -o -iname \*.yaml -o -iname \*.yml -o -iname \*.sh -o -iname \*.ts -o -iname \*.css \) \
+  -not -path "./etc" \
+  -not -path "./client/dist/*" \
+  -not -path "./client/node_modules/*" \
+  -not -path "./tools/*node*" \
+  | grep -v "testdata" \
+  | grep -v "manifests")
 
-  for each in $FILES
-  do
-    if ! grep -Eq 'Apache License|License-Identifier: Apache' $each
-    then
-      FILES_MISSING_COPYRIGHT+=($each)
-    fi
-  done
-}
-
-check_license 'go'
-check_license 'yaml'
-check_license 'yml'
-check_license 'sh'
+for each in $FILES
+do
+  if ! grep -Eq 'Apache License|License-Identifier: Apache' $each
+  then
+    FILES_MISSING_COPYRIGHT+=($each)
+  fi
+done
 
 if [ ${#FILES_MISSING_COPYRIGHT[@]} -gt 0 ]
 then
-   echo "Copyright header missing for these files: ${FILES_MISSING_COPYRIGHT[@]}"
+   printf "Copyright header missing for: %s\n" "${FILES_MISSING_COPYRIGHT[@]}"
    echo "please run make add-copyright"
    exit 1
 else
