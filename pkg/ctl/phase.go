@@ -20,9 +20,9 @@ import (
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
-// HandleBaremetalRequest will flop between requests so we don't have to have them all mapped as function calls
+// HandlePhaseRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
+func HandlePhaseRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
@@ -34,17 +34,11 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 
 	subComponent := request.SubComponent
 	switch subComponent {
-	case configs.EjectMedia:
+	case configs.Plan:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerOff:
+	case configs.Render:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerOn:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerStatus:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.Reboot:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.RemoteDirect:
+	case configs.Run:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)

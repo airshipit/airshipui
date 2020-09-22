@@ -20,10 +20,10 @@ import { LogMessage } from '../../../services/log/log-message';
 
 @Component({
   selector: 'app-bare-metal',
-  templateUrl: './baremetal.component.html',
+  templateUrl: './image.component.html',
 })
 
-export class BaremetalComponent implements WSReceiver {
+export class ImageComponent implements WSReceiver {
   className = this.constructor.name;
   // TODO (aschiefe): extract these strings to constants
   type = 'ctl';
@@ -40,5 +40,9 @@ export class BaremetalComponent implements WSReceiver {
       // TODO (aschiefe): determine what should be notifications and what should be 86ed
       Log.Debug(new LogMessage('Message received in image', this.className, message));
     }
+  }
+
+  generateIso(): void {
+    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'generate'));
   }
 }

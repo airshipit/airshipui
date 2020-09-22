@@ -50,8 +50,10 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	switch request.SubComponent {
-	case configs.DocPull:
+	case configs.Pull:
 		message, err = client.docPull()
+	case configs.Plugin:
+		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
 	case configs.YamlWrite:
 		id = request.ID
 		response.Name, response.YAML, err = client.writeYamlFile(id, request.YAML)

@@ -13,21 +13,15 @@
 */
 
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { CtlComponent } from './ctl.component';
-import { DocumentModule } from './document/document.module';
-import { BaremetalModule } from './baremetal/baremetal.module';
-import { CtlRoutingModule } from './ctl-routing.module';
+import { ImageComponent } from './image.component';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   imports: [
-    CtlRoutingModule,
-
-    RouterModule,
-    DocumentModule,
-    BaremetalModule,
+    MatButtonModule
   ],
-  declarations: [CtlComponent],
-  providers: []
+  declarations: [
+    ImageComponent
+  ],
 })
-export class CtlModule { }
+export class ImageModule { }

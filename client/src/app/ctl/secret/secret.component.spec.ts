@@ -13,25 +13,27 @@
 */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CtlComponent } from './ctl.component';
-import { RouterTestingModule } from '@angular/router/testing';
+import { SecretComponent } from './secret.component';
+import { ToastrModule } from 'ngx-toastr';
 
-describe('CtlComponent', () => {
-  let component: CtlComponent;
-  let fixture: ComponentFixture<CtlComponent>;
+describe('SecretComponent', () => {
+  let component: SecretComponent;
+  let fixture: ComponentFixture<SecretComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        ToastrModule.forRoot()
       ],
-      declarations: [CtlComponent]
+      declarations: [
+        SecretComponent
+      ]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CtlComponent);
+    fixture = TestBed.createComponent(SecretComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -33,7 +33,12 @@ var KubeConfigPath *string
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
 var CTLFunctionMap = map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
 	configs.Baremetal: HandleBaremetalRequest,
+	configs.Cluster:   HandleClusterRequest,
+	configs.CTLConfig: HandleConfigRequest,
 	configs.Document:  HandleDocumentRequest,
+	configs.Image:     HandleImageRequest,
+	configs.Phase:     HandlePhaseRequest,
+	configs.Secret:    HandleSecretRequest,
 }
 
 // maintain the state of a potentially long running process

@@ -13,7 +13,7 @@
 */
 
 import { Component, OnInit } from '@angular/core';
-import {WebsocketService} from 'src/services/websocket/websocket.service';
+import { WebsocketService } from 'src/services/websocket/websocket.service';
 import { WSReceiver, WebsocketMessage, Authentication } from 'src/services/websocket/websocket.models';
 
 @Component({
@@ -26,7 +26,7 @@ export class LoginComponent implements WSReceiver, OnInit {
     type = 'ui'; // needed to have the websocket service in the constructor
     component = 'auth'; // needed to have the websocket service in the constructor
 
-    constructor(private websocketService: WebsocketService) {}
+    constructor(private websocketService: WebsocketService) { }
 
     ngOnInit(): void {
         // bind the enter key to the submit button on the page

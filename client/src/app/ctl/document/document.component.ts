@@ -166,6 +166,6 @@ export class DocumentComponent implements WSReceiver {
   }
 
   documentPull(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'docPull'));
+    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'pull'));
   }
 }

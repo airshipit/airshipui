@@ -49,8 +49,28 @@ export class AppComponent implements OnInit, WSReceiver {
           route: 'ctl/baremetal',
           iconName: 'server'
         }, {
+          displayName: 'Cluster',
+          route: 'ctl/cluster',
+          iconName: 'server'
+        } , {
+          displayName: 'Config',
+          route: 'ctl/config',
+          iconName: 'doc'
+        }, {
           displayName: 'Documents',
           route: 'ctl/documents',
+          iconName: 'doc'
+        }, {
+          displayName: 'Image',
+          route: 'ctl/image',
+          iconName: 'doc'
+        }, {
+          displayName: 'Phase',
+          route: 'ctl/phase',
+          iconName: 'doc'
+        }, {
+          displayName: 'Secret',
+          route: 'ctl/secret',
           iconName: 'doc'
         }]
     }, {

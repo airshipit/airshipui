@@ -12,12 +12,12 @@
 # limitations under the License.
 */
 
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {HomeComponent} from './home/home.component';
-import {CtlComponent} from './ctl/ctl.component';
-import {LoginComponent} from './login/login.component';
-import {AuthGuard} from 'src/services/auth-guard/auth-guard.service';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { CtlComponent } from './ctl/ctl.component';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 
 const routes: Routes = [{
     path: 'ctl',
@@ -35,8 +35,8 @@ const routes: Routes = [{
 }];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
 })
 
-export class AppRoutingModule {}
+export class AppRoutingModule { }

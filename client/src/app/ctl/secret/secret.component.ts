@@ -20,14 +20,14 @@ import { LogMessage } from '../../../services/log/log-message';
 
 @Component({
   selector: 'app-bare-metal',
-  templateUrl: './baremetal.component.html',
+  templateUrl: './secret.component.html',
 })
 
-export class BaremetalComponent implements WSReceiver {
+export class SecretComponent implements WSReceiver {
   className = this.constructor.name;
   // TODO (aschiefe): extract these strings to constants
   type = 'ctl';
-  component = 'image';
+  component = 'secret';
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.registerFunctions(this);

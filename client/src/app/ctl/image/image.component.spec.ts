@@ -13,25 +13,29 @@
 */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CtlComponent } from './ctl.component';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ImageComponent } from './image.component';
+import { MatButtonModule } from '@angular/material/button';
+import { ToastrModule } from 'ngx-toastr';
 
-describe('CtlComponent', () => {
-  let component: CtlComponent;
-  let fixture: ComponentFixture<CtlComponent>;
+describe('ImageComponent', () => {
+  let component: ImageComponent;
+  let fixture: ComponentFixture<ImageComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        MatButtonModule,
+        ToastrModule.forRoot()
       ],
-      declarations: [CtlComponent]
+      declarations: [
+        ImageComponent
+      ]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CtlComponent);
+    fixture = TestBed.createComponent(ImageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

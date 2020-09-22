@@ -20,9 +20,9 @@ import (
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
-// HandleBaremetalRequest will flop between requests so we don't have to have them all mapped as function calls
+// HandleConfigRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
+func HandleConfigRequest(request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
@@ -34,17 +34,25 @@ func HandleBaremetalRequest(request configs.WsMessage) configs.WsMessage {
 
 	subComponent := request.SubComponent
 	switch subComponent {
-	case configs.EjectMedia:
+	case configs.GetContext:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerOff:
+	case configs.GetEncryptionConfig:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerOn:
+	case configs.GetManagementConfig:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.PowerStatus:
+	case configs.GetManifest:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.Reboot:
+	case configs.Init:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
-	case configs.RemoteDirect:
+	case configs.SetContext:
+		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+	case configs.SetEncryptionConfig:
+		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+	case configs.SetManagementConfig:
+		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+	case configs.SetManifest:
+		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+	case configs.UseContext:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)

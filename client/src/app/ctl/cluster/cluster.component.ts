@@ -20,14 +20,14 @@ import { LogMessage } from '../../../services/log/log-message';
 
 @Component({
   selector: 'app-bare-metal',
-  templateUrl: './baremetal.component.html',
+  templateUrl: './cluster.component.html',
 })
 
-export class BaremetalComponent implements WSReceiver {
+export class ClusterComponent implements WSReceiver {
   className = this.constructor.name;
   // TODO (aschiefe): extract these strings to constants
   type = 'ctl';
-  component = 'image';
+  component = 'cluster';
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.registerFunctions(this);
@@ -38,7 +38,7 @@ export class BaremetalComponent implements WSReceiver {
       this.websocketService.printIfToast(message);
     } else {
       // TODO (aschiefe): determine what should be notifications and what should be 86ed
-      Log.Debug(new LogMessage('Message received in image', this.className, message));
+      Log.Debug(new LogMessage('Message received in cluster', this.className, message));
     }
   }
 }

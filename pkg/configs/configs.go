@@ -88,27 +88,73 @@ const (
 	UI    WsRequestType = "ui"
 	Alert WsRequestType = "alert"
 
+	// UI components
 	Authcomplete WsComponentType = "authcomplete"
 	SetConfig    WsComponentType = "setConfig"
 	Initialize   WsComponentType = "initialize"
 	Keepalive    WsComponentType = "keepalive"
-	CTLConfig    WsComponentType = "config"
-	Baremetal    WsComponentType = "baremetal"
-	Document     WsComponentType = "document"
 	Auth         WsComponentType = "auth"
 	Log          WsComponentType = "log"
 
-	// auth sub components
+	// CTL components
+	Baremetal WsComponentType = "baremetal"
+	Cluster   WsComponentType = "cluster"
+	CTLConfig WsComponentType = "config"
+	Document  WsComponentType = "document"
+	Image     WsComponentType = "image"
+	Phase     WsComponentType = "phase"
+	Secret    WsComponentType = "secret"
+
+	// auth subcomponets
 	Approved     WsSubComponentType = "approved"
 	Authenticate WsSubComponentType = "authenticate"
 	Denied       WsSubComponentType = "denied"
 	Refresh      WsSubComponentType = "refresh"
 	Validate     WsSubComponentType = "validate"
 
-	// ctl components
+	// ctl subcomponets
+	// ctl baremetal subcomponets
+	EjectMedia   WsSubComponentType = "ejectMedia"
+	PowerOff     WsSubComponentType = "powerOff"
+	PowerOn      WsSubComponentType = "powerOn"
+	PowerStatus  WsSubComponentType = "powerStatus"
+	Reboot       WsSubComponentType = "reboot"
+	RemoteDirect WsSubComponentType = "remoteDirect"
+
+	// ctl cluster subcomponets
+	Move   WsSubComponentType = "move"
+	Status WsSubComponentType = "status"
+
+	// ctl config subcomponets
+	GetContext          WsSubComponentType = "getContext"
+	GetEncryptionConfig WsSubComponentType = "getEncryptionConfig"
+	GetManagementConfig WsSubComponentType = "getManagementConfig"
+	GetManifest         WsSubComponentType = "getManifest"
+	SetContext          WsSubComponentType = "setContext"
+	SetEncryptionConfig WsSubComponentType = "setEncryptionConfig"
+	SetManagementConfig WsSubComponentType = "setManagementConfig"
+	SetManifest         WsSubComponentType = "setManifest"
+	UseContext          WsSubComponentType = "useContext"
+
+	// ctl document subcomponents
+	Plugin WsSubComponentType = "plugin"
+	Pull   WsSubComponentType = "pull"
+
+	// ctl image subcomponents
+	Build WsSubComponentType = "build"
+
+	// ctl phase subcomponents
+	Plan   WsSubComponentType = "plan"
+	Render WsSubComponentType = "render"
+	Run    WsSubComponentType = "run"
+
+	// ctl secret subcomponents
+	Generate WsSubComponentType = "generate"
+
+	// ctl common components
+	Init         WsSubComponentType = "init"
 	GetDefaults  WsSubComponentType = "getDefaults"
 	GenerateISO  WsSubComponentType = "generateISO"
-	DocPull      WsSubComponentType = "docPull"
 	Yaml         WsSubComponentType = "yaml"
 	YamlWrite    WsSubComponentType = "yamlWrite"
 	GetYaml      WsSubComponentType = "getYaml"

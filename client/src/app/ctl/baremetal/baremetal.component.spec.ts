@@ -12,10 +12,9 @@
 # limitations under the License.
 */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {BaremetalComponent} from './baremetal.component';
-import {MatButtonModule} from '@angular/material/button';
-import {ToastrModule} from 'ngx-toastr';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { BaremetalComponent } from './baremetal.component';
+import { ToastrModule } from 'ngx-toastr';
 
 describe('BaremetalComponent', () => {
   let component: BaremetalComponent;
@@ -24,14 +23,13 @@ describe('BaremetalComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MatButtonModule,
         ToastrModule.forRoot()
       ],
       declarations: [
         BaremetalComponent
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

@@ -12,9 +12,9 @@
 # limitations under the License.
 */
 
-import {Injectable, OnDestroy} from '@angular/core';
-import {WebsocketMessage, WSReceiver, Authentication} from './websocket.models';
-import {ToastrService} from 'ngx-toastr';
+import { Injectable, OnDestroy } from '@angular/core';
+import { WebsocketMessage, WSReceiver, Authentication } from './websocket.models';
+import { ToastrService } from 'ngx-toastr';
 import 'reflect-metadata';
 
 @Injectable({
@@ -120,7 +120,7 @@ export class WebsocketService implements OnDestroy {
         break;
       case 1007:
         console.log('Web Socket Closed: terminating the connection because it has received data within a message that was not ' +
-        'consistent with the type of the message: ', code);
+          'consistent with the type of the message: ', code);
         break;
       case 1008:
         console.log('Web Socket Closed: terminating the connection because it has received a message that "violates its policy": ', code);
@@ -131,7 +131,7 @@ export class WebsocketService implements OnDestroy {
         break;
       case 1010:
         console.log('Web Socket Closed: client is terminating the connection because it has expected the server to negotiate ' +
-        'one or more extension, but the server didn\'t return them in the response message of the WebSocket handshake: ', code);
+          'one or more extension, but the server didn\'t return them in the response message of the WebSocket handshake: ', code);
         break;
       case 1011:
         console.log('Web Socket Closed: server is terminating the connection because it encountered an unexpected condition that' +

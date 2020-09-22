@@ -12,9 +12,9 @@
 # limitations under the License.
 */
 
-import {TestBed} from '@angular/core/testing';
-import {WebsocketService} from './websocket.service';
-import {ToastrModule} from 'ngx-toastr';
+import { TestBed } from '@angular/core/testing';
+import { WebsocketService } from './websocket.service';
+import { ToastrModule } from 'ngx-toastr';
 
 describe('WebsocketService', () => {
   let service: WebsocketService;

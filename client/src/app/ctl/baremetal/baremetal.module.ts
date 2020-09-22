@@ -12,17 +12,15 @@
 # limitations under the License.
 */
 
-import {NgModule} from '@angular/core';
-import {BaremetalComponent} from './baremetal.component';
-import {MatButtonModule} from '@angular/material/button';
+import { NgModule } from '@angular/core';
+import { BaremetalComponent } from './baremetal.component';
 
 @NgModule({
   imports: [
-    MatButtonModule
   ],
   declarations: [
     BaremetalComponent
   ],
   providers: []
 })
-export class BaremetalModule {}
+export class BaremetalModule { }

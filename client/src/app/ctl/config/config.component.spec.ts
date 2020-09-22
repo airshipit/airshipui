@@ -13,25 +13,27 @@
 */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CtlComponent } from './ctl.component';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ConfigComponent } from './config.component';
+import { ToastrModule } from 'ngx-toastr';
 
-describe('CtlComponent', () => {
-  let component: CtlComponent;
-  let fixture: ComponentFixture<CtlComponent>;
+describe('ConfigComponent', () => {
+  let component: ConfigComponent;
+  let fixture: ComponentFixture<ConfigComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        ToastrModule.forRoot()
       ],
-      declarations: [CtlComponent]
+      declarations: [
+        ConfigComponent
+      ]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CtlComponent);
+    fixture = TestBed.createComponent(ConfigComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

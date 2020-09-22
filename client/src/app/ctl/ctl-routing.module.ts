@@ -12,24 +12,50 @@
 # limitations under the License.
 */
 
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {DocumentComponent} from './document/document.component';
-import {BaremetalComponent} from './baremetal/baremetal.component';
-import {AuthGuard} from 'src/services/auth-guard/auth-guard.service';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { BaremetalComponent } from './baremetal/baremetal.component';
+import { ClusterComponent } from './cluster/cluster.component';
+import { ConfigComponent } from './config/config.component';
+import { DocumentComponent } from './document/document.component';
+import { ImageComponent } from './image/image.component';
+import { PhaseComponent } from './phase/phase.component';
+import { SecretComponent } from './secret/secret.component';
+
+import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 
 const routes: Routes = [{
-    path: 'documents',
-    canActivate: [AuthGuard],
-    component: DocumentComponent,
-  }, {
-    path: 'baremetal',
-    canActivate: [AuthGuard],
-    component: BaremetalComponent
+  path: 'baremetal',
+  canActivate: [AuthGuard],
+  component: BaremetalComponent
+}, {
+  path: 'cluster',
+  canActivate: [AuthGuard],
+  component: ClusterComponent,
+}, {
+  path: 'config',
+  canActivate: [AuthGuard],
+  component: ConfigComponent,
+}, {
+  path: 'documents',
+  canActivate: [AuthGuard],
+  component: DocumentComponent,
+}, {
+  path: 'image',
+  canActivate: [AuthGuard],
+  component: ImageComponent,
+}, {
+  path: 'phase',
+  canActivate: [AuthGuard],
+  component: PhaseComponent,
+}, {
+  path: 'secret',
+  canActivate: [AuthGuard],
+  component: SecretComponent,
 }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class CtlRoutingModule {}
+export class CtlRoutingModule { }
