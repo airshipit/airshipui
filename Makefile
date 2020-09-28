@@ -177,7 +177,7 @@ tidy-lint:
 .PHONY: check-copyright-lint
 check-copyright-lint:
 	@echo "Checking file for copyright statement..."
-	@./tools/check_copyright
+	@./tools/license.sh check
 	@echo "Copyright check completed successfully"
 
 ### Helper Installations ###
@@ -262,5 +262,5 @@ clean:
 .PHONY: add-copyright
 add-copyright:
 	@echo "Adding copyright license to necessary files..."
-	@./tools/add_license.sh
+	@./tools/license.sh add
 	@echo "Copyright license additions completed successfully"
