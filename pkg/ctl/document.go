@@ -165,7 +165,9 @@ func (c *Client) writeYamlFile(id, yaml64 string) (string, string, error) {
 func (c *Client) docPull() (string, error) {
 	var message string
 	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
-	err := pull.Pull(cfgFactory)
+	// 2nd arg is noCheckout, I assume we want to checkout the repo,
+	// so setting to false
+	err := pull.Pull(cfgFactory, false)
 	if err == nil {
 		message = fmt.Sprintf("Success")
 	}
