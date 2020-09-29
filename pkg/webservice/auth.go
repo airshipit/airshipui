@@ -44,15 +44,17 @@ func handleAuth(request configs.WsMessage) configs.WsMessage {
 			var token *string
 			authRequest := request.Authentication
 			token, err = createToken(authRequest.ID, authRequest.Password)
-			sessions[request.SessionID].jwt = *token
-			response.SubComponent = configs.Approved
-			response.Token = token
+			if token != nil {
+				sessions[request.SessionID].jwt = *token
+				response.SubComponent = configs.Approved
+				response.Token = token
+			}
 		} else {
 			err = errors.New("No AuthRequest found in the request")
 		}
 	case configs.Validate:
 		if request.Token != nil {
-			err = validateToken(*request.Token)
+			_, err = validateToken(*request.Token)
 			response.SubComponent = configs.Approved
 			response.Token = request.Token
 		} else {
@@ -72,7 +74,7 @@ func handleAuth(request configs.WsMessage) configs.WsMessage {
 }
 
 // validate JWT (JSON Web Token)
-func validateToken(tokenString string) error {
+func validateToken(tokenString string) (*string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -81,17 +83,20 @@ func validateToken(tokenString string) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return nil
+	if claim, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if user, ok := claim["username"].(string); ok {
+			return &user, nil
+		}
+		return nil, errors.New("Invalid JWT User")
 	}
-	return errors.New("Invalid JWT Token")
+
+	return nil, errors.New("Invalid JWT Token")
 }
 
 // create a JWT (JSON Web Token)
-// TODO (aschiefe): for demo purposes, this is not to be used in production
 func createToken(id string, passwd string) (*string, error) {
 	origPasswdHash, ok := configs.UIConfig.Users[id]
 	if !ok {

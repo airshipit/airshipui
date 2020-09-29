@@ -12,7 +12,7 @@ Clone the Airship UI repository and build.
     make # Note running behind a proxy can cause issues, notes on solving is in the Appendix
 
 **NOTE:** Make will install node.js-v12.16.3 into your tools directory and will use that as the node binary for the UI
-building, testing and linting.  For windows this can be done using [cygwin](https://www.cygwin.com/) make.
+building, testing and linting.  For windows this can be done using [cygwin](https://www.cygwin.com/) make.  Windows may also require [tdm-gcc](https://jmeubank.github.io/tdm-gcc/) for the sqlite dependency.
 
 Run the airshipui binary
 
@@ -134,6 +134,28 @@ If you normally have to install a certificate authority to use the corporate pro
 it:
 
     export NODE_EXTRA_CA_CERTS=/<path>/<truststore>.pem
+
+## Issues with SQLITE on Windows
+You may experience issues when attempting to install SQLITE:
+```
+C:\<path>\sqlite> go get github.com/mattn/go-sqlite3
+# github.com/mattn/go-sqlite3
+/usr/lib/gcc/x86_64-pc-cygwin/10/../../../../x86_64-pc-cygwin/bin/ld: cannot find -lmingwex
+/usr/lib/gcc/x86_64-pc-cygwin/10/../../../../x86_64-pc-cygwin/bin/ld: cannot find -lmingw32
+collect2: error: ld returned 1 exit status
+go: failed to remove work dir: GetFileInformationByHandle C:\Users\someUser\AppData\Local\Temp\go-build323470906\NUL: Incorrect function.
+```
+
+To fix this you will need to install [tdm-gcc](https://jmeubank.github.io/tdm-gcc/) and set your path to reference the tdm-gcc first on the path:
+```
+C:\<path>\sqlite> set PATH=c:\TDM-GCC-64\bin;%PATH%
+```
+Test that the tdm-gcc is first on the path
+```
+C:\<path>\sqlite> which gcc
+/cygdrive/c/TDM-GCC-64/bin/gcc
+```
+You should be able to sucessfully run a 'go get github.com/mattn/go-sqlite3' without error
 
 ### Optional proxy settings
 

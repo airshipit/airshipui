@@ -25,11 +25,12 @@ import (
 	"github.com/gorilla/websocket"
 	"opendev.org/airship/airshipui/pkg/configs"
 	"opendev.org/airship/airshipui/pkg/log"
+	"opendev.org/airship/airshipui/pkg/statistics"
 )
 
 // Session is a struct to hold information about a given session
 type session struct {
-	id         string
+	sessionID  string
 	jwt        string
 	writeMutex sync.Mutex
 	ws         *websocket.Conn
@@ -74,7 +75,7 @@ func onOpen(response http.ResponseWriter, request *http.Request) {
 	}
 
 	session := newSession(wsConn)
-	log.Debugf("WebSocket session %s established with %s\n", session.id, session.ws.RemoteAddr().String())
+	log.Debugf("WebSocket session %s established with %s\n", session.sessionID, session.ws.RemoteAddr().String())
 
 	go session.onMessage()
 }
@@ -96,9 +97,10 @@ func (session *session) onMessage() {
 		go func() {
 			// test the auth token for request validity on non auth requests
 			// TODO (aschiefe): this will need to be amended when refresh tokens are implemented
+			var user *string
 			if request.Type != configs.UI && request.Component != configs.Auth && request.SubComponent != configs.Authenticate {
 				if request.Token != nil {
-					err = validateToken(*request.Token)
+					user, err = validateToken(*request.Token)
 				} else {
 					err = errors.New("No authentication token found")
 				}
@@ -115,6 +117,10 @@ func (session *session) onMessage() {
 					session.onError(err)
 				}
 			} else {
+				// This is the middleware to be able to record when a transaction starts and ends for the statistics recorder
+				// It is possible for the backend to send messages without a valid user
+				transaction := statistics.NewTransaction(request, user)
+
 				// look through the function map to find the type to handle the request
 				if reqType, ok := functionMap[request.Type]; ok {
 					// the function map may have a component (function) to process the request
@@ -123,12 +129,14 @@ func (session *session) onMessage() {
 						if err = session.webSocketSend(response); err != nil {
 							session.onError(err)
 						}
+						go transaction.Complete(len(response.Error) == 0)
 					} else {
 						if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
 							request.Component), request)); err != nil {
 							session.onError(err)
 						}
 						log.Errorf("Requested component: %s, not found\n", request.Component)
+						go transaction.Complete(false)
 					}
 				} else {
 					if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested type: %s, not found",
@@ -136,6 +144,7 @@ func (session *session) onMessage() {
 						session.onError(err)
 					}
 					log.Errorf("Requested type: %s, not found\n", request.Type)
+					go transaction.Complete(false)
 				}
 			}
 		}()
@@ -144,9 +153,9 @@ func (session *session) onMessage() {
 
 // common websocket close with logging
 func (session *session) onClose() {
-	log.Debugf("Closing websocket for session %s", session.id)
+	log.Debugf("Closing websocket for session %s", session.sessionID)
 	session.ws.Close()
-	delete(sessions, session.id)
+	delete(sessions, session.sessionID)
 }
 
 // common websocket error handling with logging
@@ -176,8 +185,8 @@ func newSession(ws *websocket.Conn) *session {
 	id := uuid.New().String()
 
 	session := &session{
-		id: id,
-		ws: ws,
+		sessionID: id,
+		ws:        ws,
 	}
 
 	// keep track of the session
@@ -194,7 +203,7 @@ func (session *session) webSocketSend(response configs.WsMessage) error {
 	session.writeMutex.Lock()
 	defer session.writeMutex.Unlock()
 	response.Timestamp = time.Now().UnixNano() / 1000000
-	response.SessionID = session.id
+	response.SessionID = session.sessionID
 
 	return session.ws.WriteJSON(response)
 }
@@ -216,7 +225,7 @@ func (session *session) sendInit() {
 		Dashboards: configs.UIConfig.Dashboards,
 		AuthMethod: configs.UIConfig.AuthMethod,
 	}); err != nil {
-		log.Errorf("Error receiving / sending init to session %s: %s\n", session.id, err)
+		log.Errorf("Error receiving / sending init to session %s: %s\n", session.sessionID, err)
 	}
 }
 
