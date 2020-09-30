@@ -23,7 +23,7 @@
                     </button>
                     <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
                       <button mat-button class="docless-phase-btn">{{node.name}}</button>
-                      <button  class="doc-btn" mat-icon-button (click)="viewPhaseDocs(node.id)"
+                      <button  class="doc-btn" mat-icon-button (click)="getPhase(node.phaseid)"
                         matTooltip="View rendered documents"
                         matTooltipPosition="above"
                         matTooltipShowDelay="1000"
@@ -44,7 +44,7 @@
                       {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                     </mat-icon>{{node.name}}
                   </button>
-                  <button *ngIf="node.isPhaseNode && !node.hasError" class="doc-btn" mat-icon-button (click)="viewPhaseDocs(node.id)"
+                  <button *ngIf="node.isPhaseNode && !node.hasError" class="doc-btn" mat-icon-button (click)="getPhase(node.phaseid)"
                       matTooltip="View rendered documents"
                       matTooltipPosition="above"
                       matTooltipShowDelay="1000"

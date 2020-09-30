@@ -99,8 +99,8 @@ func (client *Client) GetPhaseTree() ([]KustomNode, error) {
 // builds the document bundle. The tree hierarchy is:
 // kustomize "type" (like function) -> directory name -> file name
 func (client *Client) GetPhaseSourceFiles(id ifc.ID) ([]KustomNode, error) {
-	if index == nil {
-		index = map[string]interface{}{}
+	if fileIndex == nil {
+		fileIndex = map[string]string{}
 	}
 
 	helper, err := getHelper()
@@ -159,7 +159,7 @@ func (client *Client) GetPhaseSourceFiles(id ifc.ID) ([]KustomNode, error) {
 							ID:   id,
 							Name: f.Name(),
 						})
-					index[id] = path
+					fileIndex[id] = path
 				}
 			}
 			tNode.Children = append(tNode.Children, dNode)

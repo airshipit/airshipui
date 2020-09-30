@@ -152,16 +152,22 @@ const (
 	Generate WsSubComponentType = "generate"
 
 	// ctl common components
-	Init         WsSubComponentType = "init"
-	GetDefaults  WsSubComponentType = "getDefaults"
-	GenerateISO  WsSubComponentType = "generateISO"
-	Yaml         WsSubComponentType = "yaml"
-	YamlWrite    WsSubComponentType = "yamlWrite"
-	GetYaml      WsSubComponentType = "getYaml"
-	GetSource    WsSubComponentType = "getSource"
-	GetRendered  WsSubComponentType = "getRendered"
-	GetPhaseTree WsSubComponentType = "getPhaseTree"
-	GetTarget    WsSubComponentType = "getTarget"
+	Init                   WsSubComponentType = "init"
+	GetDefaults            WsSubComponentType = "getDefaults"
+	GenerateISO            WsSubComponentType = "generateISO"
+	Yaml                   WsSubComponentType = "yaml"
+	YamlWrite              WsSubComponentType = "yamlWrite"
+	GetYaml                WsSubComponentType = "getYaml"
+	GetRendered            WsSubComponentType = "getRendered"
+	GetPhaseTree           WsSubComponentType = "getPhaseTree"
+	GetTarget              WsSubComponentType = "getTarget"
+	GetPhaseSourceFiles    WsSubComponentType = "getPhaseSource"
+	SetCluster             WsSubComponentType = "cluster"
+	SetCredential          WsSubComponentType = "credential"
+	GetDocumentsBySelector WsSubComponentType = "getDocumentsBySelector"
+	GetPhase               WsSubComponentType = "getPhase"
+	GetExecutorDoc         WsSubComponentType = "getExecutorDoc"
+	GetPhaseDetails        WsSubComponentType = "getPhaseDetails"
 )
 
 // WsMessage is a request / return structure used for websockets
@@ -180,6 +186,7 @@ type WsMessage struct {
 	Data            interface{} `json:"data,omitempty"`
 	YAML            string      `json:"yaml,omitempty"`
 	Name            string      `json:"name,omitempty"`
+	Details         string      `json:"details,omitempty"`
 	ID              string      `json:"id,omitempty"`
 	Token           *string     `json:"token,omitempty"`
 
