@@ -26,9 +26,13 @@ import {CommonModule} from '@angular/common';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatCardModule} from '@angular/material/card';
 import {MatTooltipModule} from '@angular/material/tooltip/';
+import {MatMenuModule} from '@angular/material/menu';
 import {DocumentViewerModule} from './document-viewer/document-viewer.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { PhaseRunnerModule } from './phase-runner/phase-runner.module';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -47,9 +51,13 @@ import { MatListModule } from '@angular/material/list';
     MatProgressBarModule,
     MatCardModule,
     MatTooltipModule,
+    MatMenuModule,
     DocumentViewerModule,
     MatDialogModule,
     MatListModule,
+    PhaseRunnerModule,
+    MatInputModule,
+    MatProgressSpinnerModule
   ],
   providers: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

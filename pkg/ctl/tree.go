@@ -15,6 +15,7 @@
 package ctl
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -108,16 +109,23 @@ func (client *Client) GetPhaseSourceFiles(id ifc.ID) ([]KustomNode, error) {
 		return nil, err
 	}
 
-	phase, err := helper.Phase(id)
+	c := phase.NewClient(helper)
+
+	phaseIfc, err := c.PhaseByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	dirs, err := getKustomizeDirs(
-		filepath.Join(helper.TargetPath(),
-			phase.Config.DocumentEntryPoint,
-			"kustomization.yaml"))
+	docRoot, err := phaseIfc.DocumentRoot()
 	if err != nil {
+		return nil, err
+	}
+
+	dirs, err := getKustomizeDirs(filepath.Join(docRoot, "kustomization.yaml"))
+	if err != nil {
+		if errors.As(err, &phase.ErrDocumentEntrypointNotDefined{}) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -244,15 +252,18 @@ func (client *Client) createDirsMap(dirs []string) (map[string][][]string, error
 		return nil, err
 	}
 
-	manifestsDir := filepath.Join(tp, "manifests")
-
+	// these relative paths are making the BIG assumption that the target path
+	// will point to the "workspace" directory which will have "airshipctl" and
+	// "treasuremap" as subdirs at the same level, followed by a "manifests" dir
+	// in each, followed by "functions", "composites", etc. in each manifests dir
 	for _, d := range dirs {
-		rel, err := filepath.Rel(manifestsDir, d)
+		rel, err := filepath.Rel(tp, d)
 		if err != nil {
 			return nil, err
 		}
-		split := strings.SplitN(rel, string(os.PathSeparator), 2)
-		dm[split[0]] = append(dm[split[0]], []string{split[1], d})
+		split := strings.SplitN(rel, string(os.PathSeparator), 3)
+		dirGrp := filepath.Join(split[0], split[1])
+		dm[dirGrp] = append(dm[dirGrp], []string{split[2], d})
 	}
 
 	return dm, nil

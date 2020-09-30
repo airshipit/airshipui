@@ -62,6 +62,7 @@ func Init() {
 	webservice.AppendToFunctionMap(configs.CTL, map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
 		configs.Baremetal: HandleBaremetalRequest,
 		configs.Document:  HandleDocumentRequest,
+		configs.Phase:     HandlePhaseRequest,
 	})
 }
 

@@ -64,8 +64,12 @@ func HandleImageRequest(request configs.WsMessage) configs.WsMessage {
 
 func (c *Client) generateIso() (string, error) {
 	var message string
+
 	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
-	err := isogen.GenerateBootstrapIso(cfgFactory)
+
+	// setting "progress" to false since we don't need to see CLI
+	// progress bar in UI
+	err := isogen.GenerateBootstrapIso(cfgFactory, false)
 	if err == nil {
 		message = fmt.Sprintf("Success")
 	}

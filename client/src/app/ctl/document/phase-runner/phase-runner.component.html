@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>{{data.name}}</h1>
+<div mat-dialog-content>
+  <div *ngFor="let box of checkboxes">
+    <div class="checkbox-wrapper">
+      <mat-checkbox [(ngModel)]="box.checked" (change)="getChecked()">{{box.name}}</mat-checkbox>
+    </div>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button (click)="onNoClick()">Cancel</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="data" cdkFocusInitial>Run</button>
+</div>

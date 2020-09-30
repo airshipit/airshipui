@@ -144,9 +144,12 @@ const (
 	Build WsSubComponentType = "build"
 
 	// ctl phase subcomponents
-	Plan   WsSubComponentType = "plan"
-	Render WsSubComponentType = "render"
-	Run    WsSubComponentType = "run"
+	Plan WsSubComponentType = "plan"
+	// we may not need to implement phase render since that's
+	// what's already being shown in the document-viewer
+	Render        WsSubComponentType = "render"
+	Run           WsSubComponentType = "run"
+	ValidatePhase WsSubComponentType = "validatePhase"
 
 	// ctl secret subcomponents
 	Generate WsSubComponentType = "generate"

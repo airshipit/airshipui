@@ -21,3 +21,8 @@ export class KustomNode {
     isPhaseNode: boolean;
     hasError: boolean;
 }
+
+export class RunOptions {
+    Debug: boolean;
+    DryRun: boolean;
+}

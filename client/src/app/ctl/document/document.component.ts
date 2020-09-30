@@ -17,11 +17,12 @@ import {WebsocketService} from '../../../services/websocket/websocket.service';
 import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
 import {Log} from '../../../services/log/log.service';
 import {LogMessage} from '../../../services/log/log-message';
-import {KustomNode} from './document.models';
+import {KustomNode, RunOptions} from './document.models';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DocumentViewerComponent } from './document-viewer/document-viewer.component';
+import {PhaseRunnerComponent} from './phase-runner/phase-runner.component';
 
 @Component({
   selector: 'app-document',
@@ -33,7 +34,10 @@ export class DocumentComponent implements WSReceiver {
   className = this.constructor.name;
   statusMsg: string;
   loading: boolean;
-  dialogRef: MatDialogRef<DocumentViewerComponent, any>;
+  running: boolean;
+  isOpen: boolean;
+  phaseViewerRef: MatDialogRef<DocumentViewerComponent, any>;
+  phaseRunnerRef: MatDialogRef<PhaseRunnerComponent, any>;
 
   type = 'ctl';
   component = 'document';
@@ -98,11 +102,26 @@ export class DocumentComponent implements WSReceiver {
         case 'yamlWrite':
           this.handleYamlWrite(message);
           break;
+        case 'validatePhase':
+          this.handleValidatePhase(message);
+          break;
+        case 'run':
+          this.handleRunPhase(message);
+          break;
         default:
           Log.Error(new LogMessage('Document message sub component not handled', this.className, message));
           break;
       }
     }
+  }
+
+  handleValidatePhase(message: WebsocketMessage): void {
+    this.websocketService.printIfToast(message);
+  }
+
+  handleRunPhase(message: WebsocketMessage): void {
+    this.running = false;
+    this.websocketService.printIfToast(message);
   }
 
   handleGetPhaseTree(data: JSON): void {
@@ -117,22 +136,22 @@ export class DocumentComponent implements WSReceiver {
     if (message.yaml !== '' && message.yaml !== undefined) {
       yaml = atob(message.yaml);
     }
-    this.dialogRef = this.openDialog(message.id, message.name, message.details, yaml);
+    this.phaseViewerRef = this.openPhaseDialog(message.id, message.name, message.details, yaml);
   }
 
   handleGetExecutorDoc(message: WebsocketMessage): void {
-    this.dialogRef.componentInstance.executorYaml = atob(message.yaml);
+    this.phaseViewerRef.componentInstance.executorYaml = atob(message.yaml);
   }
 
   handleGetDocumentsBySelector(message: WebsocketMessage): void {
-    this.dialogRef.componentInstance.loading = false;
-    Object.assign(this.dialogRef.componentInstance.results, message.data);
-    this.dialogRef.componentInstance.resultsMsg = `Matches: ${this.dialogRef.componentInstance.results.length}`;
+    this.phaseViewerRef.componentInstance.loading = false;
+    Object.assign(this.phaseViewerRef.componentInstance.results, message.data);
+    this.phaseViewerRef.componentInstance.resultsMsg = `Matches: ${this.phaseViewerRef.componentInstance.results.length}`;
   }
 
   handleGetYaml(message: WebsocketMessage): void {
     if (message.message === 'rendered') {
-      this.dialogRef.componentInstance.yaml = atob(message.yaml);
+      this.phaseViewerRef.componentInstance.yaml = atob(message.yaml);
     } else {
       this.changeEditorContents((message.yaml));
       this.setTitle(message.name);
@@ -172,7 +191,7 @@ export class DocumentComponent implements WSReceiver {
     this.websocketService.sendMessage(websocketMessage);
   }
 
-  openDialog(id: string, name: string, details: string, yaml: string): MatDialogRef<DocumentViewerComponent, any> {
+  openPhaseDialog(id: string, name: string, details: string, yaml: string): MatDialogRef<DocumentViewerComponent, any> {
     const dialogRef = this.dialog.open(DocumentViewerComponent, {
       width: '80vw',
       height: '90vh',
@@ -190,6 +209,26 @@ export class DocumentComponent implements WSReceiver {
 
     this.getExecutorDoc(JSON.parse(id));
     return dialogRef;
+  }
+
+  confirmRunPhase(node: KustomNode): void {
+    const dialogRef = this.dialog.open(PhaseRunnerComponent, {
+      width: '25vw',
+      height: '30vh',
+      data: {
+        id: node.phaseid,
+        name: node.name,
+        options: new RunOptions()
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        const runOpts: RunOptions = result.options;
+        this.runPhase(node, runOpts);
+      }
+    });
+
   }
 
   getPhaseDetails(id: object): void {
@@ -227,6 +266,24 @@ export class DocumentComponent implements WSReceiver {
   getTarget(): void {
     const websocketMessage = this.constructDocumentWsMessage('getTarget');
     this.websocketService.sendMessage(websocketMessage);
+  }
+
+  // TODO(mfuller): we'll probably want to run / check phase validation
+  // before actually running the phase
+  runPhase(node: KustomNode, opts: RunOptions): void {
+    this.running = true;
+    const msg = new WebsocketMessage(this.type, 'phase', 'run');
+    msg.id = JSON.stringify(node.phaseid);
+    if (opts !== undefined) {
+      msg.data = JSON.parse(JSON.stringify(opts));
+    }
+    this.websocketService.sendMessage(msg);
+  }
+
+  validatePhase(id: object): void {
+    const msg = new WebsocketMessage(this.type, 'phase', 'validatePhase');
+    msg.id = JSON.stringify(id);
+    this.websocketService.sendMessage(msg);
   }
 
   constructDocumentWsMessage(subComponent: string): WebsocketMessage {

@@ -22,14 +22,25 @@
                       <mat-icon class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
                     </button>
                     <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
-                      <button mat-button class="docless-phase-btn">{{node.name}}</button>
-                      <button  class="doc-btn" mat-icon-button (click)="getPhase(node.phaseid)"
-                        matTooltip="View rendered documents"
-                        matTooltipPosition="above"
-                        matTooltipShowDelay="1000"
-                        matTooltipHideDelay="500">
-                        <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                      <button mat-button class="docless-phase-btn">{{node.name}}
                       </button>
+                      <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon class="grey-icon">more_vert</mat-icon>
+                      </button>
+                      <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="getPhase(node.phaseid)">
+                          <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                          <span>View</span>
+                        </button>
+                        <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                          <mat-icon>check_circle_icon</mat-icon>
+                          <span>Validate</span>
+                        </button>
+                        <button mat-menu-item (click)="confirmRunPhase(node)">
+                          <mat-icon>play_circle_outline</mat-icon>
+                          <span>Run</span>
+                        </button>
+                      </mat-menu>
                     </div>
                   </div>
                 </div>
@@ -44,13 +55,23 @@
                       {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                     </mat-icon>{{node.name}}
                   </button>
-                  <button *ngIf="node.isPhaseNode && !node.hasError" class="doc-btn" mat-icon-button (click)="getPhase(node.phaseid)"
-                      matTooltip="View rendered documents"
-                      matTooltipPosition="above"
-                      matTooltipShowDelay="1000"
-                      matTooltipHideDelay="500">
-                    <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                  <button *ngIf="node.isPhaseNode && !node.hasError" mat-icon-button [matMenuTriggerFor]="menu">
+                    <mat-icon class="grey-icon">more_vert</mat-icon>
                   </button>
+                  <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="getPhase(node.phaseid)">
+                      <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                      <span>View</span>
+                    </button>
+                    <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                      <mat-icon>check_circle_icon</mat-icon>
+                      <span>Validate</span>
+                    </button>
+                    <button mat-menu-item (click)="confirmRunPhase(node)">
+                      <mat-icon>play_circle_outline</mat-icon>
+                      <span>Run</span>
+                    </button>
+                  </mat-menu>
                 </div>
                 <ul class="nested-ul" [class.phase-tree-invisible]="!treeControl.isExpanded(node)">
                   <ng-container matTreeNodeOutlet></ng-container>

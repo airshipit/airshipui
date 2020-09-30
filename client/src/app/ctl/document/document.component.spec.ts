@@ -27,6 +27,7 @@ import {MatCardModule} from '@angular/material/card';
 import {MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('DocumentComponent', () => {
   let component: DocumentComponent;
@@ -47,7 +48,8 @@ describe('DocumentComponent', () => {
         MatCardModule,
         MatProgressBarModule,
         MatTooltipModule,
-        MatDialogModule
+        MatDialogModule,
+        MatMenuModule
       ],
       declarations: [DocumentComponent]
     })

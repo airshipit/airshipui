@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -97,6 +98,7 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
+// GetExecutorDoc returns the title and YAML of the executor document for the specified phase
 func (c *Client) GetExecutorDoc(id string) (string, string, error) {
 	helper, err := getHelper()
 	if err != nil {
@@ -141,12 +143,12 @@ func (c *Client) getPhaseDetails(id ifc.ID) (string, error) {
 
 	pClient := phase.NewClient(helper)
 
-	phase, err := pClient.PhaseByID(id)
+	phaseIfc, err := pClient.PhaseByID(id)
 	if err != nil {
 		return "", err
 	}
 
-	return phase.Details()
+	return phaseIfc.Details()
 }
 
 func (c *Client) getYaml(id, message string) (string, string, error) {
@@ -242,24 +244,29 @@ func getPhaseBundle(id ifc.ID) (document.Bundle, error) {
 
 	pClient := phase.NewClient(helper)
 
-	phase, err := pClient.PhaseByID(id)
+	phaseIfc, err := pClient.PhaseByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// some phases have no associated docs so they won't have a root.
-	// in that case, return nothing
-	if phase.DocumentRoot() == "" {
-		return nil, nil
+	docRoot, err := phaseIfc.DocumentRoot()
+	if err != nil {
+		// if phase has no doc entrypoint defined, just
+		// return nothing; otherwise, return the error
+		if errors.As(err, &phase.ErrDocumentEntrypointNotDefined{}) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
-	b, err := document.NewBundleByPath(phase.DocumentRoot())
+	b, err := document.NewBundleByPath(docRoot)
 	if err != nil {
 		return nil, err
 	}
 	return b, nil
 }
 
+// GetPhase returns the name, description, and doc bundle for specified phase
 func (c *Client) GetPhase(id string) (string, string, string, error) {
 	phaseID := ifc.ID{}
 
@@ -307,6 +314,7 @@ func (c *Client) docPull() (string, error) {
 	return message, err
 }
 
+// SelectorParams structure to hold data for constructing a document Selector
 type SelectorParams struct {
 	Name       string `json:"name,omitempty"`
 	Namespace  string `json:"namespace,omitempty"`
@@ -316,12 +324,15 @@ type SelectorParams struct {
 	Annotation string `json:"annotation,omitempty"`
 }
 
+// GVK small structure to hold group, version, kind for building a Selector
 type GVK struct {
 	Group   string `json:"group"`
 	Version string `json:"version"`
 	Kind    string `json:"kind"`
 }
 
+// GetDocumentsBySelector returns a slice of KustomNodes representing all phase
+// documents returned by applying the provided Selector
 func GetDocumentsBySelector(id string, data string) ([]KustomNode, error) {
 	docIndex = map[string]document.Document{}
 
@@ -343,12 +354,17 @@ func GetDocumentsBySelector(id string, data string) ([]KustomNode, error) {
 
 	pClient := phase.NewClient(helper)
 
-	phase, err := pClient.PhaseByID(phaseID)
+	phaseIfc, err := pClient.PhaseByID(phaseID)
 	if err != nil {
 		return nil, err
 	}
 
-	bundle, err := document.NewBundleByPath(phase.DocumentRoot())
+	docRoot, err := phaseIfc.DocumentRoot()
+	if err != nil {
+		return nil, err
+	}
+
+	bundle, err := document.NewBundleByPath(docRoot)
 	if err != nil {
 		return nil, err
 	}
