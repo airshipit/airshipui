@@ -31,6 +31,7 @@ type Transaction struct {
 	Table        configs.WsComponentType
 	SubComponent configs.WsSubComponentType
 	User         *string
+	Target       *string
 	Started      int64
 }
 
@@ -44,14 +45,16 @@ const (
 	// the table structure used for the records
 	tableCreate = `CREATE TABLE IF NOT EXISTS table (
 		subcomponent varchar(64) null,
-		user varchar(64) null,
+		user varchar(64),
+		target varchar(64) null,
 		success tinyint(1) default 0,
 		started timestamp,
-		elapsed timestamp,
-		stopped timestamp)`
+		elapsed bigint,
+		stopped timestamp,
+		primary key (subcomponent, user, started, stopped))`
 	// the prepared statement used for inserts
 	// TODO (aschiefe): determine if we need to batch inserts
-	insert = "INSERT INTO table(subcomponent, user, success, started, elapsed, stopped) values(?,?,?,?,?,?)"
+	insert = "INSERT INTO table(subcomponent, user, target, success, started, elapsed, stopped) values(?,?,?,?,?,?,?)"
 )
 
 // Init will create the database if it doesn't exist or open the existing database
@@ -61,7 +64,7 @@ func Init() {
 	if _, err := os.Stat("./sqlite/statistics.db"); os.IsNotExist(err) {
 		intitTables = true
 	}
-	// need to define error so that the program well set the global db variable
+	// need to define error so that the program will set the global db variable
 	var err error
 	// TODO (aschiefe): encrypt & password protect the database
 	// TODO (aschiefe): pull the db location out to the confing
@@ -70,25 +73,29 @@ func Init() {
 		log.Fatal(err)
 	}
 	if intitTables {
-		createTables()
+		err = createTables()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
 // createTables is only used when there is no database to write the correct structure for the records
-func createTables() {
-	for index := range tables {
-		stmt, err := db.Prepare(strings.ReplaceAll(tableCreate, "table", tables[index]))
+func createTables() error {
+	for _, table := range tables {
+		stmt, err := db.Prepare(strings.ReplaceAll(tableCreate, "table", table))
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		_, err = stmt.Exec()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		log.Tracef("%s table created.", tables[index])
+		log.Tracef("%s table created.", table)
 	}
+	return nil
 }
 
 // NewTransaction establishes the transaction which will record
@@ -96,6 +103,7 @@ func NewTransaction(request configs.WsMessage, user *string) *Transaction {
 	return &Transaction{
 		Table:        request.Component,
 		SubComponent: request.SubComponent,
+		Target:       request.Target,
 		Started:      time.Now().UnixNano() / 1000000,
 		User:         user,
 	}
@@ -120,7 +128,14 @@ func (transaction *Transaction) Complete(errorMessagePresent bool) {
 
 		writeMutex.Lock()
 		defer writeMutex.Unlock()
-		result, err := stmt.Exec(transaction.SubComponent, transaction.User, success, started, (stopped - started), stopped)
+		result, err := stmt.Exec(transaction.SubComponent,
+			transaction.User,
+			transaction.Target,
+			success,
+			started,
+			(stopped - started),
+			stopped)
+
 		if err != nil {
 			log.Error(err)
 			return
