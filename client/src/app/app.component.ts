@@ -47,7 +47,7 @@ export class AppComponent implements OnInit, WSReceiver {
         {
           displayName: 'Bare Metal',
           route: 'ctl/baremetal',
-          iconName: 'server'
+          iconName: 'devices'
         }, {
           displayName: 'Cluster',
           route: 'ctl/cluster',
@@ -55,7 +55,7 @@ export class AppComponent implements OnInit, WSReceiver {
         } , {
           displayName: 'Config',
           route: 'ctl/config',
-          iconName: 'doc'
+          iconName: 'settings'
         }, {
           displayName: 'Documents',
           route: 'ctl/documents',
@@ -63,15 +63,15 @@ export class AppComponent implements OnInit, WSReceiver {
         }, {
           displayName: 'Image',
           route: 'ctl/image',
-          iconName: 'doc'
+          iconName: 'camera'
         }, {
           displayName: 'Phase',
           route: 'ctl/phase',
-          iconName: 'doc'
+          iconName: 'list_alt'
         }, {
           displayName: 'Secret',
           route: 'ctl/secret',
-          iconName: 'doc'
+          iconName: 'security'
         }]
     }, {
       displayName: 'Dashboards',

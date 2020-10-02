@@ -23,5 +23,10 @@ export enum Icons {
   text_snippet = 'text_snippet',
   error = 'error',
   open_in_new = 'open_in_new',
-  filter = 'filter'
+  filter = 'filter',
+  security = 'security',
+  settings = 'settings',
+  camera = 'camera',
+  list_alt = 'list_alt',
+  devices = 'devices'
 }
