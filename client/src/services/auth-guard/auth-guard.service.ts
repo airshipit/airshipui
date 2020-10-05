@@ -80,7 +80,11 @@ export class AuthGuard implements WSReceiver, CanActivate {
         case 'approved':
           Log.Debug(new LogMessage('Auth approved received', this.className, message));
           this.setToken(message.token);
-          this.router.navigate(['/']);
+          // redirect to / only when on /login otherwise leave the path where it was before the auth attempt
+          const location = window.location.pathname;
+          if (location === '/login' || location === '/login/') {
+            this.router.navigate(['/']);
+          }
           break;
         case 'denied':
           Log.Debug(new LogMessage('Auth denied received', this.className, message));
