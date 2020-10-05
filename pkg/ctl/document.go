@@ -39,7 +39,7 @@ var (
 )
 
 // HandleDocumentRequest will flop between requests so we don't have to have them all mapped as function calls
-func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
+func HandleDocumentRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Document,
@@ -47,12 +47,13 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	var err error
-	var message string
+	var message *string
 	var id string
 
 	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 		return response
 	}
 
@@ -64,32 +65,36 @@ func HandleDocumentRequest(request configs.WsMessage) configs.WsMessage {
 	case configs.YamlWrite:
 		id = request.ID
 		response.Name, response.YAML, err = client.writeYamlFile(id, request.YAML)
-		message = fmt.Sprintf("File '%s' saved successfully", response.Name)
+		s := fmt.Sprintf("File '%s' saved successfully", response.Name)
+		message = &s
 	case configs.GetYaml:
 		id = request.ID
 		message = request.Message
-		response.Name, response.YAML, err = client.getYaml(id, message)
+		response.Name, response.YAML, err = client.getYaml(id, *message)
 	case configs.GetPhaseTree:
 		response.Data, err = client.GetPhaseTree()
 	case configs.GetPhase:
 		id = request.ID
-		message = "rendered"
+		s := "rendered"
+		message = &s
 		response.Name, response.Details, response.YAML, err = client.GetPhase(id)
 	case configs.GetDocumentsBySelector:
 		id = request.ID
-		response.Data, err = GetDocumentsBySelector(request.ID, request.Message)
+		response.Data, err = GetDocumentsBySelector(request.ID, *request.Message)
 	case configs.GetTarget:
 		message = client.getTarget()
 	case configs.GetExecutorDoc:
 		id = request.ID
-		message = "rendered"
+		s := "rendered"
+		message = &s
 		response.Name, response.YAML, err = client.GetExecutorDoc(id)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
 
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 	} else {
 		response.Message = message
 		response.ID = id
@@ -126,13 +131,16 @@ func (c *Client) GetExecutorDoc(id string) (string, string, error) {
 	return title, base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-func (c *Client) getTarget() string {
+func (c *Client) getTarget() *string {
+	var s string
 	m, err := c.Config.CurrentContextManifest()
 	if err != nil {
-		return "unknown"
+		s = "unknown"
+		return &s
 	}
 
-	return filepath.Join(m.TargetPath, m.SubPath)
+	s = filepath.Join(m.TargetPath, m.SubPath)
+	return &s
 }
 
 func (c *Client) getPhaseDetails(id ifc.ID) (string, error) {
@@ -301,14 +309,15 @@ func (c *Client) GetPhase(id string) (string, string, string, error) {
 	return title, details, base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
-func (c *Client) docPull() (string, error) {
-	var message string
+func (c *Client) docPull() (*string, error) {
+	var message *string
 	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
 	// 2nd arg is noCheckout, I assume we want to checkout the repo,
 	// so setting to false
 	err := pull.Pull(cfgFactory, false)
 	if err == nil {
-		message = fmt.Sprintf("Success")
+		s := fmt.Sprintf("Success")
+		message = &s
 	}
 
 	return message, err

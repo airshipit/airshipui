@@ -31,8 +31,10 @@ type Transaction struct {
 	Table        configs.WsComponentType
 	SubComponent configs.WsSubComponentType
 	User         *string
+	ActionType   *string
 	Target       *string
 	Started      int64
+	Recordable   bool
 }
 
 var (
@@ -46,15 +48,23 @@ const (
 	tableCreate = `CREATE TABLE IF NOT EXISTS table (
 		subcomponent varchar(64) null,
 		user varchar(64),
-		target varchar(64) null,
+		type text check(type in ('direct', 'phase')) null,
+		target text null,
 		success tinyint(1) default 0,
 		started timestamp,
 		elapsed bigint,
-		stopped timestamp,
-		primary key (subcomponent, user, started, stopped))`
+		stopped timestamp)`
 	// the prepared statement used for inserts
 	// TODO (aschiefe): determine if we need to batch inserts
-	insert = "INSERT INTO table(subcomponent, user, target, success, started, elapsed, stopped) values(?,?,?,?,?,?,?)"
+	insert = `INSERT INTO table(subcomponent,
+								user,
+								type,
+								target,
+								success,
+								started,
+								elapsed,
+								stopped)
+								values(?,?,?,?,?,?,?,?)`
 )
 
 // Init will create the database if it doesn't exist or open the existing database
@@ -99,19 +109,21 @@ func createTables() error {
 }
 
 // NewTransaction establishes the transaction which will record
-func NewTransaction(request configs.WsMessage, user *string) *Transaction {
+func NewTransaction(user *string, request configs.WsMessage) *Transaction {
 	return &Transaction{
 		Table:        request.Component,
 		SubComponent: request.SubComponent,
+		ActionType:   request.ActionType,
 		Target:       request.Target,
 		Started:      time.Now().UnixNano() / 1000000,
 		User:         user,
+		Recordable:   isRecordable(request),
 	}
 }
 
 // Complete will put an entry into the statistics database for the transaction
-func (transaction *Transaction) Complete(errorMessagePresent bool) {
-	if transaction.User != nil && transaction.isRecordable() {
+func (transaction *Transaction) Complete(errorMessageNotPresent bool) {
+	if transaction.User != nil && transaction.Recordable {
 		stmt, err := db.Prepare(strings.ReplaceAll(insert, "table", string(transaction.Table)))
 		if err != nil {
 			log.Error(err)
@@ -122,7 +134,7 @@ func (transaction *Transaction) Complete(errorMessagePresent bool) {
 		stopped := time.Now().UnixNano() / 1000000
 
 		success := 0
-		if errorMessagePresent {
+		if errorMessageNotPresent {
 			success = 1
 		}
 
@@ -130,6 +142,7 @@ func (transaction *Transaction) Complete(errorMessagePresent bool) {
 		defer writeMutex.Unlock()
 		result, err := stmt.Exec(transaction.SubComponent,
 			transaction.User,
+			transaction.ActionType,
 			transaction.Target,
 			success,
 			started,
@@ -152,16 +165,28 @@ func (transaction *Transaction) Complete(errorMessagePresent bool) {
 }
 
 // isRecordable will shuffle through the transaction and determine if we should write it to the database
-func (transaction *Transaction) isRecordable() bool {
+func isRecordable(request configs.WsMessage) bool {
 	recordable := true
-	if transaction.Table == configs.Auth {
+	// don't record auth attempts
+	if request.Component == configs.Auth {
 		recordable = false
 	}
-	switch transaction.SubComponent {
-	case configs.GetTarget:
-		recordable = false
-	case configs.GetPhaseTree:
+
+	// don't record default get data events
+	switch request.SubComponent {
+	case configs.GetTarget,
+		configs.GetDefaults,
+		configs.GetPhaseTree,
+		configs.GetPhase,
+		configs.GetYaml,
+		configs.GetDocumentsBySelector:
 		recordable = false
 	}
+
+	// don't request actions taken against multiple targets, the individual action will be recorded
+	if request.Targets != nil {
+		recordable = false
+	}
+
 	return recordable
 }

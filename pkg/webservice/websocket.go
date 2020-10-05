@@ -47,7 +47,7 @@ var upgrader = websocket.Upgrader{
 
 // this is a way to allow for arbitrary messages to be processed by the backend
 // the message of a specifc component is shunted to that subsystem for further processing
-var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
+var funcMap = map[configs.WsRequestType]map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage{
 	configs.UI: {
 		configs.Keepalive: keepaliveReply,
 		configs.Auth:      handleAuth,
@@ -58,8 +58,8 @@ var functionMap = map[configs.WsRequestType]map[configs.WsComponentType]func(con
 // It does however require them to implement an init function to append them
 // TODO: maybe some form of an interface to enforce this may be necessary?
 func AppendToFunctionMap(requestType configs.WsRequestType,
-	functions map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage) {
-	functionMap[requestType] = functions
+	functions map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage) {
+	funcMap[requestType] = functions
 }
 
 // handle the origin request & upgrade to websocket
@@ -107,11 +107,12 @@ func (session *session) onMessage() {
 			}
 			if err != nil {
 				// deny the request if we get a bad token, this will force the UI to a login screen
+				e := "Invalid token, authentication denied"
 				response := configs.WsMessage{
 					Type:         configs.UI,
 					Component:    configs.Auth,
 					SubComponent: configs.Denied,
-					Error:        "Invalid token, authentication denied",
+					Error:        &e,
 				}
 				if err = session.webSocketSend(response); err != nil {
 					session.onError(err)
@@ -119,17 +120,17 @@ func (session *session) onMessage() {
 			} else {
 				// This is the middleware to be able to record when a transaction starts and ends for the statistics recorder
 				// It is possible for the backend to send messages without a valid user
-				transaction := statistics.NewTransaction(request, user)
+				transaction := statistics.NewTransaction(user, request)
 
 				// look through the function map to find the type to handle the request
-				if reqType, ok := functionMap[request.Type]; ok {
+				if reqType, ok := funcMap[request.Type]; ok {
 					// the function map may have a component (function) to process the request
 					if component, ok := reqType[request.Component]; ok {
-						response := component(request)
+						response := component(user, request)
 						if err = session.webSocketSend(response); err != nil {
 							session.onError(err)
 						}
-						go transaction.Complete(len(response.Error) == 0)
+						go transaction.Complete(response.Error == nil)
 					} else {
 						if err = session.webSocketSend(requestErrorHelper(fmt.Sprintf("Requested component: %s, not found",
 							request.Component), request)); err != nil {
@@ -164,7 +165,7 @@ func (session *session) onError(err error) {
 }
 
 // The UI will occasionally ping the server due to the websocket default timeout
-func keepaliveReply(configs.WsMessage) configs.WsMessage {
+func keepaliveReply(*string, configs.WsMessage) configs.WsMessage {
 	return configs.WsMessage{
 		Type:      configs.UI,
 		Component: configs.Keepalive,
@@ -176,7 +177,7 @@ func requestErrorHelper(err string, request configs.WsMessage) configs.WsMessage
 	return configs.WsMessage{
 		Type:      request.Type,
 		Component: request.Component,
-		Error:     err,
+		Error:     &err,
 	}
 }
 

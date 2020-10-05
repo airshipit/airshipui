@@ -14,13 +14,26 @@
 
 import { NgModule } from '@angular/core';
 import { BaremetalComponent } from './baremetal.component';
+import { ToastrModule } from 'ngx-toastr';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
   imports: [
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatInputModule,
+    MatSortModule,
+    ToastrModule.forRoot()
   ],
   declarations: [
     BaremetalComponent
-  ],
-  providers: []
+  ]
 })
 export class BaremetalModule { }

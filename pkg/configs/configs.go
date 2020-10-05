@@ -105,6 +105,10 @@ const (
 	Phase     WsComponentType = "phase"
 	Secret    WsComponentType = "secret"
 
+	// actions direct or phase
+	DirectAction string = "direct"
+	PhaseAction  string = "phase"
+
 	// auth subcomponets
 	Approved     WsSubComponentType = "approved"
 	Authenticate WsSubComponentType = "authenticate"
@@ -114,12 +118,12 @@ const (
 
 	// ctl subcomponets
 	// ctl baremetal subcomponets
-	EjectMedia   WsSubComponentType = "ejectMedia"
-	PowerOff     WsSubComponentType = "powerOff"
-	PowerOn      WsSubComponentType = "powerOn"
-	PowerStatus  WsSubComponentType = "powerStatus"
+	EjectMedia   WsSubComponentType = "ejectmedia"
+	PowerOff     WsSubComponentType = "poweroff"
+	PowerOn      WsSubComponentType = "poweron"
+	PowerStatus  WsSubComponentType = "powerstatus"
 	Reboot       WsSubComponentType = "reboot"
-	RemoteDirect WsSubComponentType = "remoteDirect"
+	RemoteDirect WsSubComponentType = "remotedirect"
 
 	// ctl cluster subcomponets
 	Move   WsSubComponentType = "move"
@@ -157,16 +161,12 @@ const (
 	// ctl common components
 	Init                   WsSubComponentType = "init"
 	GetDefaults            WsSubComponentType = "getDefaults"
-	GenerateISO            WsSubComponentType = "generateISO"
-	Yaml                   WsSubComponentType = "yaml"
 	YamlWrite              WsSubComponentType = "yamlWrite"
 	GetYaml                WsSubComponentType = "getYaml"
 	GetRendered            WsSubComponentType = "getRendered"
 	GetPhaseTree           WsSubComponentType = "getPhaseTree"
 	GetTarget              WsSubComponentType = "getTarget"
 	GetPhaseSourceFiles    WsSubComponentType = "getPhaseSource"
-	SetCluster             WsSubComponentType = "cluster"
-	SetCredential          WsSubComponentType = "credential"
 	GetDocumentsBySelector WsSubComponentType = "getDocumentsBySelector"
 	GetPhase               WsSubComponentType = "getPhase"
 	GetExecutorDoc         WsSubComponentType = "getExecutorDoc"
@@ -183,16 +183,20 @@ type WsMessage struct {
 	Timestamp    int64              `json:"timestamp,omitempty"`
 
 	// additional conditional components that may or may not be involved in the request / response
-	Error           string      `json:"error,omitempty"`
 	IsAuthenticated bool        `json:"isAuthenticated,omitempty"`
-	Message         string      `json:"message,omitempty"`
 	Data            interface{} `json:"data,omitempty"`
 	YAML            string      `json:"yaml,omitempty"`
 	Name            string      `json:"name,omitempty"`
 	Details         string      `json:"details,omitempty"`
 	ID              string      `json:"id,omitempty"`
+	Error           *string     `json:"error,omitempty"`
+	Message         *string     `json:"message,omitempty"`
 	Token           *string     `json:"token,omitempty"`
-	Target          *string     `json:"target,omitempty"`
+
+	// used by baremetal CTL requests
+	ActionType *string   `json:"actionType,omitempty"` // signifies if it's a phase or direct action
+	Target     *string   `json:"target,omitempty"`     // singular target (usually in a response)
+	Targets    *[]string `json:"targets,omitempty"`    // multiple targets (usually in a request)
 
 	// used for auth
 	Authentication *Authentication `json:"authentication,omitempty"`
@@ -226,6 +230,7 @@ func SetUIConfig() error {
 	return checkConfigs()
 }
 
+// checkConfigs will work its way through the config file, if it exists, and creates defaults where needed
 func checkConfigs() error {
 	writeFile := false
 	if UIConfig.WebService == nil {
@@ -273,6 +278,8 @@ func checkConfigs() error {
 	return nil
 }
 
+// createDefaultUser generates a default user if one doesn't exist in the conf file.
+// the default id is admin and the default password is admin
 func createDefaultUser() error {
 	hash := sha512.New()
 	_, err := hash.Write([]byte("admin"))
@@ -283,6 +290,7 @@ func createDefaultUser() error {
 	return nil
 }
 
+// writeTestSSL generates an SSL keypair and writes it to file
 func writeTestSSL(privateKeyFile string, publicKeyFile string) error {
 	// get and write out private key
 	log.Warnf("Generating private key %s.  DO NOT USE THIS FOR PRODUCTION", privateKeyFile)
@@ -301,6 +309,7 @@ func writeTestSSL(privateKeyFile string, publicKeyFile string) error {
 	return nil
 }
 
+// getAndWritePrivateKey generates a default SSL private key and writes it to file
 func getAndWritePrivateKey(fileName string) (*rsa.PrivateKey, error) {
 	privateKeyBytes, privateKey, err := cryptography.GeneratePrivateKey()
 	if err != nil {
@@ -313,6 +322,7 @@ func getAndWritePrivateKey(fileName string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
+// getAndWritePublicKey generates a default SSL public key and writes it to file
 func getAndWritePublicKey(fileName string, privateKey *rsa.PrivateKey) error {
 	publicKeyBytes, err := cryptography.GeneratePublicKey(privateKey)
 	if err != nil {
@@ -325,6 +335,7 @@ func getAndWritePublicKey(fileName string, privateKey *rsa.PrivateKey) error {
 	return nil
 }
 
+// setEtcDir determines the full path for the etc dir used to write out the docs
 func setEtcDir() error {
 	if etcDir == nil {
 		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))

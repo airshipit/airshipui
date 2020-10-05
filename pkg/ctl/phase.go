@@ -26,7 +26,7 @@ import (
 
 // HandlePhaseRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandlePhaseRequest(request configs.WsMessage) configs.WsMessage {
+func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Document, // setting this to Document for now since that's handling phase requests
@@ -34,12 +34,13 @@ func HandlePhaseRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	var err error
-	var message string
+	var message *string
 	var valid bool
 
 	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 		return response
 	}
 
@@ -59,7 +60,8 @@ func HandlePhaseRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 	} else {
 		response.Message = message
 	}
@@ -70,12 +72,12 @@ func HandlePhaseRequest(request configs.WsMessage) configs.WsMessage {
 // this helper function will likely disappear once a clear workflow for
 // phase validation takes shape in UI. For now, it simply returns a
 // string message to be displayed as a toast in frontend client
-func validateHelper(valid bool) string {
+func validateHelper(valid bool) *string {
 	msg := "invalid"
 	if valid {
 		msg = "valid"
 	}
-	return msg
+	return &msg
 }
 
 // ValidatePhase validates the specified phase

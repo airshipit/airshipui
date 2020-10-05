@@ -22,7 +22,7 @@ import (
 
 // HandleSecretRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandleSecretRequest(request configs.WsMessage) configs.WsMessage {
+func HandleSecretRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
@@ -30,7 +30,7 @@ func HandleSecretRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	var err error
-	var message string
+	var message *string
 
 	subComponent := request.SubComponent
 	switch subComponent {
@@ -41,7 +41,8 @@ func HandleSecretRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 	} else {
 		response.Message = message
 	}

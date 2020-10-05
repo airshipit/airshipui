@@ -118,12 +118,13 @@ func (p *UIEventProcessor) processClusterctlEvent(e events.ClusterctlEvent) {
 }
 
 func sendEventMessage(sessionID, eventType, message string) {
+	m := fmt.Sprintf("%s: %s", eventType, message)
 	err := webservice.WebSocketSend(configs.WsMessage{
 		SessionID:    sessionID,
 		Type:         configs.CTL,
 		Component:    configs.Document, // probably will change to configs.Phase soon
 		SubComponent: configs.Run,
-		Message:      fmt.Sprintf("%s: %s", eventType, message),
+		Message:      &m,
 	})
 	if err != nil {
 		log.Errorf("Error sending message %s", err)

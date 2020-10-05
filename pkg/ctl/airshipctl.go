@@ -31,7 +31,7 @@ var AirshipConfigPath *string
 var KubeConfigPath *string
 
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
-var CTLFunctionMap = map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
+var CTLFunctionMap = map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage{
 	configs.Baremetal: HandleBaremetalRequest,
 	configs.Cluster:   HandleClusterRequest,
 	configs.CTLConfig: HandleConfigRequest,
@@ -59,11 +59,13 @@ type LogInterceptor struct {
 // Init allows for the circular reference to the webservice package to be broken and allow for the sending
 // of arbitrary messages from any package to the websocket
 func Init() {
-	webservice.AppendToFunctionMap(configs.CTL, map[configs.WsComponentType]func(configs.WsMessage) configs.WsMessage{
-		configs.Baremetal: HandleBaremetalRequest,
-		configs.Document:  HandleDocumentRequest,
-		configs.Phase:     HandlePhaseRequest,
-	})
+	webservice.AppendToFunctionMap(
+		configs.CTL,
+		map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage{
+			configs.Baremetal: HandleBaremetalRequest,
+			configs.Document:  HandleDocumentRequest,
+			configs.Phase:     HandlePhaseRequest,
+		})
 }
 
 // NewDefaultClient initializes the airshipctl client for external usage with default logging.
@@ -118,7 +120,8 @@ func NewLogInterceptor(request configs.WsMessage) *LogInterceptor {
 // The intention is to hijack the log output for a progress bar on the UI
 func (cw *LogInterceptor) Write(data []byte) (n int, err error) {
 	response := cw.response
-	response.Message = string(data)
+	s := string(data)
+	response.Message = &s
 	if err = webservice.WebSocketSend(response); err != nil {
 		uiLog.Errorf("Error receiving / sending message: %s\n", err)
 		return len(data), err

@@ -34,13 +34,15 @@ func TestHandleUnknownDocumentSubComponent(t *testing.T) {
 	AirshipConfigPath = &acp
 	KubeConfigPath = &kcp
 
-	response := HandleDocumentRequest(request)
+	user := "test"
+	response := HandleDocumentRequest(&user, request)
 
+	e := "Subcomponent fake_subcomponent not found"
 	expected := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Document,
 		SubComponent: "fake_subcomponent",
-		Error:        "Subcomponent fake_subcomponent not found",
+		Error:        &e,
 	}
 
 	assert.Equal(t, expected, response)

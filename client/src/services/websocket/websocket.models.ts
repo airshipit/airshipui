@@ -39,11 +39,13 @@ export class WebsocketMessage {
   token: string;
   data: JSON;
   yaml: string;
+  actionType: string;
+  targets: string[];
   authentication: Authentication;
 
   // this constructor looks like this in case anyone decides they want just a raw message with no data predefined
   // or an easy way to specify the defaults
-  constructor(type?: string | undefined, component?: string | undefined, subComponent?: string | undefined) {
+  constructor(type?: string | null, component?: string | null, subComponent?: string | null) {
     this.type = type;
     this.component = component;
     this.subComponent = subComponent;
@@ -63,7 +65,7 @@ export class Authentication {
   id: string;
   password: string;
 
-  constructor(id?: string | undefined, password?: string | undefined) {
+  constructor(id?: string | null, password?: string | null) {
     this.id = id;
     this.password = password;
   }

@@ -34,13 +34,15 @@ func TestHandleUnknownBaremetalSubComponent(t *testing.T) {
 	AirshipConfigPath = &acp
 	KubeConfigPath = &kcp
 
-	response := HandleBaremetalRequest(request)
+	user := "test"
+	response := HandleBaremetalRequest(&user, request)
 
+	e := "Subcomponent fake_subcomponent not found"
 	expected := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
 		SubComponent: "fake_subcomponent",
-		Error:        "Subcomponent fake_subcomponent not found",
+		Error:        &e,
 	}
 
 	assert.Equal(t, expected, response)

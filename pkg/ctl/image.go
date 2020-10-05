@@ -15,16 +15,15 @@
 package ctl
 
 import (
+	"errors"
 	"fmt"
 
-	"opendev.org/airship/airshipctl/pkg/bootstrap/isogen"
-	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
 // HandleImageRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandleImageRequest(request configs.WsMessage) configs.WsMessage {
+func HandleImageRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
@@ -32,11 +31,12 @@ func HandleImageRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	var err error
-	var message string
+	var message *string
 
 	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 		return response
 	}
 
@@ -54,7 +54,8 @@ func HandleImageRequest(request configs.WsMessage) configs.WsMessage {
 	}
 
 	if err != nil {
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 	} else {
 		response.Message = message
 	}
@@ -62,17 +63,7 @@ func HandleImageRequest(request configs.WsMessage) configs.WsMessage {
 	return response
 }
 
-func (c *Client) generateIso() (string, error) {
-	var message string
-
-	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
-
-	// setting "progress" to false since we don't need to see CLI
-	// progress bar in UI
-	err := isogen.GenerateBootstrapIso(cfgFactory, false)
-	if err == nil {
-		message = fmt.Sprintf("Success")
-	}
-
-	return message, err
+func (c *Client) generateIso() (*string, error) {
+	err := errors.New("Isogen is no longer available")
+	return nil, err
 }

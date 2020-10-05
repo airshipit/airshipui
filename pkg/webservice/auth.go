@@ -31,7 +31,7 @@ import (
 var jwtKey = []byte("airshipUI_JWT_key")
 
 // The UI will either request authentication or validation, handle those situations here
-func handleAuth(request configs.WsMessage) configs.WsMessage {
+func handleAuth(_ *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:      configs.UI,
 		Component: configs.Auth,
@@ -66,10 +66,10 @@ func handleAuth(request configs.WsMessage) configs.WsMessage {
 
 	if err != nil {
 		log.Error(err)
-		response.Error = err.Error()
+		e := err.Error()
+		response.Error = &e
 		response.SubComponent = configs.Denied
 	}
-
 	return response
 }
 
