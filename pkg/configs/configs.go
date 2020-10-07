@@ -189,6 +189,7 @@ type WsMessage struct {
 	Details         string      `json:"details,omitempty"`
 	ID              string      `json:"id,omitempty"`
 	Token           *string     `json:"token,omitempty"`
+	Target          *string     `json:"target,omitempty"`
 
 	// used for auth
 	Authentication *Authentication `json:"authentication,omitempty"`
