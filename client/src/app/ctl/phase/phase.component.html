@@ -1,1 +1,104 @@
-<h1>Phase component</h1>
+<mat-tab-group>
+    <mat-tab label="Phase Explorer">
+      <div class="explorer-container">
+        <mat-card class="phase-tree-card">
+          <mat-card-header>
+            <mat-card-title>Phases</mat-card-title>
+            <mat-card-subtitle>Target: {{targetPath}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+          <mat-card-content class="phase-card-content">
+            <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="phase-tree">
+              <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+                <li class="mat-tree-node">
+                  <div class="mat-tree-node">
+                    <div *ngIf="!node.isPhaseNode">
+                      <button class="get-yaml-btn" mat-icon-button (click)="!node.isPhaseNode && getYaml(node.id)">
+                        <mat-icon class="grey-icon" svgIcon="doc"></mat-icon> {{node.name}}
+                      </button>
+                    </div>
+                    <div *ngIf="node.isPhaseNode && (node.hasError || node.children.length === 0)" class="phase-error">
+                      <button *ngIf="node.hasError" mat-icon-button>
+                        <mat-icon class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
+                      </button>
+                      <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
+                        <button mat-button class="docless-phase-btn">{{node.name}}
+                        </button>
+                        <button mat-icon-button [matMenuTriggerFor]="menu">
+                          <mat-icon class="grey-icon">more_vert</mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                          <button mat-menu-item (click)="getPhase(node.phaseid)">
+                            <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                            <span>View</span>
+                          </button>
+                          <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                            <mat-icon>check_circle_icon</mat-icon>
+                            <span>Validate</span>
+                          </button>
+                          <button mat-menu-item (click)="confirmRunPhase(node)">
+                            <mat-icon>play_circle_outline</mat-icon>
+                            <span>Run</span>
+                          </button>
+                        </mat-menu>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </mat-tree-node>
+              <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+                <li>
+                  <div class="mat-tree-node">
+                    <button class="phase-tree-toggle" mat-button matTreeNodeToggle
+                            [attr.aria-label]="'toggle ' + node.name">
+                      <mat-icon class="mat-icon-rtl-mirror">
+                        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                      </mat-icon>{{node.name}}
+                    </button>
+                    <button *ngIf="node.isPhaseNode && !node.hasError" mat-icon-button [matMenuTriggerFor]="menu">
+                      <mat-icon class="grey-icon">more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                      <button mat-menu-item (click)="getPhase(node.phaseid)">
+                        <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                        <span>View</span>
+                      </button>
+                      <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                        <mat-icon>check_circle_icon</mat-icon>
+                        <span>Validate</span>
+                      </button>
+                      <button mat-menu-item (click)="confirmRunPhase(node)">
+                        <mat-icon>play_circle_outline</mat-icon>
+                        <span>Run</span>
+                      </button>
+                    </mat-menu>
+                  </div>
+                  <ul class="nested-ul" [class.phase-tree-invisible]="!treeControl.isExpanded(node)">
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </ul>
+                </li>
+              </mat-nested-tree-node>
+            </mat-tree>
+          </mat-card-content>
+        </mat-card>
+      <!-- EDITOR -->
+        <mat-card *ngIf="showEditor" class="editor-card">
+          <mat-card-header>
+            <mat-card-title>{{editorTitle}}</mat-card-title>
+            <mat-card-subtitle>{{editorSubtitle}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="editor-card-content">
+            <ngx-monaco-editor *ngIf="code !== undefined && code !== null" [options]="editorOptions" [(ngModel)]="code" (onInit)="onInit($event)"></ngx-monaco-editor>
+          </mat-card-content>
+          <mat-card-actions>
+            <div class="editor-button-grp">
+              <div class="editor-btns">
+                <button class="editor-btn" mat-raised-button color="primary" id="SaveYamlBtn" (click)="saveYaml()" [disabled]="saveBtnDisabled">Save</button>
+                <button class="editor-btn" mat-raised-button (click)="closeEditor()">Close</button>
+              </div>
+            </div>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>

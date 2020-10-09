@@ -23,14 +23,14 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import {MatInputModule} from '@angular/material/input';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DocumentViewerComponent } from './document-viewer.component';
+import { PhaseViewerComponent } from './phase-viewer.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
-    DocumentViewerComponent
+    PhaseViewerComponent
   ],
   imports: [
     CommonModule,
@@ -51,4 +51,4 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   ],
   providers: [],
 })
-export class DocumentViewerModule {}
+export class PhaseViewerModule {}

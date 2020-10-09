@@ -122,7 +122,7 @@ func sendEventMessage(sessionID, eventType, message string) {
 	err := webservice.WebSocketSend(configs.WsMessage{
 		SessionID:    sessionID,
 		Type:         configs.CTL,
-		Component:    configs.Document, // probably will change to configs.Phase soon
+		Component:    configs.Phase,
 		SubComponent: configs.Run,
 		Message:      &m,
 	})

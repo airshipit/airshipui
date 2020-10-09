@@ -1,0 +1,120 @@
+/*
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+.explorer-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+/* Phase Tree styles */
+
+.grey-icon {
+  color: grey;
+  height: 20px;
+  width: 20px;
+}
+
+.error-icon {
+  padding-left: 20px;
+  color: red;
+  height: 20px;
+  width: 20px;
+}
+
+.docless-phase {
+  padding-left: 20px;
+}
+
+.docless-phase-btn {
+  padding-left: 20px;
+  padding-right: 0px;
+}
+
+.phase-tree-invisible {
+  display: none;
+}
+
+.mat-tree-node {
+  min-height: 25px;
+}
+
+.nested-ul {
+  padding-left: 0px;
+}
+
+.phase-tree ul,
+.phase-tree li {
+  padding-left: 20px;
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style-type: none;
+}
+
+.phase-tree {
+  height: 100%;
+}
+
+.phase-tree-card {
+  height: calc(100vh - 176px);
+  width: 40%;
+  box-sizing: border-box;
+}
+
+.phase-card-content {
+  max-height: 90%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.phase-tree-progress-bar {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.phase-tree-toggle {
+  padding-right: 0px;
+}
+
+/* Editor styles */
+.editor-btn {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.editor-button-grp {
+  display: flex;
+}
+
+.editor-btns {
+  margin-left: auto;
+  margin-right: 30px;
+}
+
+.editor-card {
+  height: calc(100vh - 176px);
+  width: 60%;
+  box-sizing: border-box;
+}
+
+.editor-card-content {
+  height: 85%;
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+ngx-monaco-editor {
+  height: 100%;
+  width: 100%;
+}

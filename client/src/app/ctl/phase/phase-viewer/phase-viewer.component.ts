@@ -14,19 +14,19 @@
 
 import {Component, OnInit} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
-import {KustomNode} from '../document.models';
+import {KustomNode} from '../phase.models';
 import {WebsocketMessage} from '../../../../services/websocket/websocket.models';
 import {WebsocketService} from '../../../../services/websocket/websocket.service';
 import {FormControl, FormGroup} from '@angular/forms';
 
 @Component({
-    selector: 'app-document-viewer',
-    templateUrl: 'document-viewer.component.html',
-    styleUrls: ['./document-viewer.component.css']
+    selector: 'app-phase-viewer',
+    templateUrl: 'phase-viewer.component.html',
+    styleUrls: ['./phase-viewer.component.css']
 
 })
 
-export class DocumentViewerComponent implements OnInit {
+export class PhaseViewerComponent implements OnInit {
     editorOptions = {language: 'yaml', automaticLayout: true, readOnly: true, theme: 'airshipTheme'};
     bundleYaml: string;
     executorYaml: string;
@@ -49,7 +49,7 @@ export class DocumentViewerComponent implements OnInit {
     });
 
     constructor(
-        public dialogRef: MatDialogRef<DocumentViewerComponent>,
+        public dialogRef: MatDialogRef<PhaseViewerComponent>,
         private websocketService: WebsocketService) {}
 
     ngOnInit(): void {
@@ -80,7 +80,7 @@ export class DocumentViewerComponent implements OnInit {
     }
 
     getDocumentsBySelector(selector: string): void {
-        const msg = new WebsocketMessage('ctl', 'document', 'getDocumentsBySelector');
+        const msg = new WebsocketMessage('ctl', 'phase', 'getDocumentsBySelector');
         msg.message = selector;
         msg.id = this.id;
         this.websocketService.sendMessage(msg);
@@ -88,7 +88,7 @@ export class DocumentViewerComponent implements OnInit {
 
     getYaml(id: string): void {
         this.yaml = null;
-        const msg = new WebsocketMessage('ctl', 'document', 'getYaml');
+        const msg = new WebsocketMessage('ctl', 'phase', 'getYaml');
         msg.id = id;
         msg.message = 'rendered';
         this.websocketService.sendMessage(msg);

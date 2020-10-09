@@ -12,7 +12,7 @@
 # limitations under the License.
 */
 
-import {RunOptions} from '../document.models';
+import {RunOptions} from '../phase.models';
 
 export class RunnerDialogData {
     name: string;

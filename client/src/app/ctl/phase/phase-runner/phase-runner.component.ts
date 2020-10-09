@@ -14,7 +14,7 @@
 
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { RunOptions } from '../document.models';
+import { RunOptions } from '../phase.models';
 import { RunnerDialogData } from './phase-runner.models';
 
 @Component({
