@@ -52,6 +52,11 @@
   height: 48px;
 }
 
+.tasks {
+  padding-right: 15px;
+  color: white;
+}
+
 .mat-sidenav-content {
   min-height: 100%;
   display: flex;

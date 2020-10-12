@@ -13,7 +13,7 @@
 */
 
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RouterModule } from '@angular/router';
@@ -33,6 +33,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { CtlModule } from './ctl/ctl.module';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import monacoConfig from './monaco-config';
+import { TaskModule } from './task/task.module';
+import { MatMenuModule } from '@angular/material/menu';
+import { TaskComponent } from './task/task.component';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 @NgModule({
@@ -49,14 +55,20 @@ import monacoConfig from './monaco-config';
     MatExpansionModule,
     MatListModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatToolbarModule,
     RouterModule,
     MatTabsModule,
     ToastrModule.forRoot(),
     MonacoEditorModule.forRoot(monacoConfig),
+    TaskModule,
+    MatMenuModule,
+    OverlayModule,
+    MatTooltipModule
   ],
-  declarations: [AppComponent],
+  declarations: [AppComponent, TaskComponent],
   providers: [WebsocketService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule { }

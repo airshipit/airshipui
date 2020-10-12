@@ -204,7 +204,6 @@ export class WebsocketService implements OnDestroy {
     if (message.error !== undefined && message.error !== null) {
       this.toastrService.error(message.error);
     } else {
-      console.log(message);
       this.toastrService.info(message.message);
     }
   }

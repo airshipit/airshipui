@@ -28,6 +28,7 @@ import {MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 describe('DocumentComponent', () => {
   let component: PhaseComponent;
@@ -49,7 +50,8 @@ describe('DocumentComponent', () => {
         MatProgressBarModule,
         MatTooltipModule,
         MatDialogModule,
-        MatMenuModule
+        MatMenuModule,
+        MatProgressSpinnerModule
       ],
       declarations: [PhaseComponent]
     })

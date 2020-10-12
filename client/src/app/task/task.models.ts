@@ -12,23 +12,19 @@
 # limitations under the License.
 */
 
-export enum Icons {
-  account = 'account',
-  airplane = 'airplane',
-  doc = 'doc',
-  list = 'list',
-  server = 'server',
-  speed = 'speed',
-  launch = 'launch',
-  text_snippet = 'text_snippet',
-  error = 'error',
-  open_in_new = 'open_in_new',
-  filter = 'filter',
-  security = 'security',
-  settings = 'settings',
-  camera = 'camera',
-  list_alt = 'list_alt',
-  devices = 'devices',
-  check_circle = 'check_circle',
-  close = 'close'
+export class Task {
+    id: string;
+    name: string;
+    running: boolean;
+    progress: Progress;
+}
+
+export class Progress {
+    startTime: number;
+    endTime: number;
+    lastUpdated: number;
+    message: string;
+    totalSteps: number;
+    currentStep: number;
+    errors: string[];
 }

@@ -11,6 +11,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	opendev.org/airship/airshipctl v0.0.0-20201007194648-8d6851511840
+	sigs.k8s.io/cli-utils v0.18.1
 	sigs.k8s.io/kustomize/api v0.5.1
 )
 

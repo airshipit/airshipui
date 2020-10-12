@@ -181,7 +181,7 @@ func (client *Client) GetPhaseSourceFiles(id ifc.ID) ([]KustomNode, error) {
 // bundle to be consumed by the UI frontend
 type KustomNode struct {
 	ID          string       `json:"id"` // UUID for backend node index
-	PhaseID     ifc.ID       `json:"phaseid"`
+	PhaseID     ifc.ID       `json:"phaseId"`
 	Name        string       `json:"name"` // name used for display purposes (cli, ui)
 	IsPhaseNode bool         `json:"isPhaseNode"`
 	HasError    bool         `json:"hasError"`
