@@ -40,7 +40,7 @@ type phaseInfo struct {
 	ClusterName  string `json:"clusterName,omitempty"`
 }
 
-type defaultData struct {
+type baremetalData struct {
 	Nodes  []nodeInfo  `json:"nodes,omitempty"`
 	Phases []phaseInfo `json:"phases,omitempty"`
 }
@@ -66,7 +66,7 @@ func HandleBaremetalRequest(user *string, request configs.WsMessage) configs.WsM
 
 	switch subComponent {
 	case configs.GetDefaults:
-		response.Data, err = getDefaults(request)
+		response.Data, err = getBaremetalDefaults(request)
 	case configs.EjectMedia:
 		err = doAction(user, request)
 	case configs.PowerOff:
@@ -93,7 +93,7 @@ func HandleBaremetalRequest(user *string, request configs.WsMessage) configs.WsM
 	return response
 }
 
-func getDefaults(request configs.WsMessage) (defaultData, error) {
+func getBaremetalDefaults(request configs.WsMessage) (baremetalData, error) {
 	nodeInfo, err := getNodeInfo(request)
 	phaseInfo, err2 := getPhaseInfo()
 
@@ -103,7 +103,7 @@ func getDefaults(request configs.WsMessage) (defaultData, error) {
 		err = err2
 	}
 
-	return defaultData{
+	return baremetalData{
 		Nodes:  nodeInfo,
 		Phases: phaseInfo,
 	}, err
@@ -189,7 +189,7 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Baremetal,
-		SubComponent: configs.EjectMedia,
+		SubComponent: request.SubComponent,
 		SessionID:    request.SessionID,
 		ActionType:   request.ActionType,
 		Target:       &target,
@@ -200,14 +200,7 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 
 	client, err := NewClient(AirshipConfigPath, KubeConfigPath, response)
 	if err != nil {
-		log.Error(err)
-		e := err.Error()
-		response.Error = &e
-		transaction.Complete(false)
-		err = webservice.WebSocketSend(response)
-		if err != nil {
-			log.Error(err)
-		}
+		errorHelper(err, transaction, response)
 		return
 	}
 
@@ -219,14 +212,7 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 	}
 	m, err := remote.NewManager(client.Config, phase, selectors...)
 	if err != nil {
-		log.Error(err)
-		e := err.Error()
-		response.Error = &e
-		transaction.Complete(false)
-		err = webservice.WebSocketSend(response)
-		if err != nil {
-			log.Error(err)
-		}
+		errorHelper(err, transaction, response)
 		return
 	}
 
@@ -256,14 +242,7 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 	}
 
 	if err != nil {
-		log.Error(err)
-		e := err.Error()
-		response.Error = &e
-		transaction.Complete(false)
-		err = webservice.WebSocketSend(response)
-		if err != nil {
-			log.Error(err)
-		}
+		errorHelper(err, transaction, response)
 		return
 	}
 

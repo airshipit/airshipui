@@ -22,6 +22,7 @@ export enum Icons {
   launch = 'launch',
   text_snippet = 'text_snippet',
   error = 'error',
+  error_outline = 'error_outline',
   open_in_new = 'open_in_new',
   filter = 'filter',
   security = 'security',

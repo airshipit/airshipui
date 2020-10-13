@@ -17,6 +17,7 @@ import { RouterModule } from '@angular/router';
 import { CtlComponent } from './ctl.component';
 import { DocumentModule } from './document/document.module';
 import { BaremetalModule } from './baremetal/baremetal.module';
+import { ClusterModule } from './cluster/cluster.module';
 import { CtlRoutingModule } from './ctl-routing.module';
 import { PhaseModule } from './phase/phase.module';
 import { SecretModule } from './secret/secret.module';
@@ -24,7 +25,7 @@ import { SecretModule } from './secret/secret.module';
 @NgModule({
   imports: [
     CtlRoutingModule,
-
+    ClusterModule,
     RouterModule,
     DocumentModule,
     BaremetalModule,

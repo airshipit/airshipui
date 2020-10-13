@@ -19,6 +19,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipui/pkg/configs"
 	uiLog "opendev.org/airship/airshipui/pkg/log"
+	"opendev.org/airship/airshipui/pkg/statistics"
 	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
@@ -122,4 +123,16 @@ func (cw *LogInterceptor) Write(data []byte) (n int, err error) {
 	}
 
 	return len(data), nil
+}
+
+// errorHelper formats & sends errors for the ctl components
+func errorHelper(err error, transaction *statistics.Transaction, response configs.WsMessage) {
+	uiLog.Error(err)
+	e := err.Error()
+	response.Error = &e
+	transaction.Complete(false)
+	err = webservice.WebSocketSend(response)
+	if err != nil {
+		uiLog.Error(err)
+	}
 }

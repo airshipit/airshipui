@@ -25,7 +25,7 @@ import (
 func HandleClusterRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
-		Component:    configs.Baremetal,
+		Component:    configs.Cluster,
 		SubComponent: request.SubComponent,
 	}
 
@@ -34,10 +34,12 @@ func HandleClusterRequest(user *string, request configs.WsMessage) configs.WsMes
 
 	subComponent := request.SubComponent
 	switch subComponent {
+	case configs.GetDefaults:
+		err = fmt.Errorf("Subcomponent %s deprecated", request.SubComponent)
 	case configs.Init:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+		err = fmt.Errorf("Subcomponent %s deprecated", request.SubComponent)
 	case configs.Move:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+		err = fmt.Errorf("Subcomponent %s deprecated", request.SubComponent)
 	case configs.Status:
 		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
 	default:

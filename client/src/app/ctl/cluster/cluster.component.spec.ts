@@ -15,6 +15,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClusterComponent } from './cluster.component';
 import { ToastrModule } from 'ngx-toastr';
+import { MatIconModule } from '@angular/material/icon';
+import { HttpClientModule } from '@angular/common/http';
+
 
 describe('ClusterComponent', () => {
   let component: ClusterComponent;
@@ -23,6 +26,8 @@ describe('ClusterComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
+        MatIconModule,
+        HttpClientModule,
         ToastrModule.forRoot()
       ],
       declarations: [

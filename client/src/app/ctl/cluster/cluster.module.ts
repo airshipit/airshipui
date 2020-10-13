@@ -14,13 +14,16 @@
 
 import { NgModule } from '@angular/core';
 import { ClusterComponent } from './cluster.component';
+import { ToastrModule } from 'ngx-toastr';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   imports: [
+    MatIconModule,
+    ToastrModule.forRoot()
   ],
   declarations: [
     ClusterComponent
-  ],
-  providers: []
+  ]
 })
 export class ClusterModule { }

@@ -19,8 +19,9 @@ import { Log } from '../../../services/log/log.service';
 import { LogMessage } from '../../../services/log/log-message';
 
 @Component({
-  selector: 'app-bare-metal',
+  selector: 'app-cluster',
   templateUrl: './cluster.component.html',
+  styleUrls: ['./cluster.component.css']
 })
 
 export class ClusterComponent implements WSReceiver {
@@ -37,8 +38,11 @@ export class ClusterComponent implements WSReceiver {
     if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
     } else {
-      // TODO (aschiefe): determine what should be notifications and what should be 86ed
-      Log.Debug(new LogMessage('Message received in cluster', this.className, message));
+      switch (message.subComponent) {
+        default:
+          Log.Error(new LogMessage('Cluster message sub component not handled', this.className, message));
+          break;
+      }
     }
   }
 }
