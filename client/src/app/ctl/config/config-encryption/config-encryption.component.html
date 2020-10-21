@@ -1,0 +1,39 @@
+<mat-card class="encryption-config-card">
+    <mat-card-header>
+        <mat-card-title>
+            <button mat-icon-button (click)="toggleLock()">
+                <mat-icon *ngIf="locked" class="grey-icon" svgIcon="lock"></mat-icon>
+                <mat-icon *ngIf="!locked" class="grey-icon" svgIcon="lock_open"></mat-icon>
+            </button>{{config.name}}
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <div *ngIf="config.hasOwnProperty('encryptionKeyPath')">
+            <p>EncryptionKeyPath:
+                <mat-form-field appearance="fill">
+                    <input matInput [formControl]="encryptionKeyPath">
+                </mat-form-field>
+            </p>
+            <p>DecryptionKeyPath:
+                <mat-form-field appearance="fill">
+                    <input matInput [formControl]="decryptionKeyPath">
+                </mat-form-field>
+            </p>
+        </div>
+        <div *ngIf="config.hasOwnProperty('keySecretName')">
+            <p>KeySecretName:
+                <mat-form-field appearance="fill">
+                    <input matInput [formControl]="keySecretName">
+                </mat-form-field>
+            </p>
+            <p>KeySecretNamespace:
+                <mat-form-field appearance="fill">
+                    <input matInput [formControl]="keySecretNamespace">
+                </mat-form-field>
+            </p>
+        </div>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-raised-button [disabled]="locked" (click)="setEncryptionConfig()" color="primary">Set</button>
+    </mat-card-actions>
+</mat-card>

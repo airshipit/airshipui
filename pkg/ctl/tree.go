@@ -38,7 +38,7 @@ func getHelper() (ifc.Helper, error) {
 		return helper, nil
 	}
 
-	c, err := NewDefaultClient(AirshipConfigPath, KubeConfigPath)
+	c, err := NewDefaultClient(AirshipConfigPath)
 	if err != nil {
 		return nil, err
 	}

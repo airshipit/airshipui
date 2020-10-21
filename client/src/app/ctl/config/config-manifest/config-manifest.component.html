@@ -1,0 +1,66 @@
+<mat-card class="manifest-config-card">
+    <mat-card-header>
+        <mat-card-title>
+            <button mat-icon-button (click)="toggleLock()">
+                <mat-icon *ngIf="locked" class="grey-icon" svgIcon="lock"></mat-icon>
+                <mat-icon *ngIf="!locked" class="grey-icon" svgIcon="lock_open"></mat-icon>
+            </button>{{manifest.name}}
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <p>RepoName:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="RepoName">
+            </mat-form-field>
+        </p>
+        <p>URL:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="URL">
+            </mat-form-field>
+        </p>
+        <p>Branch:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="Branch">
+            </mat-form-field>
+        </p>
+        <p>CommitHash:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="CommitHash">
+            </mat-form-field>
+        </p>
+        <p>Tag:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="Tag">
+            </mat-form-field>
+        </p>
+        <p>RemoteRef:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="RemoteRef">
+            </mat-form-field>
+        </p>
+        <p>
+            <mat-checkbox [formControl]="Force" labelPosition="before">Force: </mat-checkbox>
+        </p>
+        <p>
+            <mat-checkbox [formControl]="IsPhase" labelPosition="before">IsPhase: </mat-checkbox>
+        </p>
+        <p>SubPath:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="SubPath">
+            </mat-form-field>
+        </p>
+        <p>TargetPath:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="TargetPath">
+            </mat-form-field>
+        </p>
+        <p>MetadataPath:
+            <mat-form-field appearance="fill">
+                <input matInput [formControl]="MetadataPath">
+            </mat-form-field>
+        </p>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-raised-button [disabled]="locked" (click)="setManifest()" color="primary">Set</button>
+    </mat-card-actions>
+</mat-card>

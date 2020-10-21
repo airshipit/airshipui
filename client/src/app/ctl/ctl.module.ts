@@ -21,11 +21,13 @@ import { ClusterModule } from './cluster/cluster.module';
 import { CtlRoutingModule } from './ctl-routing.module';
 import { PhaseModule } from './phase/phase.module';
 import { SecretModule } from './secret/secret.module';
+import { ConfigModule } from './config/config.module';
 
 @NgModule({
   imports: [
     CtlRoutingModule,
     ClusterModule,
+    ConfigModule,
     RouterModule,
     DocumentModule,
     BaremetalModule,

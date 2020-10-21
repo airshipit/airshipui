@@ -1,1 +1,26 @@
-<h1>Config component</h1>
+<h1>Airship Configuration Operations</h1>
+<mat-divider></mat-divider>
+<div class="config-container">
+    <h3>Contexts - Current Context: {{currentContext}}</h3>
+    <div class="contexts" *ngFor="let context of contexts">
+        <app-config-context [context]="context"></app-config-context>
+    </div>
+    <mat-divider></mat-divider>
+
+    <h3>Manifests</h3>
+    <div class="manifests" *ngFor="let manifest of manifests">
+        <app-config-manifest [manifest]="manifest"></app-config-manifest>
+    </div>
+    <mat-divider></mat-divider>
+
+    <h3>Encryption Configurations</h3>
+    <div class="encryption-configs" *ngFor="let config of encryptionConfigs">
+        <app-config-encryption [config]="config"></app-config-encryption>
+    </div>
+    <mat-divider></mat-divider>
+
+    <h3>Management Configurations</h3>
+    <div class="management-configs" *ngFor="let config of managementConfigs">
+        <app-config-management [config]="config"></app-config-management>
+    </div>
+</div>

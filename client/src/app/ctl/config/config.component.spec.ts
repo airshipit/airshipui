@@ -15,6 +15,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfigComponent } from './config.component';
 import { ToastrModule } from 'ngx-toastr';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ConfigContextModule } from './config-context/config-context.module';
+import { ConfigManagementModule } from './config-management/config-management.module';
+import { ConfigManifestModule } from './config-manifest/config-manifest.module';
+import { ConfigEncryptionModule } from './config-encryption/config-encryption.module';
+import { ConfigManifestComponent } from './config-manifest/config-manifest.component';
+import { ConfigManagementComponent } from './config-management/config-management.component';
+import { ConfigEncryptionComponent } from './config-encryption/config-encryption.component';
+import { ConfigContextComponent } from './config-context/config-context.component';
 
 describe('ConfigComponent', () => {
   let component: ConfigComponent;
@@ -23,11 +37,26 @@ describe('ConfigComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        ToastrModule.forRoot()
+        ToastrModule.forRoot(),
+        FormsModule,
+        MatButtonModule,
+        MatInputModule,
+        MatCardModule,
+        MatCheckboxModule,
+        ConfigContextModule,
+        ConfigManagementModule,
+        ConfigManifestModule,
+        ConfigEncryptionModule,
+        ReactiveFormsModule
       ],
       declarations: [
-        ConfigComponent
-      ]
+        ConfigComponent,
+        ConfigManifestComponent,
+        ConfigManagementComponent,
+        ConfigEncryptionComponent,
+        ConfigContextComponent
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
       .compileComponents();
   }));
