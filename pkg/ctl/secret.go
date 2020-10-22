@@ -17,6 +17,7 @@ package ctl
 import (
 	"fmt"
 
+	"opendev.org/airship/airshipctl/pkg/secret"
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
@@ -25,7 +26,7 @@ import (
 func HandleSecretRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
 		Type:         configs.CTL,
-		Component:    configs.Baremetal,
+		Component:    configs.Secret,
 		SubComponent: request.SubComponent,
 	}
 
@@ -35,7 +36,7 @@ func HandleSecretRequest(user *string, request configs.WsMessage) configs.WsMess
 	subComponent := request.SubComponent
 	switch subComponent {
 	case configs.Generate:
-		err = fmt.Errorf("Subcomponent %s not implemented", request.SubComponent)
+		message = generatePassphrase()
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -48,4 +49,11 @@ func HandleSecretRequest(user *string, request configs.WsMessage) configs.WsMess
 	}
 
 	return response
+}
+
+// generatePassphrase will generate a master passphrase to be used for encryption / decryption
+func generatePassphrase() *string {
+	engine := secret.NewPassphraseEngine(nil)
+	masterPassphrase := engine.GeneratePassphrase()
+	return &masterPassphrase
 }

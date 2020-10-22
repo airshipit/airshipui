@@ -59,13 +59,7 @@ type LogInterceptor struct {
 // Init allows for the circular reference to the webservice package to be broken and allow for the sending
 // of arbitrary messages from any package to the websocket
 func Init() {
-	webservice.AppendToFunctionMap(
-		configs.CTL,
-		map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage{
-			configs.Baremetal: HandleBaremetalRequest,
-			configs.Document:  HandleDocumentRequest,
-			configs.Phase:     HandlePhaseRequest,
-		})
+	webservice.AppendToFunctionMap(configs.CTL, CTLFunctionMap)
 }
 
 // NewDefaultClient initializes the airshipctl client for external usage with default logging.

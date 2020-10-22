@@ -19,6 +19,7 @@ import { DocumentModule } from './document/document.module';
 import { BaremetalModule } from './baremetal/baremetal.module';
 import { CtlRoutingModule } from './ctl-routing.module';
 import { PhaseModule } from './phase/phase.module';
+import { SecretModule } from './secret/secret.module';
 
 @NgModule({
   imports: [
@@ -27,7 +28,8 @@ import { PhaseModule } from './phase/phase.module';
     RouterModule,
     DocumentModule,
     BaremetalModule,
-    PhaseModule
+    PhaseModule,
+    SecretModule
   ],
   declarations: [CtlComponent],
   providers: []

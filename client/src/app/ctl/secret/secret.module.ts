@@ -14,13 +14,24 @@
 
 import { NgModule } from '@angular/core';
 import { SecretComponent } from './secret.component';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatIconModule } from '@angular/material/icon';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
+    MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatStepperModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   declarations: [
     SecretComponent
   ],
-  providers: []
+  providers: [],
 })
-export class PhaseModule { }
+export class SecretModule { }
