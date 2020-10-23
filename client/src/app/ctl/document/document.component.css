@@ -12,3 +12,20 @@
 # limitations under the License.
 */
 
+/* add border & center the table */
+.documentBorder {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-spacing: 10px;
+    border:1px gray solid;
+    border-radius: 5px;
+    align-self: center;
+    width: 100%;
+}
+
+.container {
+    padding-left: 10px;
+    padding-right: 10px;
+}

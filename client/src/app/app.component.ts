@@ -102,6 +102,9 @@ export class AppComponent implements OnInit, WSReceiver {
             this.updateDashboards(message.dashboards);
           }
           break;
+        case 'keepalive':
+          Log.Debug(new LogMessage('Keepalive message received in app', this.className, message));
+          break;
         default:
           Log.Debug(new LogMessage('Uncategorized message received in app', this.className, message));
           break;

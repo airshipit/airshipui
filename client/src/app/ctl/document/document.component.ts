@@ -41,8 +41,10 @@ export class DocumentComponent implements WSReceiver {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'docPull':
-          this.statusMsg = 'Message pull was a ' + message.message;
+        case 'pull':
+          this.statusMsg = 'Document pull was a ' + message.message;
+          const button = (document.getElementById('DocPullBtn') as HTMLInputElement);
+          button.removeAttribute('disabled');
           break;
         default:
           Log.Error(new LogMessage('Document message sub component not handled', this.className, message));
@@ -52,6 +54,9 @@ export class DocumentComponent implements WSReceiver {
   }
 
   documentPull(): void {
+    this.statusMsg = '';
     this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'pull'));
+    const button = (document.getElementById('DocPullBtn') as HTMLInputElement);
+    button.setAttribute('disabled', 'disabled');
   }
 }

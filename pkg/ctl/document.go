@@ -67,7 +67,7 @@ func (c *Client) docPull() (*string, error) {
 	// so setting to false
 	err := pull.Pull(cfgFactory, false)
 	if err == nil {
-		s := fmt.Sprintf("Success")
+		s := "Success"
 		message = &s
 	}
 
