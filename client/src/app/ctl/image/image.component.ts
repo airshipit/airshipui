@@ -13,14 +13,15 @@
 */
 
 import { Component } from '@angular/core';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from '../../../services/websocket/websocket.models';
-import { Log } from '../../../services/log/log.service';
-import { LogMessage } from '../../../services/log/log-message';
+import { WebsocketService } from 'src/services/websocket/websocket.service';
+import { WebsocketMessage, WSReceiver } from 'src/services/websocket/websocket.models';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
 
 @Component({
   selector: 'app-bare-metal',
   templateUrl: './image.component.html',
+  styleUrls: ['./image.component.css']
 })
 
 export class ImageComponent implements WSReceiver {
@@ -28,6 +29,7 @@ export class ImageComponent implements WSReceiver {
   // TODO (aschiefe): extract these strings to constants
   type = 'ctl';
   component = 'image';
+  statusMsg: string;
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.registerFunctions(this);
