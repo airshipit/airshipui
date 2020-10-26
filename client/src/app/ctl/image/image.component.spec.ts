@@ -14,7 +14,6 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ImageComponent } from './image.component';
-import { MatButtonModule } from '@angular/material/button';
 import { ToastrModule } from 'ngx-toastr';
 
 describe('ImageComponent', () => {
@@ -24,7 +23,6 @@ describe('ImageComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MatButtonModule,
         ToastrModule.forRoot()
       ],
       declarations: [

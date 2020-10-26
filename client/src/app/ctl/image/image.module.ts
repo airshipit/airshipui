@@ -14,12 +14,8 @@
 
 import { NgModule } from '@angular/core';
 import { ImageComponent } from './image.component';
-import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
-  imports: [
-    MatButtonModule
-  ],
   declarations: [
     ImageComponent
   ],

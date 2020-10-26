@@ -15,9 +15,10 @@
 package ctl
 
 import (
-	"errors"
 	"fmt"
 
+	"opendev.org/airship/airshipctl/pkg/config"
+	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
@@ -42,7 +43,7 @@ func HandleImageRequest(user *string, request configs.WsMessage) configs.WsMessa
 
 	subComponent := request.SubComponent
 	switch subComponent {
-	case configs.Build:
+	case configs.Generate:
 		// since this is long running cache it up
 		// TODO: Test before running the geniso
 		runningRequests[subComponent] = true
@@ -63,7 +64,13 @@ func HandleImageRequest(user *string, request configs.WsMessage) configs.WsMessa
 	return response
 }
 
+// generate iso now just runs a phase and not an individual command
 func (c *Client) generateIso() (*string, error) {
-	err := errors.New("Isogen is no longer available")
-	return nil, err
+	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
+	p := &phase.RunCommand{
+		Factory: cfgFactory,
+	}
+	p.Options.PhaseID.Name = config.BootstrapPhase
+	s := "Success"
+	return &s, p.RunE()
 }
