@@ -14,10 +14,7 @@
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {DocumentComponent} from './document.component';
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatButtonModule} from '@angular/material/button';
 import { ToastrModule } from 'ngx-toastr';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('DocumentComponent', () => {
   let component: DocumentComponent;
@@ -26,10 +23,7 @@ describe('DocumentComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MatTabsModule,
-        MatButtonModule,
         ToastrModule.forRoot(),
-        BrowserAnimationsModule
       ],
       declarations: [DocumentComponent]
     })

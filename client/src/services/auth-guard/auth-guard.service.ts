@@ -73,7 +73,6 @@ export class AuthGuard implements WSReceiver, CanActivate {
   async receiver(message: WebsocketMessage): Promise<void> {
     if (message.hasOwnProperty('error')) {
       Log.Error(new LogMessage('Error received in AuthGuard', this.className, message));
-      this.websocketService.printIfToast(message);
       AuthGuard.logout();
     } else {
       switch (message.subComponent) {

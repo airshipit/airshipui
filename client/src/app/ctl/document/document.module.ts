@@ -13,17 +13,13 @@
 */
 
 import {NgModule} from '@angular/core';
-import {MatTabsModule} from '@angular/material/tabs';
 import {DocumentComponent} from './document.component';
-import {MatButtonModule} from '@angular/material/button';
 
 @NgModule({
   declarations: [
     DocumentComponent,
   ],
   imports: [
-    MatTabsModule,
-    MatButtonModule,
   ],
   providers: [],
 })
