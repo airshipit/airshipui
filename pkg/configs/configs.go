@@ -199,6 +199,7 @@ type WsMessage struct {
 	Error           *string     `json:"error,omitempty"`
 	Message         *string     `json:"message,omitempty"`
 	Token           *string     `json:"token,omitempty"`
+	RefreshToken    *string     `json:"refreshToken,omitempty"`
 
 	// used by baremetal CTL requests
 	ActionType *string   `json:"actionType,omitempty"` // signifies if it's a phase or direct action

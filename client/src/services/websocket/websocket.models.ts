@@ -37,6 +37,7 @@ export class WebsocketMessage {
   isAuthenticated: boolean;
   message: string;
   token: string;
+  refreshToken: string;
   data: JSON;
   yaml: string;
   actionType: string;

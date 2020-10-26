@@ -30,6 +30,7 @@ export class AuthGuard implements WSReceiver, CanActivate {
   private className = this.constructor.name;
   private loading = false;
   private sendToLogin = false;
+
   type = 'ui';
   component = 'auth';
 
@@ -37,7 +38,7 @@ export class AuthGuard implements WSReceiver, CanActivate {
   public static logout(): void {
     // blank out the object storage so we can't get re authenticate
     WebsocketService.token = undefined;
-    WebsocketService.tokenExpiration = 0;
+    WebsocketService.refreshToken = undefined;
 
     // blank out the local storage so we can't get re authenticate
     localStorage.removeItem('airshipUI-token');
@@ -77,8 +78,8 @@ export class AuthGuard implements WSReceiver, CanActivate {
     } else {
       switch (message.subComponent) {
         case 'approved':
+          this.setToken(message.token, false);
           Log.Debug(new LogMessage('Auth approved received', this.className, message));
-          this.setToken(message.token);
           // redirect to / only when on /login otherwise leave the path where it was before the auth attempt
           const location = window.location.pathname;
           if (location === '/login' || location === '/login/') {
@@ -86,12 +87,16 @@ export class AuthGuard implements WSReceiver, CanActivate {
           }
           break;
         case 'denied':
-          Log.Debug(new LogMessage('Auth denied received', this.className, message));
           AuthGuard.logout();
+          Log.Debug(new LogMessage('Auth denied received', this.className, message));
+          break;
+        case 'refresh':
+          this.setToken(message.refreshToken, true);
+          Log.Debug(new LogMessage('Auth token refresh received', this.className, message));
           break;
         default:
-          Log.Debug(new LogMessage('Unknown auth message received', this.className, message));
           AuthGuard.logout();
+          Log.Debug(new LogMessage('Unknown auth message received', this.className, message));
           break;
       }
     }
@@ -100,8 +105,8 @@ export class AuthGuard implements WSReceiver, CanActivate {
   // this decides if you can show a page
   // TODO: maybe RBAC type of stuff may need to go here
   canActivate(): boolean {
+    const authenticated = this.validateToken();
     const location = window.location.pathname;
-    const authenticated = this.isAuthenticated();
 
     // redirect everything to /login if not authenticated
     if (!authenticated && location !== '/login/') {
@@ -114,18 +119,6 @@ export class AuthGuard implements WSReceiver, CanActivate {
         this.router.navigate(['/login']);
       }
       return true;
-    }
-
-    // login page specific details
-    // redirect /login to / if authenticated and landing on /login
-    // TODO (aschiefe): not super happy about this setup, may need to simplify
-    if (location === '/login/') {
-      if (authenticated) {
-        this.router.navigate(['/']);
-        return false;
-      } else {
-        return true;
-      }
     }
 
     // flip the link if we're in or out of the fold
@@ -148,25 +141,6 @@ export class AuthGuard implements WSReceiver, CanActivate {
     }
   }
 
-
-
-  // test the auth token to see if we can let the user see the page
-  // TODO: maybe RBAC type of stuff may need to go here
-  private isAuthenticated(): boolean {
-    if (WebsocketService.token === undefined) { this.getStoredToken(); }
-    try {
-      let authenticated = false;
-      // test for token expiration
-      // if the token is null the date test will always return true
-      if (WebsocketService.token !== undefined && WebsocketService.tokenExpiration > 0) {
-        authenticated = WebsocketService.tokenExpiration >= new Date().getTime();
-      }
-      return authenticated;
-    } catch (ex) {
-      return false;
-    }
-  }
-
   // retrieve the stored token & send it to the go backend for validation
   private getStoredToken(): void {
     const tokenString = localStorage.getItem('airshipUI-token');
@@ -175,37 +149,41 @@ export class AuthGuard implements WSReceiver, CanActivate {
       if (token.hasOwnProperty('token')) {
         WebsocketService.token = token.token;
       }
-      if (token.hasOwnProperty('date')) {
-        WebsocketService.tokenExpiration = token.date;
-      }
-
-      // even after all this it's possible to have nothing.  I started with nothing and still have most of it left
-      if (WebsocketService.token !== undefined) {
-        this.validateToken();
-      }
     }
   }
 
   // the UI frontend is not the decider, the back end is.  If this token is good we continue, if it's not we stop
-  private validateToken(): void {
-    const message = new WebsocketMessage(this.type, this.component, 'validate');
-    message.token = WebsocketService.token;
-    this.websocketService.sendMessage(message);
+  private validateToken(): boolean {
+    if (WebsocketService.token === undefined) { this.getStoredToken(); }
+
+    // even after all this it's possible to have nothing.  I started with nothing and still have most of it left
+    if (WebsocketService.token !== undefined) {
+      const message = new WebsocketMessage(this.type, this.component, 'validate');
+      message.token = WebsocketService.token;
+
+      // if we have a refresh token we also need to include that in the validity check
+      if (WebsocketService.refreshToken !== undefined) {
+        message.refreshToken = WebsocketService.refreshToken;
+      }
+
+      this.websocketService.sendMessage(message);
+    }
+
+    return WebsocketService.token !== undefined;
   }
 
   // store the token locally so we can be authenticated between runs
-  private setToken(token): void {
-    // calculate 1 hour expiration
-    const date = new Date();
-    date.setTime(date.getTime() + (1 * 60 * 60 * 1000));
-
+  private setToken(token, isRefresh): void {
     // set the token for auth check going forward
-    WebsocketService.token = token;
-    WebsocketService.tokenExpiration = date.getTime();
+    if (isRefresh) {
+      WebsocketService.refreshToken = token;
+    } else {
+      WebsocketService.token = token;
 
-    // set the token locally to have a login till browser exits
-    const json = { date: WebsocketService.tokenExpiration, token: WebsocketService.token };
-    localStorage.setItem('airshipUI-token', JSON.stringify(json));
+      // set the token locally to have a login till browser exits
+      const json: any = { token: WebsocketService.token };
+      localStorage.setItem('airshipUI-token', JSON.stringify(json));
+    }
   }
 
   // detect navigation events in case we redirect from authguard which would happen too fast to protect /login and cause an endless loop

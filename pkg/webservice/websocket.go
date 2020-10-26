@@ -96,11 +96,10 @@ func (session *session) onMessage() {
 		// this has to be a go routine otherwise it will block any incoming messages waiting for a command return
 		go func() {
 			// test the auth token for request validity on non auth requests
-			// TODO (aschiefe): this will need to be amended when refresh tokens are implemented
 			var user *string
 			if request.Type != configs.UI && request.Component != configs.Auth && request.SubComponent != configs.Authenticate {
 				if request.Token != nil {
-					user, err = validateToken(*request.Token)
+					user, err = validateToken(request)
 				} else {
 					err = errors.New("No authentication token found")
 				}

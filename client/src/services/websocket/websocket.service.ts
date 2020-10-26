@@ -24,7 +24,7 @@ import 'reflect-metadata';
 export class WebsocketService implements OnDestroy {
   // to avoid circular includes this has to go here
   public static token: string;
-  public static tokenExpiration: number;
+  public static refreshToken: string;
 
   private ws: WebSocket;
   private timeout: any;
@@ -58,6 +58,7 @@ export class WebsocketService implements OnDestroy {
       message.sessionID = this.sessionID;
       message.timestamp = new Date().getTime();
       if (WebsocketService.token !== undefined) { message.token = WebsocketService.token; }
+      if (WebsocketService.refreshToken !== undefined) { message.refreshToken = WebsocketService.refreshToken; }
       // TODO (aschiefe): determine if this debug statement is a good thing (tm)
       // Log.Debug(new LogMessage('Sending WebSocket Message', this.className, message));
       this.ws.send(JSON.stringify(message));
