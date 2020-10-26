@@ -10,7 +10,7 @@
           <mat-card-content class="phase-card-content">
             <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="phase-tree">
               <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-                <li class="mat-tree-node">
+                <li class="tree-node-li">
                   <div class="mat-tree-node">
                     <div *ngIf="!node.isPhaseNode">
                       <button class="get-yaml-btn" mat-icon-button (click)="!node.isPhaseNode && getYaml(node.id)">
@@ -22,17 +22,18 @@
                         <mat-icon class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
                       </button>
                       <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
-                        <button mat-button class="docless-phase-btn">{{node.name}}
+                        <button mat-button class="docless-phase-btn">{{node.name}}</button>
+                        <span class="spacer"></span>
+                        <button class="menu-button" *ngIf="!node.running" mat-icon-button [matMenuTriggerFor]="menu">
+                          <mat-icon class="grey-icon" svgIcon="settings"></mat-icon>
                         </button>
-                        <button mat-icon-button [matMenuTriggerFor]="menu">
-                          <mat-icon class="grey-icon">more_vert</mat-icon>
-                        </button>
+                        <mat-spinner *ngIf="node.running" class="spinner" [diameter]="20"></mat-spinner>
                         <mat-menu #menu="matMenu">
-                          <button mat-menu-item (click)="getPhase(node.phaseid)">
+                          <button mat-menu-item (click)="getPhase(node.phaseId)">
                             <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
                             <span>View</span>
                           </button>
-                          <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                          <button mat-menu-item (click)="validatePhase(node.phaseId)">
                             <mat-icon>check_circle_icon</mat-icon>
                             <span>Validate</span>
                           </button>
@@ -55,15 +56,16 @@
                         {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                       </mat-icon>{{node.name}}
                     </button>
-                    <button *ngIf="node.isPhaseNode && !node.hasError" mat-icon-button [matMenuTriggerFor]="menu">
-                      <mat-icon class="grey-icon">more_vert</mat-icon>
+                    <button class="menu-button" *ngIf="node.isPhaseNode && !node.hasError && !node.running" mat-icon-button [matMenuTriggerFor]="menu">
+                      <mat-icon class="grey-icon" svgIcon="settings"></mat-icon>
                     </button>
+                    <mat-spinner *ngIf="node.running" class="spinner" [diameter]="20"></mat-spinner>
                     <mat-menu #menu="matMenu">
-                      <button mat-menu-item (click)="getPhase(node.phaseid)">
+                      <button mat-menu-item (click)="getPhase(node.phaseId)">
                         <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
                         <span>View</span>
                       </button>
-                      <button mat-menu-item (click)="validatePhase(node.phaseid)">
+                      <button mat-menu-item (click)="validatePhase(node.phaseId)">
                         <mat-icon>check_circle_icon</mat-icon>
                         <span>Validate</span>
                       </button>

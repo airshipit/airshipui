@@ -76,13 +76,13 @@ export class PhaseComponent implements WSReceiver {
     if (message.hasOwnProperty('error')) {
       this.websocketService.printIfToast(message);
       this.loading = false;
+      if (message.subComponent === 'run') {
+        this.toggleNode(message.id);
+      }
     } else {
       switch (message.subComponent) {
         case 'getTarget':
           this.targetPath = message.message;
-          break;
-        case 'docPull':
-          this.statusMsg = 'Message pull was a ' + message.message;
           break;
         case 'getPhaseTree':
           this.handleGetPhaseTree(message.data);
@@ -120,8 +120,7 @@ export class PhaseComponent implements WSReceiver {
   }
 
   handleRunPhase(message: WebsocketMessage): void {
-    this.running = false;
-    this.websocketService.printIfToast(message);
+    this.toggleNode(message.id);
   }
 
   handleGetPhaseTree(data: JSON): void {
@@ -215,7 +214,7 @@ export class PhaseComponent implements WSReceiver {
       width: '25vw',
       height: '30vh',
       data: {
-        id: node.phaseid,
+        id: node.phaseId,
         name: node.name,
         options: new RunOptions()
       }
@@ -270,9 +269,9 @@ export class PhaseComponent implements WSReceiver {
   // TODO(mfuller): we'll probably want to run / check phase validation
   // before actually running the phase
   runPhase(node: KustomNode, opts: RunOptions): void {
-    this.running = true;
+    node.running = true;
     const msg = this.newMessage('run');
-    msg.id = JSON.stringify(node.phaseid);
+    msg.id = JSON.stringify(node.phaseId);
     if (opts !== undefined) {
       msg.data = JSON.parse(JSON.stringify(opts));
     }
@@ -287,5 +286,29 @@ export class PhaseComponent implements WSReceiver {
 
   newMessage(subComponent: string): WebsocketMessage {
     return new WebsocketMessage(this.type, this.component, subComponent);
+  }
+
+  findNode(node: KustomNode, id: string): KustomNode {
+    if (node.id === id) {
+      return node;
+    }
+
+    for (const child of node.children) {
+      const c = this.findNode(child, id);
+      if (c) {
+        return c;
+      }
+    }
+  }
+
+  toggleNode(id: string): void {
+    const phaseID = JSON.parse(id);
+    for (const node of this.phaseTree) {
+      const name = phaseID.Name as string;
+      if (node.phaseId.Name === name) {
+        node.running = false;
+        return;
+      }
+    }
   }
 }

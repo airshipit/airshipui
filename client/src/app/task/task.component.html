@@ -1,0 +1,40 @@
+<button mat-icon-button (click)="isOpen = !isOpen" type="button" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+  <mat-icon *ngIf="!isOpen" class="white-icon" svgIcon="list_alt"
+    matTooltip="Running Tasks"
+    matTooltipPosition="below"
+    matTooltipShowDelay="1000"
+    matTooltipHideDelay="500"></mat-icon>
+  <mat-icon *ngIf="isOpen" class="white-icon" svgIcon="close"
+    matTooltip="Close"
+    matTooltipPosition="below"
+    matTooltipShowDelay="1000"
+    matTooltipHideDelay="500"></mat-icon>
+</button>
+
+<ng-template class="task-overlay" cdkConnectedOverlay [cdkConnectedOverlayOrigin]="trigger" [cdkConnectedOverlayOpen]="isOpen">
+  <div class="overlay-container">
+    <div class="overlay-header">
+      <h4 class="title">Running Tasks</h4>
+    </div>
+    <mat-list dense *ngFor="let task of tasks">
+      <mat-list-item [matTooltip]="taskToString(task)"
+          matTooltipPosition="below"
+          matTooltipShowDelay="1000"
+          matTooltipHideDelay="500"
+          matTooltipClass="multiline-tooltip">
+        <h4 matLine>{{task.name}}</h4>
+        <h6 class="status-message" matLine>{{task.progress.message}}</h6>
+        <mat-icon *ngIf="!task.running && task.progress.errors.length > 0" class="error-icon" svgIcon="error"></mat-icon>
+        <mat-icon *ngIf="!task.running && task.progress.errors.length == 0" class="green-icon" svgIcon="check_circle"></mat-icon>
+        <mat-spinner *ngIf="task.running" class="spinner" [diameter]="20"></mat-spinner>
+        <button *ngIf="!task.running" mat-icon-button (click)="taskRemove(task.id)"
+          matTooltip="Delete Task"
+          matTooltipPosition="below"
+          matTooltipShowDelay="1000"
+          matTooltipHideDelay="500">
+          <mat-icon svgIcon="close"></mat-icon>
+        </button>
+      </mat-list-item>
+    </mat-list>
+  </div>
+</ng-template>

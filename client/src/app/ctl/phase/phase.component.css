@@ -35,6 +35,8 @@
 
 .docless-phase {
   padding-left: 20px;
+  display: flex;
+  flex-direction: row;
 }
 
 .docless-phase-btn {
@@ -85,6 +87,28 @@
 
 .phase-tree-toggle {
   padding-right: 0px;
+}
+
+.phase-error {
+  width: 100%;
+}
+
+.tree-node-li {
+  width: 100%;
+}
+
+.has-children {
+  display: flex;
+  flex-direction: row;
+}
+
+.menu-button {
+  margin-left: auto;
+}
+
+.spinner {
+  margin-left: auto;
+  margin-right: 10px;
 }
 
 /* Editor styles */

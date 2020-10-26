@@ -23,6 +23,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"opendev.org/airship/airshipui/pkg/webservice"
 
 	"github.com/google/uuid"
 	"opendev.org/airship/airshipctl/pkg/document"
@@ -30,6 +33,7 @@ import (
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
 	"opendev.org/airship/airshipui/pkg/configs"
+	"opendev.org/airship/airshipui/pkg/task"
 )
 
 var (
@@ -40,15 +44,16 @@ var (
 // HandlePhaseRequest will flop between requests so we don't have to have them all mapped as function calls
 // This will wait for the sub component to complete before responding.  The assumption is this is an async request
 func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessage {
+	id := request.ID
 	response := configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.Phase,
 		SubComponent: request.SubComponent,
+		ID:           id,
 	}
 
 	var err error
 	var message *string
-	var id string
 	var valid bool
 
 	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
@@ -65,29 +70,24 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 		valid, err = client.ValidatePhase(request.ID, request.SessionID)
 		message = validateHelper(valid)
 	case configs.YamlWrite:
-		id = request.ID
 		response.Name, response.YAML, err = client.writeYamlFile(id, request.YAML)
 		s := fmt.Sprintf("File '%s' saved successfully", response.Name)
 		message = &s
 	case configs.GetYaml:
-		id = request.ID
 		message = request.Message
 		response.Name, response.YAML, err = client.getYaml(id, *message)
 	case configs.GetPhaseTree:
 		response.Data, err = client.GetPhaseTree()
 	case configs.GetPhase:
-		id = request.ID
 		s := "rendered"
 		message = &s
 		response.Name, response.Details, response.YAML, err = client.GetPhase(id)
 	case configs.GetDocumentsBySelector:
-		id = request.ID
 		message = request.Message
 		response.Data, err = GetDocumentsBySelector(request.ID, *message)
 	case configs.GetTarget:
 		message = client.getTarget()
 	case configs.GetExecutorDoc:
-		id = request.ID
 		s := "rendered"
 		message = &s
 		response.Name, response.YAML, err = client.GetExecutorDoc(id)
@@ -100,7 +100,6 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 		response.Error = &e
 	} else {
 		response.Message = message
-		response.ID = id
 	}
 
 	return response
@@ -453,12 +452,21 @@ func getSelector(data string) (document.Selector, error) {
 // (ifc.Phase.Validate isn't implemented yet, so this function
 // currently always returns "valid")
 func (c *Client) ValidatePhase(id, sessionID string) (bool, error) {
-	phase, err := getPhaseIfc(id, sessionID)
+	phaseID := ifc.ID{}
+	err := json.Unmarshal([]byte(id), &phaseID)
 	if err != nil {
 		return false, err
 	}
 
-	err = phase.Validate()
+	// probably not needed for validate, but let's create one anyway
+	taskid := uuid.New().String()
+
+	phaseIfc, err := getPhaseIfc(phaseID, taskid, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	err = phaseIfc.Validate()
 	if err != nil {
 		return false, err
 	}
@@ -468,14 +476,25 @@ func (c *Client) ValidatePhase(id, sessionID string) (bool, error) {
 
 // RunPhase runs the selected phase
 func (c *Client) RunPhase(request configs.WsMessage) error {
-	phase, err := getPhaseIfc(request.ID, request.SessionID)
+	phaseID := ifc.ID{}
+	err := json.Unmarshal([]byte(request.ID), &phaseID)
+	if err != nil {
+		return err
+	}
+
+	name := phaseID.Name
+
+	taskID := uuid.New().String()
+
+	phaseIfc, err := getPhaseIfc(phaseID, taskID, request.SessionID)
 	if err != nil {
 		return err
 	}
 
 	opts := ifc.RunOptions{}
+	var bytes []byte
 	if request.Data != nil {
-		bytes, err := json.Marshal(request.Data)
+		bytes, err = json.Marshal(request.Data)
 		if err != nil {
 			return err
 		}
@@ -486,27 +505,42 @@ func (c *Client) RunPhase(request configs.WsMessage) error {
 		}
 	}
 
-	return phase.Run(opts)
+	// send initial TaskStart message to create task on frontend
+	msg := configs.WsMessage{
+		SessionID:    request.SessionID,
+		Type:         configs.UI,
+		Component:    configs.Task,
+		SubComponent: configs.TaskStart,
+		Name:         name,
+		ID:           taskID,
+		Data: task.Progress{
+			StartTime: time.Now().UnixNano() / 1000000,
+			Message:   fmt.Sprintf("Starting task '%s'", name),
+			Errors:    []string{},
+		},
+	}
+
+	err = webservice.WebSocketSend(msg)
+	if err != nil {
+		return err
+	}
+
+	return phaseIfc.Run(opts)
 }
 
 // helper function to return a Phase interface based on a JSON
 // string representation of an ifc.ID value
-func getPhaseIfc(id, sessionID string) (ifc.Phase, error) {
-	phaseID := ifc.ID{}
-
-	err := json.Unmarshal([]byte(id), &phaseID)
-	if err != nil {
-		return nil, err
-	}
-
+func getPhaseIfc(phaseID ifc.ID, taskID, sessionID string) (ifc.Phase, error) {
 	helper, err := getHelper()
 	if err != nil {
 		return nil, err
 	}
 
+	tsk := task.NewTask(sessionID, taskID, phaseID.Name)
+
 	var procFunc phase.ProcessorFunc
 	procFunc = func() events.EventProcessor {
-		return NewUIEventProcessor(sessionID)
+		return NewUIEventProcessor(sessionID, tsk)
 	}
 
 	// inject event processor to phase client

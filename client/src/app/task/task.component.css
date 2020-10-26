@@ -1,0 +1,64 @@
+/*
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+.white-icon {
+    color: white;
+    margin-right: 25px;
+}
+
+.green-icon {
+    color: green;
+    height: 20px;
+    width: 20px;
+}
+
+.error-icon {
+    color: red;
+    height: 20px;
+    width: 20px;
+}
+
+.grey-icon {
+    color: grey;
+    height: 20px;
+    width: 20px;
+}
+
+.title {
+    margin-left: 15px;
+}
+
+.task-overlay {
+    width: 600px;
+    height: 400px;
+    background-color: white;
+}
+
+.overlay-container {
+    width: 600px;
+    height: 400px;
+    background-color: white;
+    border: 2px solid rgb(101, 199, 194);
+    padding: 5px;
+    overflow-y: auto;
+}
+
+.status-message {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+::ng-deep.multiline-tooltip {
+    white-space: pre-line;
+}

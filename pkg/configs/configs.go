@@ -95,6 +95,13 @@ const (
 	Keepalive    WsComponentType = "keepalive"
 	Auth         WsComponentType = "auth"
 	Log          WsComponentType = "log"
+	Task         WsComponentType = "task"
+
+	// task subcomponents
+	TaskStart  WsSubComponentType = "taskStart"
+	TaskUpdate WsSubComponentType = "taskUpdate"
+	TaskRemove WsSubComponentType = "taskRemove"
+	TaskEnd    WsSubComponentType = "taskEnd"
 
 	// CTL components
 	Baremetal WsComponentType = "baremetal"

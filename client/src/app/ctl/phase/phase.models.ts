@@ -14,11 +14,12 @@
 
 export class KustomNode {
     id: string;
-    phaseid: { name: string, namespace: string};
+    phaseId: { Name: string, Namespace: string};
     name: string;
     canLoadChildren: boolean;
     children: KustomNode[];
     isPhaseNode: boolean;
+    running: boolean;
     hasError: boolean;
 }
 
