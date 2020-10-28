@@ -27,7 +27,9 @@ export class WebsocketService implements OnDestroy {
   public static tokenExpiration: number;
 
   private ws: WebSocket;
-  private timeout: any;
+  private restart = true;
+  private restartTimeout: any;
+  private keepAliveTimeout: any;
   private sessionID: string;
 
   // functionMap is how we know where to send the direct messages
@@ -49,6 +51,7 @@ export class WebsocketService implements OnDestroy {
 
   // catch the page destroy and shut down the websocket connection normally
   ngOnDestroy(): void {
+    this.restart = false;
     this.ws.close();
   }
 
@@ -70,6 +73,10 @@ export class WebsocketService implements OnDestroy {
 
   // register initializes the websocket communication with the go backend
   private register(): void {
+    // clear the restart timeout if it exists
+    window.clearTimeout(this.restartTimeout);
+    window.clearInterval(this.restartTimeout);
+
     if (this.ws !== undefined && this.ws !== null) {
       this.ws.close();
     }
@@ -82,12 +89,13 @@ export class WebsocketService implements OnDestroy {
 
     this.ws.onerror = (event) => {
       console.log('Web Socket received an error: ', event);
+      this.close(1006);
     };
 
     this.ws.onopen = () => {
       console.log('Websocket established');
       // start up the keepalive so the websocket-message stays open
-      this.timeout = setTimeout(() => { this.keepAlive(); }, 60000);
+      this.keepAliveTimeout = setTimeout(() => { this.keepAlive(); }, 60000);
     };
 
     this.ws.onclose = (event) => {
@@ -110,7 +118,7 @@ export class WebsocketService implements OnDestroy {
         console.log('Web Socket Closed: terminating the connection because it has received a type of data it cannot accept: ', code);
         break;
       case 1004:
-        console.log('Web Socket Closed: Reserved. The specific meaning might be defined in the futur: ', code);
+        console.log('Web Socket Closed: Reserved. The specific meaning might be defined in the future: ', code);
         break;
       case 1005:
         console.log('Web Socket Closed: No status code was actually present: ', code);
@@ -146,7 +154,13 @@ export class WebsocketService implements OnDestroy {
         break;
     }
 
+    this.sessionID = undefined;
     this.ws = null;
+
+    if (this.restart) {
+      // attempt to reconnect every second until the page is closed or we hit a success
+      this.restartTimeout = setTimeout(() => { this.register(); }, 1000);
+    }
   }
 
   // Takes the WebsocketMessage and iterates through the function map to send a directed message when it shows up
@@ -178,12 +192,12 @@ export class WebsocketService implements OnDestroy {
   // websockets time out after 5 minutes of inactivity, this keeps the backend engaged so it doesn't time
   private keepAlive(): void {
     // clear the previously set timeout
-    window.clearTimeout(this.timeout);
-    window.clearInterval(this.timeout);
+    window.clearTimeout(this.keepAliveTimeout);
+    window.clearInterval(this.keepAliveTimeout);
     if (this.ws !== undefined && this.ws !== null && this.ws.readyState !== this.ws.CLOSED) {
       this.sendMessage(new WebsocketMessage('ui', 'keepalive', null));
     }
-    this.timeout = setTimeout(() => { this.keepAlive(); }, 60000);
+    this.keepAliveTimeout = setTimeout(() => { this.keepAlive(); }, 60000);
   }
 
   // registerFunctions is a is called out of the target's constructor so it can auto populate the function map
