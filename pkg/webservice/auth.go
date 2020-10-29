@@ -54,7 +54,7 @@ func handleAuth(_ *string, request configs.WsMessage) configs.WsMessage {
 		}
 	case configs.Validate:
 		if request.Token != nil {
-			_, err = validateToken(*request.Token)
+			_, err = validateToken(request)
 			response.SubComponent = configs.Approved
 			response.Token = request.Token
 		} else {
@@ -74,8 +74,16 @@ func handleAuth(_ *string, request configs.WsMessage) configs.WsMessage {
 }
 
 // validate JWT (JSON Web Token)
-func validateToken(tokenString string) (*string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func validateToken(request configs.WsMessage) (*string, error) {
+	// update the token string to be the refresh token if it's present
+	// otherwise just use the default token string
+	// TODO(aschiefe): determine if we need to compare the original token claims to the refresh
+	tokenString := request.Token
+	if request.RefreshToken != nil {
+		tokenString = request.RefreshToken
+	}
+
+	token, err := jwt.Parse(*tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -83,17 +91,26 @@ func validateToken(tokenString string) (*string, error) {
 	})
 
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 
+	// extract the claim from the token
 	if claim, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// extract the user from the claim
 		if user, ok := claim["username"].(string); ok {
+			// test to see if we need to sent a refresh token
+			go testForRefresh(claim, request)
 			return &user, nil
 		}
-		return nil, errors.New("Invalid JWT User")
+		err = errors.New("Invalid JWT User")
+		log.Error(err)
+		return nil, err
 	}
 
-	return nil, errors.New("Invalid JWT Token")
+	err = errors.New("Invalid JWT Token")
+	log.Error(err)
+	return nil, err
 }
 
 // create a JWT (JSON Web Token)
@@ -126,4 +143,45 @@ func createToken(id string, passwd string) (*string, error) {
 	// Sign and get the complete encoded token as string
 	token, err := jwtClaim.SignedString(jwtKey)
 	return &token, err
+}
+
+// from time to time we might want to send a refresh token to the UI.  The UI should not be in charge of requesting it
+func testForRefresh(claim jwt.MapClaims, request configs.WsMessage) {
+	// for some reason the exp is stored as an float and not an int in the claim conversion
+	// so we do a little dance and cast some floats to ints and everyone goes on with their lives
+	if exp, ok := claim["exp"].(float64); ok {
+		if int64(exp) < time.Now().Add(time.Minute*15).Unix() {
+			createRefreshToken(claim, request)
+		}
+	}
+}
+
+// createRefreshToken will create an oauth2 refresh token based on the timeout on the UI
+func createRefreshToken(claim jwt.MapClaims, request configs.WsMessage) {
+	// add the new expiration to the claim
+	claim["exp"] = time.Now().Add(time.Hour * 1).Unix()
+
+	// create the token
+	jwtClaim := jwt.New(jwt.SigningMethodHS256)
+	jwtClaim.Claims = claim
+
+	// Sign and get the complete encoded token as string
+	refreshToken, err := jwtClaim.SignedString(jwtKey)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	// test to see if the session is still in existence before firing off a message
+	if session, ok := sessions[request.SessionID]; ok {
+		if err = session.webSocketSend(configs.WsMessage{
+			Type:         configs.UI,
+			Component:    configs.Auth,
+			SubComponent: configs.Refresh,
+			RefreshToken: &refreshToken,
+			SessionID:    request.SessionID,
+		}); err != nil {
+			session.onError(err)
+		}
+	}
 }
