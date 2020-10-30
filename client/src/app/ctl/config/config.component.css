@@ -15,3 +15,11 @@
 .grey-icon {
     color: grey;
 }
+
+.current-context {
+    color: #ff4081;
+}
+
+mat-expansion-panel {
+    padding-bottom: 15px;
+}
