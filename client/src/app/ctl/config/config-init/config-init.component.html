@@ -1,0 +1,23 @@
+<div class="config-init-form">
+    <h4>Initialize new Airship configuration file</h4>
+    <mat-form-field class="init-form-field">
+        <mat-label>Path</mat-label>
+        <input matInput type="text" placeholder="Leave blank for default $HOME/.airship/config" [formControl]="initValue">
+        <button mat-button *ngIf="initValue" matSuffix mat-icon-button aria-label="Clear" (click)="initValue=''">
+          <mat-icon>close</mat-icon>
+        </button>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="initAirshipConfig()">Initialize</button>
+</div>
+<mat-divider></mat-divider>
+<div class="config-specify-form">
+    <h4>Specify existing Airship configuration file</h4>
+    <mat-form-field class="specify-form-field">
+        <mat-label>Path</mat-label>
+        <input matInput type="text" [formControl]="specifyValue">
+        <button mat-button *ngIf="specifyValue" matSuffix mat-icon-button aria-label="Clear" (click)="specifyValue=''">
+          <mat-icon>close</mat-icon>
+        </button>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="setAirshipConfig()">Set Path</button>
+</div>

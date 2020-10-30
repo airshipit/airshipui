@@ -1,6 +1,7 @@
 <h1>Airship Configuration Options</h1>
+<h5>Airship Config File: {{airshipConfigPath}}</h5>
 <mat-divider></mat-divider>
-<div class="config-container">
+<div *ngIf="airshipConfigPath !== '' && airshipConfigPath !== undefined; else initblock" class="config-container">
     <mat-expansion-panel>
         <mat-expansion-panel-header>
             <mat-panel-title class="title">
@@ -45,3 +46,8 @@
         </mat-accordion>
     </mat-expansion-panel>
 </div>
+<ng-template #initblock>
+    <div class="config-init-container">
+        <app-config-init></app-config-init>
+    </div>
+</ng-template>

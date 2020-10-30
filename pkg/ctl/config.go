@@ -17,82 +17,124 @@ package ctl
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	ctlconfig "opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipui/pkg/configs"
-	"opendev.org/airship/airshipui/pkg/log"
 )
 
-// HandleConfigRequest will flop between requests so we don't have to have them all mapped as function calls
-// This will wait for the sub component to complete before responding.  The assumption is this is an async request
-func HandleConfigRequest(user *string, request configs.WsMessage) configs.WsMessage {
-	response := configs.WsMessage{
+// ConfigFunctionMap is being used to call the appropriate function based on the SubComponentType,
+// since the linter seems to think there are too many cases for a switch / case
+var ConfigFunctionMap = map[configs.WsSubComponentType]func(configs.WsMessage) configs.WsMessage{
+	configs.SetAirshipConfig:     SetAirshipConfig,
+	configs.GetAirshipConfigPath: GetAirshipConfigPath,
+	configs.GetCurrentContext:    GetCurrentContext,
+	configs.GetContexts:          GetContexts,
+	configs.GetEncryptionConfigs: GetEncryptionConfigs,
+	configs.GetManagementConfigs: GetManagementConfigs,
+	configs.GetManifests:         GetManifests,
+	configs.Init:                 InitAirshipConfig,
+	configs.SetContext:           SetContext,
+	configs.SetEncryptionConfig:  SetEncryptionConfig,
+	configs.SetManagementConfig:  SetManagementConfig,
+	configs.SetManifest:          SetManifest,
+	configs.UseContext:           UseContext,
+}
+
+// helper function to create most of the relevant bits of the response message
+func newResponse(request configs.WsMessage) configs.WsMessage {
+	return configs.WsMessage{
 		Type:         configs.CTL,
 		Component:    configs.CTLConfig,
 		SubComponent: request.SubComponent,
 		Name:         request.Name,
 	}
+}
 
-	var err error
-	var message *string
+// HandleConfigRequest will flop between requests so we don't have to have them all mapped as function calls
+// This will wait for the sub component to complete before responding.  The assumption is this is an async request
+func HandleConfigRequest(user *string, request configs.WsMessage) configs.WsMessage {
+	var response configs.WsMessage
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
-	if err != nil {
-		e := fmt.Sprintf("Error initializing airshipctl client: %s", err)
-		response.Error = &e
-		return response
-	}
-
-	subComponent := request.SubComponent
-	switch subComponent {
-	case configs.GetCurrentContext:
-		context := client.Config.CurrentContext
-		message = &context
-	case configs.GetContexts:
-		response.Data = GetContexts(client)
-	case configs.GetEncryptionConfigs:
-		response.Data = GetEncryptionConfigs(client)
-	case configs.GetManagementConfigs:
-		response.Data = GetManagementConfigs(client)
-	case configs.GetManifests:
-		response.Data = GetManifests(client)
-	case configs.Init:
-		err = InitAirshipConfig(AirshipConfigPath)
-	case configs.SetContext:
-		response.Data, err = SetContext(client, request)
-		str := fmt.Sprintf("Context '%s' has been modified", request.Name)
-		message = &str
-	case configs.SetEncryptionConfig:
-		response.Data, err = SetEncryptionConfig(client, request)
-		str := fmt.Sprintf("Encryption configuration '%s' has been modified", request.Name)
-		message = &str
-	case configs.SetManagementConfig:
-		err = SetManagementConfig(client, request)
-		str := fmt.Sprintf("Management configuration '%s' has been modified", request.Name)
-		message = &str
-	case configs.SetManifest:
-		response.Data, err = SetManifest(client, request)
-		str := fmt.Sprintf("Manifest '%s' has been modified", request.Name)
-		message = &str
-	case configs.UseContext:
-		err = UseContext(client, request)
-	default:
-		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
-	}
-
-	if err != nil {
-		e := err.Error()
-		response.Error = &e
+	if handler, ok := ConfigFunctionMap[request.SubComponent]; ok {
+		response = handler(request)
 	} else {
-		response.Message = message
+		response = newResponse(request)
+		err := fmt.Sprintf("Subcomponent %s not found", request.SubComponent)
+		response.Error = &err
 	}
 
 	return response
 }
 
+// GetAirshipConfigPath returns value stored in AirshipConfigPath
+func GetAirshipConfigPath(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+	response.Message = AirshipConfigPath
+	return response
+}
+
+// SetAirshipConfig sets the AirshipConfigPath to the value specified by
+// UI client
+func SetAirshipConfig(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	AirshipConfigPath = request.Message
+
+	msg := fmt.Sprintf("Config file set to '%s'", *AirshipConfigPath)
+	response.Message = &msg
+
+	return response
+}
+
+// GetCurrentContext returns the name of the currently configured context
+func GetCurrentContext(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	response.Message = &client.Config.CurrentContext
+
+	return response
+}
+
 // InitAirshipConfig wrapper function for CTL's CreateConfig using the specified path
-func InitAirshipConfig(path *string) error {
-	return ctlconfig.CreateConfig(*path)
+// TODO(mfuller): we'll need to persist this info in airshipui.json so that we can
+// set AirshipConfigPath at app launch
+func InitAirshipConfig(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	confPath := *request.Message
+	if confPath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			e := err.Error()
+			response.Error = &e
+			return response
+		}
+		confPath = filepath.Join(home, ".airship", "config")
+	}
+
+	err := ctlconfig.CreateConfig(confPath)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	AirshipConfigPath = &confPath
+
+	msg := fmt.Sprintf("Config file set to '%s'", *AirshipConfigPath)
+
+	response.Message = &msg
+
+	return response
 }
 
 // Context wrapper struct to include context name with CTL's Context
@@ -103,7 +145,16 @@ type Context struct {
 
 // GetContexts returns a slice of wrapper Context structs so we know the name of each
 // for display in the UI
-func GetContexts(client *Client) []Context {
+func GetContexts(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
 	contexts := []Context{}
 	for name, context := range client.Config.Contexts {
 		contexts = append(contexts, Context{
@@ -117,7 +168,9 @@ func GetContexts(client *Client) []Context {
 		})
 	}
 
-	return contexts
+	response.Data = contexts
+
+	return response
 }
 
 // Manifest wraps CTL's Manifest to include the manifest name
@@ -128,7 +181,16 @@ type Manifest struct {
 
 // GetManifests returns a slice of wrapper Manifest structs so we know the name of each
 // for display in the UI
-func GetManifests(client *Client) []Manifest {
+func GetManifests(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
 	manifests := []Manifest{}
 
 	for name, manifest := range client.Config.Manifests {
@@ -138,7 +200,9 @@ func GetManifests(client *Client) []Manifest {
 		})
 	}
 
-	return manifests
+	response.Data = manifests
+
+	return response
 }
 
 // ManagementConfig wrapper struct for CTL's ManagementConfiguration that
@@ -149,7 +213,16 @@ type ManagementConfig struct {
 }
 
 // GetManagementConfigs function to retrieve all management configs
-func GetManagementConfigs(client *Client) []ManagementConfig {
+func GetManagementConfigs(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
 	configs := []ManagementConfig{}
 	for name, conf := range client.Config.ManagementConfiguration {
 		configs = append(configs, ManagementConfig{
@@ -163,7 +236,10 @@ func GetManagementConfigs(client *Client) []ManagementConfig {
 			},
 		})
 	}
-	return configs
+
+	response.Data = configs
+
+	return response
 }
 
 // EncryptionConfig wrapper struct for CTL's EncryptionConfiguration that
@@ -175,7 +251,16 @@ type EncryptionConfig struct {
 
 // GetEncryptionConfigs returns a slice of wrapper EncryptionConfig structs so we
 // know the name of each for display in the UI
-func GetEncryptionConfigs(client *Client) []EncryptionConfig {
+func GetEncryptionConfigs(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
 	configs := []EncryptionConfig{}
 	for name, config := range client.Config.EncryptionConfigs {
 		configs = append(configs, EncryptionConfig{
@@ -187,101 +272,216 @@ func GetEncryptionConfigs(client *Client) []EncryptionConfig {
 		})
 	}
 
-	return configs
+	response.Data = configs
+
+	return response
 }
 
 // SetContext wrapper function for CTL's RunSetContext, using a UI client
-func SetContext(client *Client, message configs.WsMessage) (bool, error) {
-	bytes, err := json.Marshal(message.Data)
+func SetContext(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	bytes, err := json.Marshal(request.Data)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
 	var opts ctlconfig.ContextOptions
 	err = json.Unmarshal(bytes, &opts)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
 	err = opts.Validate()
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
-	return ctlconfig.RunSetContext(&opts, client.Config, true)
+	_, err = ctlconfig.RunSetContext(&opts, client.Config, true)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	msg := fmt.Sprintf("Context '%s' has been modified", request.Name)
+	response.Message = &msg
+
+	return response
 }
 
 // SetEncryptionConfig wrapper function for CTL's RunSetEncryptionConfig, using a UI client
-func SetEncryptionConfig(client *Client, message configs.WsMessage) (bool, error) {
-	bytes, err := json.Marshal(message.Data)
+func SetEncryptionConfig(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	bytes, err := json.Marshal(request.Data)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
 	var opts ctlconfig.EncryptionConfigOptions
 	err = json.Unmarshal(bytes, &opts)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
 	err = opts.Validate()
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
-	return ctlconfig.RunSetEncryptionConfig(&opts, client.Config, true)
+	_, err = ctlconfig.RunSetEncryptionConfig(&opts, client.Config, true)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	msg := fmt.Sprintf("Encryption configuration '%s' has been modified", request.Name)
+	response.Message = &msg
+
+	return response
 }
 
 // SetManagementConfig sets the specified management configuration with values
 // received from the frontend client
 // TODO(mfuller): there's currently no setter for this in the CTL config pkg
 // so we'll set the values manually and then persist the config
-func SetManagementConfig(client *Client, message configs.WsMessage) error {
-	bytes, err := json.Marshal(message.Data)
+func SetManagementConfig(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		return err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
-	if mCfg, found := client.Config.ManagementConfiguration[message.Name]; found {
+	bytes, err := json.Marshal(request.Data)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	if mCfg, found := client.Config.ManagementConfiguration[request.Name]; found {
 		err = json.Unmarshal(bytes, mCfg)
 		if err != nil {
-			return err
+			e := err.Error()
+			response.Error = &e
+			return response
 		}
 
 		err = client.Config.PersistConfig()
 		if err != nil {
-			return err
+			e := err.Error()
+			response.Error = &e
+			return response
 		}
 	} else {
-		return fmt.Errorf("Management configuration '%s' not found", message.Name)
+		e := fmt.Sprintf("Management configuration '%s' not found", request.Name)
+		response.Error = &e
+		return response
 	}
 
-	return nil
+	msg := fmt.Sprintf("Management configuration '%s' has been modified", request.Name)
+	response.Message = &msg
+
+	return response
 }
 
 // SetManifest wrapper function for CTL's RunSetManifest, using a UI client
-func SetManifest(client *Client, message configs.WsMessage) (bool, error) {
-	bytes, err := json.Marshal(message.Data)
+func SetManifest(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	bytes, err := json.Marshal(request.Data)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
 	var opts ctlconfig.ManifestOptions
 	err = json.Unmarshal(bytes, &opts)
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
-	log.Infof("Unmarshaled options: %+v", opts)
 	err = opts.Validate()
 	if err != nil {
-		return false, err
+		e := err.Error()
+		response.Error = &e
+		return response
 	}
 
-	return ctlconfig.RunSetManifest(&opts, client.Config, true)
+	_, err = ctlconfig.RunSetManifest(&opts, client.Config, true)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	msg := fmt.Sprintf("Manifest '%s' has been modified", request.Name)
+	response.Message = &msg
+
+	return response
 }
 
 // UseContext wrapper function for CTL's RunUseConfig, using a UI client
-func UseContext(client *Client, message configs.WsMessage) error {
-	return ctlconfig.RunUseContext(message.Name, client.Config)
+func UseContext(request configs.WsMessage) configs.WsMessage {
+	response := newResponse(request)
+
+	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	err = ctlconfig.RunUseContext(request.Name, client.Config)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	msg := fmt.Sprintf("Using context '%s'", request.Name)
+	response.Message = &msg
+
+	return response
 }
