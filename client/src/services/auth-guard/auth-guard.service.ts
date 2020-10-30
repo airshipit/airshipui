@@ -121,6 +121,18 @@ export class AuthGuard implements WSReceiver, CanActivate {
       return true;
     }
 
+    // login page specific details
+    // redirect /login to / if authenticated and landing on /login
+    // If this is not here when you refresh on the login page it somehow redirects to /
+    if (location === '/login/') {
+      if (authenticated) {
+        this.router.navigate(['/']);
+        return false;
+      } else {
+        return true;
+      }
+    }
+
     // flip the link if we're in or out of the fold
     this.toggleAuthButton(authenticated);
 

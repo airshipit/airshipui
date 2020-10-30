@@ -24,7 +24,7 @@ import { WSReceiver, WebsocketMessage, Authentication } from 'src/services/webso
 export class LoginComponent implements WSReceiver, OnInit {
     className = this.constructor.name;
     type = 'ui'; // needed to have the websocket service in the constructor
-    component = 'auth'; // needed to have the websocket service in the constructor
+    component = 'login'; // needed to have the websocket service in the constructor
 
     constructor(private websocketService: WebsocketService) { }
 
@@ -47,7 +47,7 @@ export class LoginComponent implements WSReceiver, OnInit {
 
     // formSubmit sends the auth request to the backend
     public formSubmit(id, passwd): void {
-        const message = new WebsocketMessage(this.type, this.component, 'authenticate');
+        const message = new WebsocketMessage(this.type, 'auth', 'authenticate');
         message.authentication = new Authentication(id, passwd);
         this.websocketService.sendMessage(message);
     }
