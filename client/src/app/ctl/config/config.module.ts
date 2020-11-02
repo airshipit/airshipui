@@ -26,7 +26,7 @@ import { ConfigEncryptionComponent } from './config-encryption/config-encryption
 import { ConfigManagementComponent } from './config-management/config-management.component';
 import { ConfigManifestComponent } from './config-manifest/config-manifest.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   imports: [
@@ -38,7 +38,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatDividerModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatExpansionModule
   ],
   declarations: [
     ConfigComponent,

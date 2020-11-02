@@ -1,36 +1,37 @@
-<mat-card class="management-config-card">
-    <mat-card-header>
-        <mat-card-title>
-            <button mat-icon-button (click)="toggleLock()">
-                <mat-icon *ngIf="locked" class="grey-icon" svgIcon="lock"></mat-icon>
-                <mat-icon *ngIf="!locked" class="grey-icon" svgIcon="lock_open"></mat-icon>
-            </button>{{config.name}}
-        </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+<mat-expansion-panel>
+    <mat-expansion-panel-header>
+        <mat-panel-title class="title">
+            <h4>{{config.name}}</h4>
+        </mat-panel-title>
+    </mat-expansion-panel-header>
         <p>
             <mat-checkbox [formControl]="insecure" labelPosition="before">Insecure: </mat-checkbox>
         </p>
-        <p>SystemActionRetries:
+        SystemActionRetries:
             <mat-form-field appearance="fill">
                 <input matInput [formControl]="systemActionRetries" pattern="[0-9]*">
             </mat-form-field>
-        </p>
-        <p>SystemRebootDelay:
+        SystemRebootDelay:
             <mat-form-field appearance="fill">
                 <input matInput [formControl]="systemRebootDelay" pattern="[0-9]*">
             </mat-form-field>
-        </p>
-        <p>Type:
+        Type:
             <mat-form-field appearance="fill">
                 <input matInput [formControl]="type">
             </mat-form-field>
-        </p>
         <p>
             <mat-checkbox [formControl]="useproxy" labelPosition="before">UseProxy: </mat-checkbox>
         </p>
-    </mat-card-content>
-    <mat-card-actions>
-        <button mat-raised-button [disabled]="locked" (click)="setManagementConfig()" color="primary">Set</button>
-    </mat-card-actions>
-</mat-card>
+    <mat-action-row>
+        <div class="edit-btn-container">
+            <button mat-icon-button (click)="toggleLock()">
+                <mat-icon *ngIf="locked else unlocked" class="grey-icon" svgIcon="lock"></mat-icon>
+                <ng-template #unlocked>
+                    <mat-icon *ngIf="!locked" class="grey-icon" svgIcon="lock_open"></mat-icon>
+                </ng-template>
+            Edit</button>
+        </div>
+        <button mat-raised-button class="set-button" [disabled]="locked" (click)="setManagementConfig()" color="primary">Set</button>
+    </mat-action-row>
+</mat-expansion-panel>
+<br />

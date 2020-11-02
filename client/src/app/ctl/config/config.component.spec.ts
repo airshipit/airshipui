@@ -19,7 +19,6 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
-import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ConfigContextModule } from './config-context/config-context.module';
 import { ConfigManagementModule } from './config-management/config-management.module';
@@ -29,6 +28,8 @@ import { ConfigManifestComponent } from './config-manifest/config-manifest.compo
 import { ConfigManagementComponent } from './config-management/config-management.component';
 import { ConfigEncryptionComponent } from './config-encryption/config-encryption.component';
 import { ConfigContextComponent } from './config-context/config-context.component';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ConfigComponent', () => {
   let component: ConfigComponent;
@@ -41,13 +42,14 @@ describe('ConfigComponent', () => {
         FormsModule,
         MatButtonModule,
         MatInputModule,
-        MatCardModule,
         MatCheckboxModule,
         ConfigContextModule,
         ConfigManagementModule,
         ConfigManifestModule,
         ConfigEncryptionModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        MatExpansionModule,
+        BrowserAnimationsModule
       ],
       declarations: [
         ConfigComponent,
