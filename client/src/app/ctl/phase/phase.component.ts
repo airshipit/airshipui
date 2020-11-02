@@ -12,17 +12,17 @@
 # limitations under the License.
 */
 
-import {Component} from '@angular/core';
-import {WebsocketService} from '../../../services/websocket/websocket.service';
-import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
-import {Log} from '../../../services/log/log.service';
-import {LogMessage} from '../../../services/log/log-message';
-import {KustomNode, RunOptions} from './phase.models';
-import {NestedTreeControl} from '@angular/cdk/tree';
-import {MatTreeNestedDataSource} from '@angular/material/tree';
+import { Component } from '@angular/core';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
+import { KustomNode, RunOptions } from './phase.models';
+import { NestedTreeControl } from '@angular/cdk/tree';
+import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { PhaseViewerComponent } from './phase-viewer/phase-viewer.component';
-import {PhaseRunnerComponent} from './phase-runner/phase-runner.component';
+import { PhaseRunnerComponent } from './phase-runner/phase-runner.component';
 
 @Component({
   selector: 'app-phase',
@@ -30,7 +30,7 @@ import {PhaseRunnerComponent} from './phase-runner/phase-runner.component';
   styleUrls: ['./phase.component.css']
 })
 
-export class PhaseComponent implements WSReceiver {
+export class PhaseComponent implements WsReceiver {
   className = this.constructor.name;
   statusMsg: string;
   loading: boolean;
@@ -39,8 +39,8 @@ export class PhaseComponent implements WSReceiver {
   phaseViewerRef: MatDialogRef<PhaseViewerComponent, any>;
   phaseRunnerRef: MatDialogRef<PhaseRunnerComponent, any>;
 
-  type = 'ctl';
-  component = 'phase';
+  type = WsConstants.CTL;
+  component = WsConstants.PHASE;
   activeLink = 'overview';
 
   targetPath: string;
@@ -66,46 +66,46 @@ export class PhaseComponent implements WSReceiver {
     });
   }
 
-  constructor(private websocketService: WebsocketService, public dialog: MatDialog) {
+  constructor(private websocketService: WsService, public dialog: MatDialog) {
     this.websocketService.registerFunctions(this);
     this.getTarget();
     this.getPhaseTree(); // load the source first
   }
 
-  public async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  public async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
       this.loading = false;
-      if (message.subComponent === 'run') {
+      if (message.subComponent === WsConstants.RUN) {
         this.toggleNode(message.id);
       }
     } else {
       switch (message.subComponent) {
-        case 'getTarget':
+        case WsConstants.GET_TARGET:
           this.targetPath = message.message;
           break;
-        case 'getPhaseTree':
+        case WsConstants.GET_PHASE_TREE:
           this.handleGetPhaseTree(message.data);
           break;
-        case 'getPhase':
+        case WsConstants.GET_PHASE:
           this.handleGetPhase(message);
           break;
-        case 'getYaml':
+        case WsConstants.GET_YAML:
           this.handleGetYaml(message);
           break;
-        case 'getDocumentsBySelector':
+        case WsConstants.GET_DOCUMENT_BY_SELECTOR:
           this.handleGetDocumentsBySelector(message);
           break;
-        case 'getExecutorDoc':
+        case WsConstants.GET_EXECUTOR_DOC:
           this.handleGetExecutorDoc(message);
           break;
-        case 'yamlWrite':
+        case WsConstants.YAML_WRITE:
           this.handleYamlWrite(message);
           break;
-        case 'validatePhase':
+        case WsConstants.VALIDATE_PHASE:
           this.handleValidatePhase(message);
           break;
-        case 'run':
+        case WsConstants.RUN:
           this.handleRunPhase(message);
           break;
         default:
@@ -115,11 +115,11 @@ export class PhaseComponent implements WSReceiver {
     }
   }
 
-  handleValidatePhase(message: WebsocketMessage): void {
+  handleValidatePhase(message: WsMessage): void {
     this.websocketService.printIfToast(message);
   }
 
-  handleRunPhase(message: WebsocketMessage): void {
+  handleRunPhase(message: WsMessage): void {
     this.toggleNode(message.id);
   }
 
@@ -129,7 +129,7 @@ export class PhaseComponent implements WSReceiver {
     this.dataSource.data = this.phaseTree;
   }
 
-  handleGetPhase(message: WebsocketMessage): void {
+  handleGetPhase(message: WsMessage): void {
     this.loading = false;
     let yaml = '';
     if (message.yaml !== '' && message.yaml !== undefined) {
@@ -138,16 +138,16 @@ export class PhaseComponent implements WSReceiver {
     this.phaseViewerRef = this.openPhaseDialog(message.id, message.name, message.details, yaml);
   }
 
-  handleGetExecutorDoc(message: WebsocketMessage): void {
+  handleGetExecutorDoc(message: WsMessage): void {
     this.phaseViewerRef.componentInstance.executorYaml = atob(message.yaml);
   }
 
-  handleGetDocumentsBySelector(message: WebsocketMessage): void {
+  handleGetDocumentsBySelector(message: WsMessage): void {
     this.phaseViewerRef.componentInstance.loading = false;
     Object.assign(this.phaseViewerRef.componentInstance.results, message.data);
   }
 
-  handleGetYaml(message: WebsocketMessage): void {
+  handleGetYaml(message: WsMessage): void {
     if (message.message === 'rendered') {
       this.phaseViewerRef.componentInstance.yaml = atob(message.yaml);
     } else {
@@ -158,7 +158,7 @@ export class PhaseComponent implements WSReceiver {
     }
   }
 
-  handleYamlWrite(message: WebsocketMessage): void {
+  handleYamlWrite(message: WsMessage): void {
     this.changeEditorContents((message.yaml));
     this.setTitle(message.name);
     this.currentDocId = message.id;
@@ -176,7 +176,7 @@ export class PhaseComponent implements WSReceiver {
   }
 
   saveYaml(): void {
-    const websocketMessage = this.newMessage('yamlWrite');
+    const websocketMessage = this.newMessage(WsConstants.YAML_WRITE);
     websocketMessage.id = this.currentDocId;
     websocketMessage.name = this.editorTitle;
     websocketMessage.yaml = btoa(this.code);
@@ -185,7 +185,7 @@ export class PhaseComponent implements WSReceiver {
 
   getPhaseTree(): void {
     this.loading = true;
-    const websocketMessage = this.newMessage('getPhaseTree');
+    const websocketMessage = this.newMessage(WsConstants.GET_PHASE_TREE);
     this.websocketService.sendMessage(websocketMessage);
   }
 
@@ -229,29 +229,23 @@ export class PhaseComponent implements WSReceiver {
 
   }
 
-  getPhaseDetails(id: object): void {
-    const msg = this.newMessage('getPhaseDetails');
-    msg.id = JSON.stringify(id);
-    this.websocketService.sendMessage(msg);
-  }
-
   getPhase(id: object): void {
     this.loading = true;
-    const msg = this.newMessage('getPhase');
+    const msg = this.newMessage(WsConstants.GET_PHASE);
     msg.id = JSON.stringify(id);
     this.websocketService.sendMessage(msg);
   }
 
   getYaml(id: string): void {
     this.code = null;
-    const msg = this.newMessage('getYaml');
+    const msg = this.newMessage(WsConstants.GET_YAML);
     msg.id = id;
     msg.message = 'source';
     this.websocketService.sendMessage(msg);
   }
 
   getExecutorDoc(id: object): void {
-    const msg = this.newMessage('getExecutorDoc');
+    const msg = this.newMessage(WsConstants.GET_DOCUMENT_BY_SELECTOR);
     msg.id = JSON.stringify(id);
     this.websocketService.sendMessage(msg);
   }
@@ -262,7 +256,7 @@ export class PhaseComponent implements WSReceiver {
   }
 
   getTarget(): void {
-    const websocketMessage = this.newMessage('getTarget');
+    const websocketMessage = this.newMessage(WsConstants.GET_TARGET);
     this.websocketService.sendMessage(websocketMessage);
   }
 
@@ -270,7 +264,7 @@ export class PhaseComponent implements WSReceiver {
   // before actually running the phase
   runPhase(node: KustomNode, opts: RunOptions): void {
     node.running = true;
-    const msg = this.newMessage('run');
+    const msg = this.newMessage(WsConstants.RUN);
     msg.id = JSON.stringify(node.phaseId);
     if (opts !== undefined) {
       msg.data = JSON.parse(JSON.stringify(opts));
@@ -279,13 +273,13 @@ export class PhaseComponent implements WSReceiver {
   }
 
   validatePhase(id: object): void {
-    const msg = this.newMessage('validatePhase');
+    const msg = this.newMessage(WsConstants.VALIDATE_PHASE);
     msg.id = JSON.stringify(id);
     this.websocketService.sendMessage(msg);
   }
 
-  newMessage(subComponent: string): WebsocketMessage {
-    return new WebsocketMessage(this.type, this.component, subComponent);
+  newMessage(subComponent: string): WsMessage {
+    return new WsMessage(this.type, this.component, subComponent);
   }
 
   findNode(node: KustomNode, id: string): KustomNode {

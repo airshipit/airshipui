@@ -13,10 +13,10 @@
 */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from '../../../services/websocket/websocket.models';
-import { Log } from '../../../services/log/log.service';
-import { LogMessage } from '../../../services/log/log-message';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -29,11 +29,10 @@ import { NodeData, PhaseData } from './baremetal.models';
   styleUrls: ['./baremetal.component.css']
 })
 
-export class BaremetalComponent implements WSReceiver, OnInit {
+export class BaremetalComponent implements WsReceiver, OnInit {
   className = this.constructor.name;
-  // TODO (aschiefe): extract these strings to constants
-  type = 'ctl';
-  component = 'baremetal';
+  type = WsConstants.CTL;
+  component = WsConstants.BAREMETAL;
 
   nodeColumns: string[] = ['select', 'name', 'id', 'bmcAddress'];
   nodeDataSource: MatTableDataSource<NodeData> = new MatTableDataSource();
@@ -47,16 +46,16 @@ export class BaremetalComponent implements WSReceiver, OnInit {
   @ViewChild('phaseTableSort', { static: false }) phaseSort: MatSort;
   @ViewChild('phasePaginator', { static: false }) phasePaginator: MatPaginator;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'getDefaults':
+        case WsConstants.GET_DEFAULTS:
           this.pushData(message.data);
           break;
         default:
@@ -67,7 +66,7 @@ export class BaremetalComponent implements WSReceiver, OnInit {
   }
 
   ngOnInit(): void {
-    const message = new WebsocketMessage(this.type, this.component, 'getDefaults');
+    const message = new WsMessage(this.type, this.component, WsConstants.GET_DEFAULTS);
     Log.Debug(new LogMessage('Attempting to ask for node data', this.className, message));
     this.websocketService.sendMessage(message);
   }
@@ -178,7 +177,7 @@ export class BaremetalComponent implements WSReceiver, OnInit {
 
     // retrieve the targets to run the action against
     // create the websocket message & fire the request to the backend
-    const message = new WebsocketMessage(this.type, this.component, subComponent);
+    const message = new WsMessage(this.type, this.component, subComponent);
     const displaying = (document.getElementById('displaySelect') as HTMLInputElement).value;
     const targets: string[] = new Array();
     if (displaying === 'node') {

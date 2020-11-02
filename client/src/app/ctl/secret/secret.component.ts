@@ -13,13 +13,13 @@
 */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
 import { Log } from 'src/services/log/log.service';
 import { LogMessage } from 'src/services/log/log-message';
 import { MatStepper } from '@angular/material/stepper';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import {STEPPER_GLOBAL_OPTIONS, StepperSelectionEvent } from '@angular/cdk/stepper';
+import { STEPPER_GLOBAL_OPTIONS, StepperSelectionEvent } from '@angular/cdk/stepper';
 
 @Component({
   selector: 'app-secret',
@@ -30,11 +30,10 @@ import {STEPPER_GLOBAL_OPTIONS, StepperSelectionEvent } from '@angular/cdk/stepp
   }]
 })
 
-export class SecretComponent implements WSReceiver, OnInit {
+export class SecretComponent implements WsReceiver, OnInit {
   className = this.constructor.name;
-  // TODO (aschiefe): extract these strings to constants
-  type = 'ctl';
-  component = 'secret';
+  type = WsConstants.CTL;
+  component = WsConstants.SECRET;
 
   // form groups, these control the stepper and the validators for the inputs
   decryptSrcFG: FormGroup;
@@ -45,7 +44,7 @@ export class SecretComponent implements WSReceiver, OnInit {
   @ViewChild('decryptStepper', { static: false }) decryptStepper: MatStepper;
   @ViewChild('encryptStepper', { static: false }) encryptStepper: MatStepper;
 
-  constructor(private websocketService: WebsocketService, private formBuilder: FormBuilder) {
+  constructor(private websocketService: WsService, private formBuilder: FormBuilder) {
     this.websocketService.registerFunctions(this);
   }
 
@@ -64,12 +63,12 @@ export class SecretComponent implements WSReceiver, OnInit {
     });
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'generate':
+        case WsConstants.GENERATE:
           document.getElementById('GenerateOutputDiv').innerHTML = message.message;
           break;
         default:
@@ -80,21 +79,21 @@ export class SecretComponent implements WSReceiver, OnInit {
   }
 
   decrypt(): void {
-    const message = new WebsocketMessage(this.type, this.component, 'decrypt');
+    const message = new WsMessage(this.type, this.component, WsConstants.DECRYPT);
     message.message = 'Decrypt is currently not implemented in CTL';
     this.websocketService.printIfToast(message);
     this.decryptStepper.reset();
   }
 
   encrypt(): void {
-    const message = new WebsocketMessage(this.type, this.component, 'encrypt');
+    const message = new WsMessage(this.type, this.component, WsConstants.ENCRYPT);
     message.message = 'Encrypt is currently not implemented in CTL';
     this.websocketService.printIfToast(message);
     this.encryptStepper.reset();
   }
 
   generateSecret(): void {
-    const message = new WebsocketMessage(this.type, this.component, 'generate');
+    const message = new WsMessage(this.type, this.component, WsConstants.GENERATE);
     Log.Debug(new LogMessage('Attempting to generate secret', this.className, message));
     this.websocketService.sendMessage(message);
   }

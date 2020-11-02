@@ -12,15 +12,15 @@
 # limitations under the License.
 */
 
-import { WebsocketMessage } from '../websocket/websocket.models';
+import { WsMessage } from '../ws/ws.models';
 
 export class LogMessage {
     // the holy trinity of the websocket messages, a triumvirate if you will, which is how all are routed
     message: string;
     className: string;
-    logMessage: string | WebsocketMessage;
+    logMessage: string | WsMessage;
 
-    constructor(message?: string | undefined, className?: string | undefined, logMessage?: string | WebsocketMessage | undefined) {
+    constructor(message?: string | undefined, className?: string | undefined, logMessage?: string | WsMessage | undefined) {
         this.message = message;
         this.className = className;
         this.logMessage = logMessage;

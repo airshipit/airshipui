@@ -15,8 +15,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ManagementConfig } from '../config.models';
 import { FormControl, Validators } from '@angular/forms';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WebsocketMessage } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
   selector: 'app-config-management',
@@ -25,8 +25,8 @@ import { WebsocketMessage } from 'src/services/websocket/websocket.models';
 })
 export class ConfigManagementComponent implements OnInit {
   @Input() config: ManagementConfig;
-  msgType = 'ctl';
-  component = 'config';
+  msgType = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   locked = true;
 
@@ -39,7 +39,7 @@ export class ConfigManagementComponent implements OnInit {
 
   controlsArray = [this.name, this.insecure, this.systemRebootDelay, this.systemActionRetries, this.type, this.useproxy];
 
-  constructor(private websocketService: WebsocketService) { }
+  constructor(private websocketService: WsService) { }
 
   ngOnInit(): void {
     this.name.setValue(this.config.name);
@@ -63,7 +63,7 @@ export class ConfigManagementComponent implements OnInit {
   }
 
   setManagementConfig(): void {
-    const msg = new WebsocketMessage(this.msgType, this.component, 'setManagementConfig');
+    const msg = new WsMessage(this.msgType, this.component, WsConstants.SET_MANAGEMENT_CONFIG);
     msg.name = this.name.value;
 
     const cfg: ManagementConfig = {

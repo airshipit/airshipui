@@ -12,12 +12,12 @@
 # limitations under the License.
 */
 
-import {Component, OnInit} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {KustomNode} from '../phase.models';
-import {WebsocketMessage} from '../../../../services/websocket/websocket.models';
-import {WebsocketService} from '../../../../services/websocket/websocket.service';
-import {FormControl, FormGroup} from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+import { KustomNode } from '../phase.models';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { FormControl, FormGroup } from '@angular/forms';
 
 @Component({
     selector: 'app-phase-viewer',
@@ -50,7 +50,7 @@ export class PhaseViewerComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<PhaseViewerComponent>,
-        private websocketService: WebsocketService) {}
+        private websocketService: WsService) {}
 
     ngOnInit(): void {
         this.bundleYaml = this.yaml;
@@ -67,20 +67,20 @@ export class PhaseViewerComponent implements OnInit {
 
     setModel(val: string): void {
         switch (val) {
-            case 'bundle':
+            case WsConstants.BUNDLE:
                 this.yaml = this.bundleYaml;
                 break;
-            case 'executor':
+            case WsConstants.EXECUTOR:
                 this.yaml = this.executorYaml;
                 break;
-            case 'details':
+            case WsConstants.DETAILS:
                 this.yaml = this.phaseDetails;
                 break;
         }
     }
 
     getDocumentsBySelector(selector: string): void {
-        const msg = new WebsocketMessage('ctl', 'phase', 'getDocumentsBySelector');
+        const msg = new WsMessage(WsConstants.CTL, WsConstants.PHASE, WsConstants.GET_DOCUMENT_BY_SELECTOR);
         msg.message = selector;
         msg.id = this.id;
         this.websocketService.sendMessage(msg);
@@ -88,7 +88,7 @@ export class PhaseViewerComponent implements OnInit {
 
     getYaml(id: string): void {
         this.yaml = null;
-        const msg = new WebsocketMessage('ctl', 'phase', 'getYaml');
+        const msg = new WsMessage(WsConstants.CTL, WsConstants.PHASE, WsConstants.GET_YAML);
         msg.id = id;
         msg.message = 'rendered';
         this.websocketService.sendMessage(msg);

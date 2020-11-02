@@ -13,7 +13,7 @@
 */
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { WebsocketMessage, WSReceiver, Authentication } from './websocket.models';
+import { WsMessage, WsReceiver } from './ws.models';
 import { ToastrService } from 'ngx-toastr';
 import 'reflect-metadata';
 
@@ -21,7 +21,7 @@ import 'reflect-metadata';
   providedIn: 'root'
 })
 
-export class WebsocketService implements OnDestroy {
+export class WsService implements OnDestroy {
   // to avoid circular includes this has to go here
   public static token: string;
   public static refreshToken: string;
@@ -34,12 +34,12 @@ export class WebsocketService implements OnDestroy {
 
   // functionMap is how we know where to send the direct messages
   // the structure of this map is: type -> component -> receiver
-  private functionMap = new Map<string, Map<string, WSReceiver>>();
+  private functionMap = new Map<string, Map<string, WsReceiver>>();
 
   // messageToObject unmarshalls the incoming message into a WebsocketMessage object
-  private static messageToObject(incomingMessage: string): WebsocketMessage {
+  private static messageToObject(incomingMessage: string): WsMessage {
     const json = JSON.parse(incomingMessage);
-    const obj = new WebsocketMessage();
+    const obj = new WsMessage();
     Object.assign(obj, json);
     return obj;
   }
@@ -56,12 +56,12 @@ export class WebsocketService implements OnDestroy {
   }
 
   // sendMessage will relay a WebsocketMessage to the go backend
-  public async sendMessage(message: WebsocketMessage): Promise<void> {
+  public async sendMessage(message: WsMessage): Promise<void> {
     try {
       message.sessionID = this.sessionID;
       message.timestamp = new Date().getTime();
-      if (WebsocketService.token !== undefined) { message.token = WebsocketService.token; }
-      if (WebsocketService.refreshToken !== undefined) { message.refreshToken = WebsocketService.refreshToken; }
+      if (WsService.token !== undefined) { message.token = WsService.token; }
+      if (WsService.refreshToken !== undefined) { message.refreshToken = WsService.refreshToken; }
       // TODO (aschiefe): determine if this debug statement is a good thing (tm)
       // Log.Debug(new LogMessage('Sending WebSocket Message', this.className, message));
       this.ws.send(JSON.stringify(message));
@@ -85,7 +85,7 @@ export class WebsocketService implements OnDestroy {
     this.ws = new WebSocket('wss://localhost:10443/ws');
 
     this.ws.onmessage = (event) => {
-      this.messageHandler(WebsocketService.messageToObject(event.data));
+      this.messageHandler(WsService.messageToObject(event.data));
     };
 
     this.ws.onerror = (event) => {
@@ -165,7 +165,7 @@ export class WebsocketService implements OnDestroy {
   }
 
   // Takes the WebsocketMessage and iterates through the function map to send a directed message when it shows up
-  private async messageHandler(message: WebsocketMessage): Promise<void> {
+  private async messageHandler(message: WsMessage): Promise<void> {
     if (this.sessionID === undefined && message.hasOwnProperty('sessionID')) {
       this.sessionID = message.sessionID;
     }
@@ -196,26 +196,26 @@ export class WebsocketService implements OnDestroy {
     window.clearTimeout(this.keepAliveTimeout);
     window.clearInterval(this.keepAliveTimeout);
     if (this.ws !== undefined && this.ws !== null && this.ws.readyState !== this.ws.CLOSED) {
-      this.sendMessage(new WebsocketMessage('ui', 'keepalive', null));
+      this.sendMessage(new WsMessage('ui', 'keepalive', null));
     }
     this.keepAliveTimeout = setTimeout(() => { this.keepAlive(); }, 60000);
   }
 
   // registerFunctions is a is called out of the target's constructor so it can auto populate the function map
-  public registerFunctions(target: WSReceiver): void {
+  public registerFunctions(target: WsReceiver): void {
     const type = target.type;
     const component = target.component;
     if (this.functionMap.hasOwnProperty(type)) {
       this.functionMap[type][component] = target;
     } else {
-      const components = new Map<string, WSReceiver>();
+      const components = new Map<string, WsReceiver>();
       components[component] = target;
       this.functionMap[type] = components;
     }
   }
 
   // printIfToast puts up the toast popup message on the UI
-  printIfToast(message: WebsocketMessage): void {
+  printIfToast(message: WsMessage): void {
     if (message.error !== undefined && message.error !== null) {
       this.toastrService.error(message.error);
     } else {

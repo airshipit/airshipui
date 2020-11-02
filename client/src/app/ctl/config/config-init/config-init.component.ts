@@ -14,8 +14,8 @@
 
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { WebsocketService } from '../../../../services/websocket/websocket.service';
-import { WebsocketMessage } from '../../../../services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
   selector: 'app-config-init',
@@ -23,22 +23,22 @@ import { WebsocketMessage } from '../../../../services/websocket/websocket.model
   styleUrls: ['./config-init.component.css']
 })
 export class ConfigInitComponent {
-  type = 'ctl';
-  component = 'config';
+  type = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   initValue = new FormControl('');
   specifyValue = new FormControl('');
 
-  constructor(private websocketService: WebsocketService) {}
+  constructor(private websocketService: WsService) {}
 
   initAirshipConfig(): void {
-    const msg = new WebsocketMessage(this.type, this.component, 'init');
+    const msg = new WsMessage(this.type, this.component, WsConstants.INIT);
     msg.message = this.initValue.value;
     this.websocketService.sendMessage(msg);
   }
 
   setAirshipConfig(): void {
-    const msg = new WebsocketMessage(this.type, this.component, 'setAirshipConfig');
+    const msg = new WsMessage(this.type, this.component, WsConstants.SET_AIRSHIP_CONFIG);
     msg.message = this.specifyValue.value;
     this.websocketService.sendMessage(msg);
   }

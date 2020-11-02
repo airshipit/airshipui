@@ -13,22 +13,21 @@
 */
 
 import { Component, OnInit } from '@angular/core';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from '../../../services/websocket/websocket.models';
-import { Log } from '../../../services/log/log.service';
-import { LogMessage } from '../../../services/log/log-message';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
 import { Context, ManagementConfig, Manifest, EncryptionConfig } from './config.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
   selector: 'app-bare-metal',
   templateUrl: './config.component.html',
 })
 
-export class ConfigComponent implements WSReceiver, OnInit {
+export class ConfigComponent implements WsReceiver, OnInit {
   className = this.constructor.name;
-  // TODO (aschiefe): extract these strings to constants
-  type = 'ctl';
-  component = 'config';
+  type = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   airshipConfigPath: string;
 
@@ -38,7 +37,7 @@ export class ConfigComponent implements WSReceiver, OnInit {
   managementConfigs: ManagementConfig[] = [];
   encryptionConfigs: EncryptionConfig[] = [];
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
@@ -46,50 +45,50 @@ export class ConfigComponent implements WSReceiver, OnInit {
     this.getConfig();
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'init':
+        case WsConstants.INIT:
           this.websocketService.printIfToast(message);
           this.getConfig();
           break;
-        case 'setAirshipConfig':
+        case WsConstants.SET_AIRSHIP_CONFIG:
           this.websocketService.printIfToast(message);
           this.getConfig();
           break;
-        case 'getAirshipConfigPath':
+        case WsConstants.GET_AIRSHIP_CONFIG_PATH:
           this.airshipConfigPath = message.message;
           break;
-        case 'getCurrentContext':
+        case WsConstants.GET_CURRENT_CONTEXT:
           this.currentContext = message.message;
           break;
-        case 'getContexts':
+        case WsConstants.GET_CONTEXTS:
           Object.assign(this.contexts, message.data);
           break;
-        case 'getManifests':
+        case WsConstants.GET_MANIFESTS:
           Object.assign(this.manifests, message.data);
           break;
-        case 'getEncryptionConfigs':
+        case WsConstants.GET_ENCRYPTION_CONFIGS:
           Object.assign(this.encryptionConfigs, message.data);
           break;
-        case 'getManagementConfigs':
+        case WsConstants.GET_MANAGEMENT_CONFIGS:
           Object.assign(this.managementConfigs, message.data);
           break;
-        case 'useContext':
+        case WsConstants.USE_CONTEXT:
           this.getCurrentContext();
           break;
-        case 'setContext':
+        case WsConstants.SET_CONTEXT:
           this.websocketService.printIfToast(message);
           break;
-        case 'setEncryptionConfig':
+        case WsConstants.SET_ENCRYPTION_CONFIG:
           this.websocketService.printIfToast(message);
           break;
-        case 'setManifest':
+        case WsConstants.SET_MANIFEST:
           this.websocketService.printIfToast(message);
           break;
-        case 'setManagementConfig':
+        case WsConstants.SET_MANAGEMENT_CONFIG:
           this.websocketService.printIfToast(message);
           break;
         default:
@@ -109,38 +108,38 @@ export class ConfigComponent implements WSReceiver, OnInit {
   }
 
   getAirshipConfigPath(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
+    this.websocketService.sendMessage(new WsMessage(
       this.type, this.component, 'getAirshipConfigPath')
     );
   }
 
   getCurrentContext(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
-      this.type, this.component, 'getCurrentContext')
+    this.websocketService.sendMessage(new WsMessage(
+      this.type, this.component, WsConstants.GET_CURRENT_CONTEXT)
     );
   }
 
   getContexts(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
-      this.type, this.component, 'getContexts')
+    this.websocketService.sendMessage(new WsMessage(
+      this.type, this.component, WsConstants.GET_CONTEXTS)
     );
   }
 
   getManifests(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
-      this.type, this.component, 'getManifests')
+    this.websocketService.sendMessage(new WsMessage(
+      this.type, this.component, WsConstants.GET_MANIFESTS)
     );
   }
 
   getEncryptionConfigs(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
-      this.type, this.component, 'getEncryptionConfigs')
+    this.websocketService.sendMessage(new WsMessage(
+      this.type, this.component, WsConstants.GET_ENCRYPTION_CONFIGS)
     );
   }
 
   getManagementConfigs(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(
-      this.type, this.component, 'getManagementConfigs')
+    this.websocketService.sendMessage(new WsMessage(
+      this.type, this.component, WsConstants.GET_MANAGEMENT_CONFIGS)
     );
   }
 }

@@ -29,7 +29,14 @@ import (
 )
 
 const (
-	keySize = 4096 // 4k key
+	// keypair details
+	keySize        = 4096 // 4k key
+	privateKeyType = "RSA PRIVATE KEY"
+	publicKeyType  = "CERTIFICATE"
+
+	// certificate request details
+	cn = "localhost"  // common name
+	o  = "Airship UI" // organization
 )
 
 // GeneratePrivateKey will a pem encoded private key and an rsa private key object
@@ -42,7 +49,7 @@ func GeneratePrivateKey() ([]byte, *rsa.PrivateKey, error) {
 
 	buf := &bytes.Buffer{}
 	err = pem.Encode(buf, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
+		Type:  privateKeyType,
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
 	if err != nil {
@@ -63,7 +70,7 @@ func GeneratePublicKey(privateKey *rsa.PrivateKey) ([]byte, error) {
 
 	buf := &bytes.Buffer{}
 	err = pem.Encode(buf, &pem.Block{
-		Type:  "CERTIFICATE",
+		Type:  publicKeyType,
 		Bytes: derCert,
 	})
 	if err != nil {
@@ -77,8 +84,8 @@ func generateCSR() x509.Certificate {
 	return x509.Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
-			CommonName:   "localhost",
-			Organization: []string{"Airship UI"},
+			CommonName:   cn,
+			Organization: []string{o},
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(1, 0, 0),

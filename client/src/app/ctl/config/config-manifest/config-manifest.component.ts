@@ -15,8 +15,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Manifest, ManifestOptions, Repository } from '../config.models';
 import { FormControl } from '@angular/forms';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WebsocketMessage } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 
 @Component({
@@ -27,8 +27,8 @@ import { WebsocketMessage } from 'src/services/websocket/websocket.models';
 export class ConfigManifestComponent implements OnInit {
   @Input() manifest: Manifest;
 
-  type = 'ctl';
-  component = 'config';
+  type = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   locked = true;
   Name = new FormControl({value: '', disabled: true});
@@ -59,7 +59,7 @@ export class ConfigManifestComponent implements OnInit {
     this.MetadataPath
   ];
 
-  constructor(private websocketService: WebsocketService) { }
+  constructor(private websocketService: WsService) { }
 
   ngOnInit(): void {
     this.Name.setValue(this.manifest.name);
@@ -97,7 +97,7 @@ export class ConfigManifestComponent implements OnInit {
   }
 
   setManifest(): void {
-    const msg = new WebsocketMessage(this.type, this.component, 'setManifest');
+    const msg = new WsMessage(this.type, this.component, WsConstants.SET_MANIFEST);
     msg.name = this.manifest.name;
 
     // TODO(mfuller): since "Force" and "IsPhase" can only be set by passing in

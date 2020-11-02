@@ -13,8 +13,8 @@
 */
 
 import { Component } from '@angular/core';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
 import { Log } from 'src/services/log/log.service';
 import { LogMessage } from 'src/services/log/log-message';
 
@@ -24,19 +24,18 @@ import { LogMessage } from 'src/services/log/log-message';
   styleUrls: ['./image.component.css']
 })
 
-export class ImageComponent implements WSReceiver {
+export class ImageComponent implements WsReceiver {
   className = this.constructor.name;
-  // TODO (aschiefe): extract these strings to constants
-  type = 'ctl';
-  component = 'image';
+  type = WsConstants.CTL;
+  component = WsConstants.IMAGE;
   statusMsg: string;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       // TODO (aschiefe): determine what should be notifications and what should be 86ed
@@ -45,6 +44,6 @@ export class ImageComponent implements WSReceiver {
   }
 
   generateIso(): void {
-    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'generate'));
+    this.websocketService.sendMessage(new WsMessage(this.type, this.component, WsConstants.GENERATE));
   }
 }

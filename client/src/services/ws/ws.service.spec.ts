@@ -13,11 +13,11 @@
 */
 
 import { TestBed } from '@angular/core/testing';
-import { WebsocketService } from './websocket.service';
+import { WsService } from './ws.service';
 import { ToastrModule } from 'ngx-toastr';
 
-describe('WebsocketService', () => {
-  let service: WebsocketService;
+describe('WsService', () => {
+  let service: WsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -25,7 +25,7 @@ describe('WebsocketService', () => {
         ToastrModule.forRoot(),
       ]
     });
-    service = TestBed.inject(WebsocketService);
+    service = TestBed.inject(WsService);
   });
 
   it('should be created', () => {

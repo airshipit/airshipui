@@ -30,6 +30,12 @@ import (
 // TODO: use a private key for this instead of a phrase
 var jwtKey = []byte("airshipUI_JWT_key")
 
+const (
+	username   = "username"
+	password   = "password"
+	expiration = "exp"
+)
+
 // The UI will either request authentication or validation, handle those situations here
 func handleAuth(_ *string, request configs.WsMessage) configs.WsMessage {
 	response := configs.WsMessage{
@@ -98,7 +104,7 @@ func validateToken(request configs.WsMessage) (*string, error) {
 	// extract the claim from the token
 	if claim, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// extract the user from the claim
-		if user, ok := claim["username"].(string); ok {
+		if user, ok := claim[username].(string); ok {
 			// test to see if we need to sent a refresh token
 			go testForRefresh(claim, request)
 			return &user, nil
@@ -132,9 +138,9 @@ func createToken(id string, passwd string) (*string, error) {
 
 	// set some claims
 	claims := make(jwt.MapClaims)
-	claims["username"] = id
-	claims["password"] = passwd
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	claims[username] = id
+	claims[password] = passwd
+	claims[expiration] = time.Now().Add(time.Hour * 1).Unix()
 
 	// create the token
 	jwtClaim := jwt.New(jwt.SigningMethodHS256)
@@ -149,7 +155,7 @@ func createToken(id string, passwd string) (*string, error) {
 func testForRefresh(claim jwt.MapClaims, request configs.WsMessage) {
 	// for some reason the exp is stored as an float and not an int in the claim conversion
 	// so we do a little dance and cast some floats to ints and everyone goes on with their lives
-	if exp, ok := claim["exp"].(float64); ok {
+	if exp, ok := claim[expiration].(float64); ok {
 		if int64(exp) < time.Now().Add(time.Minute*15).Unix() {
 			createRefreshToken(claim, request)
 		}
@@ -159,7 +165,7 @@ func testForRefresh(claim jwt.MapClaims, request configs.WsMessage) {
 // createRefreshToken will create an oauth2 refresh token based on the timeout on the UI
 func createRefreshToken(claim jwt.MapClaims, request configs.WsMessage) {
 	// add the new expiration to the claim
-	claim["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	claim[expiration] = time.Now().Add(time.Hour * 1).Unix()
 
 	// create the token
 	jwtClaim := jwt.New(jwt.SigningMethodHS256)

@@ -21,35 +21,35 @@ import { DocumentComponent } from './document/document.component';
 import { ImageComponent } from './image/image.component';
 import { PhaseComponent } from './phase/phase.component';
 import { SecretComponent } from './secret/secret.component';
-
+import { WsConstants } from 'src/services/ws/ws.models';
 import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 
 const routes: Routes = [{
-  path: 'baremetal',
+  path: WsConstants.BAREMETAL,
   canActivate: [AuthGuard],
   component: BaremetalComponent
 }, {
-  path: 'cluster',
+  path: WsConstants.CLUSTER,
   canActivate: [AuthGuard],
   component: ClusterComponent,
 }, {
-  path: 'config',
+  path: WsConstants.CONFIG,
   canActivate: [AuthGuard],
   component: ConfigComponent,
 }, {
-  path: 'documents',
+  path: WsConstants.DOCUMENTS,
   canActivate: [AuthGuard],
   component: DocumentComponent,
 }, {
-  path: 'image',
+  path: WsConstants.IMAGE,
   canActivate: [AuthGuard],
   component: ImageComponent,
 }, {
-  path: 'phase',
+  path: WsConstants.PHASE,
   canActivate: [AuthGuard],
   component: PhaseComponent,
 }, {
-  path: 'secret',
+  path: WsConstants.SECRET,
   canActivate: [AuthGuard],
   component: SecretComponent,
 }];

@@ -15,8 +15,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { EncryptionConfig, EncryptionConfigOptions } from '../config.models';
-import { WebsocketService } from '../../../../services/websocket/websocket.service';
-import { WebsocketMessage } from '../../../../services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
   selector: 'app-config-encryption',
@@ -25,8 +25,8 @@ import { WebsocketMessage } from '../../../../services/websocket/websocket.model
 })
 export class ConfigEncryptionComponent implements OnInit {
   @Input() config: EncryptionConfig;
-  type = 'ctl';
-  component = 'config';
+  type = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   locked = true;
   name = new FormControl({value: '', disabled: true});
@@ -37,7 +37,7 @@ export class ConfigEncryptionComponent implements OnInit {
 
   controlsArray = [this.encryptionKeyPath, this.decryptionKeyPath, this.keySecretName, this.keySecretNamespace];
 
-  constructor(private websocketService: WebsocketService) {}
+  constructor(private websocketService: WsService) {}
 
   ngOnInit(): void {
     this.name.setValue(this.config.name);
@@ -68,7 +68,7 @@ export class ConfigEncryptionComponent implements OnInit {
       KeySecretNamespace: this.keySecretNamespace.value,
     };
 
-    const msg = new WebsocketMessage(this.type, this.component, 'setEncryptionConfig');
+    const msg = new WsMessage(this.type, this.component, WsConstants.SET_ENCRYPTION_CONFIG);
     msg.data = JSON.parse(JSON.stringify(opts));
     msg.name = this.name.value;
 

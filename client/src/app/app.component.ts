@@ -16,10 +16,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
 import { environment } from 'src/environments/environment';
 import { IconService } from 'src/services/icon/icon.service';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
+import { WsService } from 'src/services/ws/ws.service';
+import { Dashboard, WsReceiver, WsMessage, WsConstants } from 'src/services/ws/ws.models';
 import { Log } from 'src/services/log/log.service';
 import { LogMessage } from 'src/services/log/log-message';
-import { Dashboard, WSReceiver, WebsocketMessage } from 'src/services/websocket/websocket.models';
 import { Nav } from './app.models';
 import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 
@@ -29,12 +29,12 @@ import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
   styleUrls: ['./app.component.css']
 })
 
-export class AppComponent implements OnInit, WSReceiver {
+export class AppComponent implements OnInit, WsReceiver {
   @ViewChild(MatAccordion) accordion: MatAccordion;
 
   className = this.constructor.name;
-  type = 'ui';
-  component = 'any';
+  type = WsConstants.UI;
+  component = WsConstants.ANY;
 
   currentYear: number;
   version: string;
@@ -79,30 +79,30 @@ export class AppComponent implements OnInit, WSReceiver {
     }];
 
   constructor(private iconService: IconService,
-              private websocketService: WebsocketService) {
+              private websocketService: WsService) {
     this.currentYear = new Date().getFullYear();
     this.version = environment.version;
     this.websocketService.registerFunctions(this);
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.component) {
-        case 'log':
+        case WsConstants.LOG:
           Log.Debug(new LogMessage('Log message received in app', this.className, message));
           const panel = document.getElementById('logPanel');
           panel.appendChild(document.createTextNode(message.message));
           panel.appendChild(document.createElement('br'));
           break;
-        case 'initialize':
+        case WsConstants.INITIALIZE:
           Log.Debug(new LogMessage('Initialize message received in app', this.className, message));
           if (message.hasOwnProperty('dashboards')) {
             this.updateDashboards(message.dashboards);
           }
           break;
-        case 'keepalive':
+        case WsConstants.KEEPALIVE:
           Log.Debug(new LogMessage('Keepalive message received in app', this.className, message));
           break;
         default:

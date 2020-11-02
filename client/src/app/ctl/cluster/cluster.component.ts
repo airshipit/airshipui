@@ -13,10 +13,10 @@
 */
 
 import { Component } from '@angular/core';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { WebsocketMessage, WSReceiver } from '../../../services/websocket/websocket.models';
-import { Log } from '../../../services/log/log.service';
-import { LogMessage } from '../../../services/log/log-message';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
 
 @Component({
   selector: 'app-cluster',
@@ -24,18 +24,17 @@ import { LogMessage } from '../../../services/log/log-message';
   styleUrls: ['./cluster.component.css']
 })
 
-export class ClusterComponent implements WSReceiver {
+export class ClusterComponent implements WsReceiver {
   className = this.constructor.name;
-  // TODO (aschiefe): extract these strings to constants
-  type = 'ctl';
-  component = 'cluster';
+  type = WsConstants.CTL;
+  component = WsConstants.CLUSTER;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {

@@ -17,6 +17,7 @@ package statistics
 import (
 	"database/sql"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -38,6 +39,8 @@ type Transaction struct {
 }
 
 var (
+	doNotRecordRegex = regexp.MustCompile(`(?i)^get|^init$`) // the default gets we don't care about
+
 	writeMutex sync.Mutex
 	db         *sql.DB
 	tables     = []string{"baremetal", "cluster", "config", "document", "image", "phase", "secret"}
@@ -173,13 +176,7 @@ func isRecordable(request configs.WsMessage) bool {
 	}
 
 	// don't record default get data events
-	switch request.SubComponent {
-	case configs.GetTarget,
-		configs.GetDefaults,
-		configs.GetPhaseTree,
-		configs.GetPhase,
-		configs.GetYaml,
-		configs.GetDocumentsBySelector:
+	if doNotRecordRegex.MatchString(string(request.SubComponent)) {
 		recordable = false
 	}
 

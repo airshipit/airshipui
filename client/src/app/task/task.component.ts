@@ -13,8 +13,8 @@
 */
 
 import { Component } from '@angular/core';
-import { WebsocketService } from '../../services/websocket/websocket.service';
-import { WSReceiver, WebsocketMessage } from '../../services/websocket/websocket.models';
+import { WsService } from '../../services/ws/ws.service';
+import { WsReceiver, WsMessage, WsConstants } from '../../services/ws/ws.models';
 import { Task, Progress } from './task.models';
 import { Log } from '../../services/log/log.service';
 import { LogMessage } from '../../services/log/log-message';
@@ -24,31 +24,31 @@ import { LogMessage } from '../../services/log/log-message';
   templateUrl: './task.component.html',
   styleUrls: ['./task.component.css']
 })
-export class TaskComponent implements WSReceiver {
+export class TaskComponent implements WsReceiver {
   className = this.constructor.name;
-  type = 'ui';
-  component = 'task';
+  type = WsConstants.UI;
+  component = WsConstants.TASK;
 
   message: string;
   tasks: Task[] = [];
   isOpen = false;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
-  public async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  public async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'taskStart':
+        case WsConstants.TASK_START:
           this.handleTaskStart(message);
           break;
-        case 'taskUpdate':
+        case WsConstants.TASK_UPDATE:
           this.handleTaskUpdate(message);
           break;
-        case 'taskEnd':
+        case WsConstants.TASK_END:
           this.handleTaskEnd(message);
           break;
         default:
@@ -58,15 +58,15 @@ export class TaskComponent implements WSReceiver {
     }
   }
 
-  handleTaskStart(message: WebsocketMessage): void {
+  handleTaskStart(message: WsMessage): void {
     this.addTask(message);
-    const msg = new WebsocketMessage(this.type, this.component, message.subComponent);
+    const msg = new WsMessage(this.type, this.component, message.subComponent);
     msg.message = `${message.name} added to Running Tasks`;
     msg.sessionID = message.sessionID;
     this.websocketService.printIfToast(msg);
   }
 
-  handleTaskUpdate(message: WebsocketMessage): void {
+  handleTaskUpdate(message: WsMessage): void {
     const task = this.findTask(message.id);
     if (task !== null) {
       Object.assign(task.progress, message.data);
@@ -75,20 +75,20 @@ export class TaskComponent implements WSReceiver {
         task.progress.message = task.progress.errors.toString();
       }
     } else {
-      const msg = new WebsocketMessage(this.type, this.component, message.subComponent);
+      const msg = new WsMessage(this.type, this.component, message.subComponent);
       msg.sessionID = message.sessionID;
       msg.message = `Task with id ${message.id} not found`;
       this.websocketService.printIfToast(msg);
     }
   }
 
-  handleTaskEnd(message: WebsocketMessage): void {
+  handleTaskEnd(message: WsMessage): void {
     const task = this.findTask(message.id);
     if (task !== null) {
       Object.assign(task.progress, message.data);
       task.running = false;
     } else {
-      const msg = new WebsocketMessage(this.type, this.component, message.subComponent);
+      const msg = new WsMessage(this.type, this.component, message.subComponent);
       msg.sessionID = message.sessionID;
       msg.message = `Task with id ${message.id} not found`;
       this.websocketService.printIfToast(msg);
@@ -103,7 +103,7 @@ export class TaskComponent implements WSReceiver {
     }
   }
 
-  addTask(message: WebsocketMessage): void {
+  addTask(message: WsMessage): void {
     const p = new Progress();
     Object.assign(p, message.data);
 

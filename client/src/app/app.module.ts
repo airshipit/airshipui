@@ -18,9 +18,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { WebsocketService } from '../services/websocket/websocket.service';
+import { WsService } from '../services/ws/ws.service';
 import { ToastrModule } from 'ngx-toastr';
-import { MonacoEditorModule, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -67,7 +67,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatTooltipModule
   ],
   declarations: [AppComponent, TaskComponent],
-  providers: [WebsocketService],
+  providers: [WsService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

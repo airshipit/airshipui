@@ -16,14 +16,14 @@ import { Injectable } from '@angular/core';
 import { Router, CanActivate, Event as RouterEvent, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { Log } from 'src/services/log/log.service';
 import { LogMessage } from 'src/services/log/log-message';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WSReceiver, WebsocketMessage } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsReceiver, WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 @Injectable({
   providedIn: 'root'
 })
 
-export class AuthGuard implements WSReceiver, CanActivate {
+export class AuthGuard implements WsReceiver, CanActivate {
   // static router for those who may need it, I'm looking at your app components
   public static router: Router;
 
@@ -31,14 +31,14 @@ export class AuthGuard implements WSReceiver, CanActivate {
   private loading = false;
   private sendToLogin = false;
 
-  type = 'ui';
-  component = 'auth';
+  type = WsConstants.UI;
+  component = WsConstants.AUTH;
 
   // Called by the logout link at the top right of the page
   public static logout(): void {
     // blank out the object storage so we can't get re authenticate
-    WebsocketService.token = undefined;
-    WebsocketService.refreshToken = undefined;
+    WsService.token = undefined;
+    WsService.refreshToken = undefined;
 
     // blank out the local storage so we can't get re authenticate
     localStorage.removeItem('airshipUI-token');
@@ -60,7 +60,7 @@ export class AuthGuard implements WSReceiver, CanActivate {
     }
   }
 
-  constructor(private websocketService: WebsocketService, private router: Router) {
+  constructor(private websocketService: WsService, private router: Router) {
     // create a static router so other components can access it if needs be
     AuthGuard.router = router;
 
@@ -71,13 +71,13 @@ export class AuthGuard implements WSReceiver, CanActivate {
     });
   }
 
-  async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       Log.Error(new LogMessage('Error received in AuthGuard', this.className, message));
       AuthGuard.logout();
     } else {
       switch (message.subComponent) {
-        case 'approved':
+        case WsConstants.APPROVED:
           this.setToken(message.token, false);
           Log.Debug(new LogMessage('Auth approved received', this.className, message));
           // redirect to / only when on /login otherwise leave the path where it was before the auth attempt
@@ -86,11 +86,11 @@ export class AuthGuard implements WSReceiver, CanActivate {
             this.router.navigate(['/']);
           }
           break;
-        case 'denied':
+        case WsConstants.DENIED:
           AuthGuard.logout();
           Log.Debug(new LogMessage('Auth denied received', this.className, message));
           break;
-        case 'refresh':
+        case WsConstants.REFRESH:
           this.setToken(message.refreshToken, true);
           Log.Debug(new LogMessage('Auth token refresh received', this.className, message));
           break;
@@ -159,41 +159,41 @@ export class AuthGuard implements WSReceiver, CanActivate {
     const token = JSON.parse(tokenString);
     if (token !== null) {
       if (token.hasOwnProperty('token')) {
-        WebsocketService.token = token.token;
+        WsService.token = token.token;
       }
     }
   }
 
   // the UI frontend is not the decider, the back end is.  If this token is good we continue, if it's not we stop
   private validateToken(): boolean {
-    if (WebsocketService.token === undefined) { this.getStoredToken(); }
+    if (WsService.token === undefined) { this.getStoredToken(); }
 
     // even after all this it's possible to have nothing.  I started with nothing and still have most of it left
-    if (WebsocketService.token !== undefined) {
-      const message = new WebsocketMessage(this.type, this.component, 'validate');
-      message.token = WebsocketService.token;
+    if (WsService.token !== undefined) {
+      const message = new WsMessage(this.type, this.component, WsConstants.VALIDATE);
+      message.token = WsService.token;
 
       // if we have a refresh token we also need to include that in the validity check
-      if (WebsocketService.refreshToken !== undefined) {
-        message.refreshToken = WebsocketService.refreshToken;
+      if (WsService.refreshToken !== undefined) {
+        message.refreshToken = WsService.refreshToken;
       }
 
       this.websocketService.sendMessage(message);
     }
 
-    return WebsocketService.token !== undefined;
+    return WsService.token !== undefined;
   }
 
   // store the token locally so we can be authenticated between runs
   private setToken(token, isRefresh): void {
     // set the token for auth check going forward
     if (isRefresh) {
-      WebsocketService.refreshToken = token;
+      WsService.refreshToken = token;
     } else {
-      WebsocketService.token = token;
+      WsService.token = token;
 
       // set the token locally to have a login till browser exits
-      const json: any = { token: WebsocketService.token };
+      const json: any = { token: WsService.token };
       localStorage.setItem('airshipUI-token', JSON.stringify(json));
     }
   }

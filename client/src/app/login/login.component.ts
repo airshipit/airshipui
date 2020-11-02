@@ -13,20 +13,20 @@
 */
 
 import { Component, OnInit } from '@angular/core';
-import { WebsocketService } from 'src/services/websocket/websocket.service';
-import { WSReceiver, WebsocketMessage, Authentication } from 'src/services/websocket/websocket.models';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsReceiver, WsMessage, Authentication, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
     styleUrls: ['login.component.css'],
     templateUrl: 'login.component.html',
 })
 
-export class LoginComponent implements WSReceiver, OnInit {
+export class LoginComponent implements WsReceiver, OnInit {
     className = this.constructor.name;
-    type = 'ui'; // needed to have the websocket service in the constructor
-    component = 'login'; // needed to have the websocket service in the constructor
+    type = WsConstants.UI;
+    component = WsConstants.LOGIN;
 
-    constructor(private websocketService: WebsocketService) { }
+    constructor(private websocketService: WsService) { }
 
     ngOnInit(): void {
         // bind the enter key to the submit button on the page
@@ -41,13 +41,13 @@ export class LoginComponent implements WSReceiver, OnInit {
 
     // This will always throw an error but should never be called because we did not register a receiver
     // The auth guard will take care of the auth messages since it's dealing with the tokens
-    receiver(message: WebsocketMessage): Promise<void> {
+    receiver(message: WsMessage): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
     // formSubmit sends the auth request to the backend
     public formSubmit(id, passwd): void {
-        const message = new WebsocketMessage(this.type, 'auth', 'authenticate');
+        const message = new WsMessage(this.type, WsConstants.AUTH, WsConstants.AUTHENTICATE);
         message.authentication = new Authentication(id, passwd);
         this.websocketService.sendMessage(message);
     }

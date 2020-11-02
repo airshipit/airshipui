@@ -12,11 +12,11 @@
 # limitations under the License.
 */
 
-import {Component} from '@angular/core';
-import {WebsocketService} from '../../../services/websocket/websocket.service';
-import {WebsocketMessage, WSReceiver} from '../../../services/websocket/websocket.models';
-import {Log} from '../../../services/log/log.service';
-import {LogMessage} from '../../../services/log/log-message';
+import { Component } from '@angular/core';
+import { WsService } from 'src/services/ws/ws.service';
+import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
+import { Log } from 'src/services/log/log.service';
+import { LogMessage } from 'src/services/log/log-message';
 
 @Component({
   selector: 'app-document',
@@ -24,24 +24,23 @@ import {LogMessage} from '../../../services/log/log-message';
   styleUrls: ['./document.component.css']
 })
 
-export class DocumentComponent implements WSReceiver {
+export class DocumentComponent implements WsReceiver {
   className = this.constructor.name;
   statusMsg: string;
-
-  type = 'ctl';
-  component = 'document';
+  type = WsConstants.CTL;
+  component = WsConstants.DOCUMENT;
   activeLink = 'overview';
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WsService) {
     this.websocketService.registerFunctions(this);
   }
 
-  public async receiver(message: WebsocketMessage): Promise<void> {
-    if (message.hasOwnProperty('error')) {
+  public async receiver(message: WsMessage): Promise<void> {
+    if (message.hasOwnProperty(WsConstants.ERROR)) {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
-        case 'pull':
+        case WsConstants.PULL:
           this.statusMsg = 'Document pull was a ' + message.message;
           const button = (document.getElementById('DocPullBtn') as HTMLInputElement);
           button.removeAttribute('disabled');
@@ -55,7 +54,7 @@ export class DocumentComponent implements WSReceiver {
 
   documentPull(): void {
     this.statusMsg = '';
-    this.websocketService.sendMessage(new WebsocketMessage(this.type, this.component, 'pull'));
+    this.websocketService.sendMessage(new WsMessage(this.type, this.component, WsConstants.PULL));
     const button = (document.getElementById('DocPullBtn') as HTMLInputElement);
     button.setAttribute('disabled', 'disabled');
   }

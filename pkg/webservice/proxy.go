@@ -27,6 +27,14 @@ import (
 // map of proxy targets which will be used based on the request
 var proxyMap = map[string]*url.URL{}
 
+const (
+	host         = "Host"
+	xForwardHost = "X-Forwarded-Host"
+	xForwardFor  = "X-Forwarded-For"
+	tcp          = "tcp"
+	localhost0   = "localhost:0"
+)
+
 type transport struct {
 	http.RoundTripper
 }
@@ -73,25 +81,26 @@ func handleProxy(response http.ResponseWriter, request *http.Request) {
 	request.URL.Host = target.Host
 	request.URL.Scheme = target.Scheme
 
-	host := request.Header.Get("Host")
-	request.Header.Set("X-Forwarded-Host", host)
-	request.Header.Set("X-Forwarded-For", host)
+	host := request.Header.Get(host)
+	request.Header.Set(xForwardHost, host)
+	request.Header.Set(xForwardFor, host)
 
 	proxy.ServeHTTP(response, request)
 }
 
-func getRandomPort() (string, error) {
+func getRandomPort() (*string, error) {
 	// get a random port for the proxy
-	listener, err := net.Listen("tcp", "localhost:0")
+	listener, err := net.Listen(tcp, localhost0)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// close the port so we can start the proxy
 	defer listener.Close()
 
 	// get the string of the port
-	return listener.Addr().String(), nil
+	port := listener.Addr().String()
+	return &port, nil
 }
 
 // proxyServer will proxy dashboard connections allowing us to inject headers
@@ -124,18 +133,18 @@ func startProxies() {
 		}
 
 		// set the target for the proxied request to the original url
-		proxyMap[port] = target
+		proxyMap[*port] = target
 
 		// set the target for the link in the ui to the proxy address
-		dashboard.BaseURL = "http://" + port
+		dashboard.BaseURL = "http://" + *port
 
 		// kick off proxy
-		log.Debugf("Attempting to start proxy for %s on: %s\n", dashboard.Name, port)
+		log.Debugf("Attempting to start proxy for %s on: %s\n", dashboard.Name, *port)
 
 		// set the dashboard from this point on to go to the proxy
 		configs.UIConfig.Dashboards[index] = dashboard
 
 		// and away we go.........
-		go proxyServer(port)
+		go proxyServer(*port)
 	}
 }

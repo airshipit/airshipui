@@ -14,9 +14,9 @@
 
 import { Component, OnInit, Input } from '@angular/core';
 import { Context, ContextOptions } from '../config.models';
-import { WebsocketService } from '../../../../services/websocket/websocket.service';
+import { WsService } from 'src/services/ws/ws.service';
 import { FormControl } from '@angular/forms';
-import { WebsocketMessage } from 'src/services/websocket/websocket.models';
+import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
 @Component({
   selector: 'app-config-context',
@@ -25,8 +25,8 @@ import { WebsocketMessage } from 'src/services/websocket/websocket.models';
 })
 export class ConfigContextComponent implements OnInit {
   @Input() context: Context;
-  type = 'ctl';
-  component = 'config';
+  type = WsConstants.CTL;
+  component = WsConstants.CONFIG;
 
   locked = true;
 
@@ -38,7 +38,7 @@ export class ConfigContextComponent implements OnInit {
 
   controlsArray = [this.name, this.contextKubeconf, this.manifest, this.managementConfiguration, this.encryptionConfig];
 
-  constructor(private websocketService: WebsocketService) {}
+  constructor(private websocketService: WsService) {}
 
   ngOnInit(): void {
     this.name.setValue(this.context.name);
@@ -68,7 +68,7 @@ export class ConfigContextComponent implements OnInit {
       EncryptionConfig: this.encryptionConfig.value,
     };
 
-    const msg = new WebsocketMessage(this.type, this.component, 'setContext');
+    const msg = new WsMessage(this.type, this.component, WsConstants.SET_CONTEXT);
     msg.data = JSON.parse(JSON.stringify(opts));
     msg.name = this.name.value;
 
@@ -77,7 +77,7 @@ export class ConfigContextComponent implements OnInit {
   }
 
   useContext(name: string): void {
-    const msg = new WebsocketMessage(this.type, this.component, 'useContext');
+    const msg = new WsMessage(this.type, this.component, WsConstants.USE_CONTEXT);
     msg.name = name;
     this.websocketService.sendMessage(msg);
   }
