@@ -12,15 +12,42 @@
 # limitations under the License.
 */
 
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ConfigComponent } from './config.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { ConfigContextComponent } from './config-context/config-context.component';
+import { ConfigEncryptionComponent } from './config-encryption/config-encryption.component';
+import { ConfigManagementComponent } from './config-management/config-management.component';
+import { ConfigManifestComponent } from './config-manifest/config-manifest.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 
 @NgModule({
   imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatInputModule,
+    MatDividerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule
   ],
   declarations: [
-    ConfigComponent
+    ConfigComponent,
+    ConfigContextComponent,
+    ConfigEncryptionComponent,
+    ConfigManagementComponent,
+    ConfigManifestComponent
   ],
-  providers: []
+  providers: [],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ConfigModule { }

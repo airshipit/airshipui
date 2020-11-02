@@ -62,7 +62,7 @@ func HandleDocumentRequest(user *string, request configs.WsMessage) configs.WsMe
 
 func (c *Client) docPull() (*string, error) {
 	var message *string
-	cfgFactory := config.CreateFactory(AirshipConfigPath, KubeConfigPath)
+	cfgFactory := config.CreateFactory(AirshipConfigPath)
 	// 2nd arg is noCheckout, I assume we want to checkout the repo,
 	// so setting to false
 	err := pull.Pull(cfgFactory, false)

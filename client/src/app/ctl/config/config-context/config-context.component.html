@@ -1,0 +1,36 @@
+<mat-card class="context-card">
+    <mat-card-header>
+        <mat-card-title>
+            <button mat-icon-button (click)="toggleLock()">
+                <mat-icon *ngIf="locked" class="grey-icon" svgIcon="lock"></mat-icon>
+                <mat-icon *ngIf="!locked" class="grey-icon" svgIcon="lock_open"></mat-icon>
+            </button>{{context.name}}
+            <button mat-raised-button (click)="useContext(context.name)">Use Context</button>
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <p>ContextKubeconf:
+            <mat-form-field appearance="fill">
+                <input [formControl]="contextKubeconf" matInput>
+            </mat-form-field>
+        </p>
+        <p>Manifest:
+            <mat-form-field appearance="fill">
+                <input [formControl]="manifest" matInput>
+            </mat-form-field>
+        </p>
+        <p>EncryptionConfig:
+            <mat-form-field appearance="fill">
+                <input [formControl]="encryptionConfig" matInput>
+            </mat-form-field>
+        </p>
+        <p>ManagementConfiguration:
+            <mat-form-field appearance="fill">
+                <input [formControl]="managementConfiguration" matInput>
+            </mat-form-field>
+        </p>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-raised-button [disabled]="locked" (click)="setContext()" color="primary">Set</button>
+    </mat-card-actions>
+</mat-card>

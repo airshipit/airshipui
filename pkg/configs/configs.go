@@ -137,15 +137,17 @@ const (
 	Status WsSubComponentType = "status"
 
 	// ctl config subcomponets
-	GetContext          WsSubComponentType = "getContext"
-	GetEncryptionConfig WsSubComponentType = "getEncryptionConfig"
-	GetManagementConfig WsSubComponentType = "getManagementConfig"
-	GetManifest         WsSubComponentType = "getManifest"
-	SetContext          WsSubComponentType = "setContext"
-	SetEncryptionConfig WsSubComponentType = "setEncryptionConfig"
-	SetManagementConfig WsSubComponentType = "setManagementConfig"
-	SetManifest         WsSubComponentType = "setManifest"
-	UseContext          WsSubComponentType = "useContext"
+	GetContexts          WsSubComponentType = "getContexts"
+	GetCurrentContext    WsSubComponentType = "getCurrentContext"
+	GetEncryptionConfigs WsSubComponentType = "getEncryptionConfigs"
+	GetManagementConfigs WsSubComponentType = "getManagementConfigs"
+	GetManifests         WsSubComponentType = "getManifests"
+	SetContext           WsSubComponentType = "setContext"
+	SetEncryptionConfig  WsSubComponentType = "setEncryptionConfig"
+	SetManagementConfig  WsSubComponentType = "setManagementConfig"
+	SetManifest          WsSubComponentType = "setManifest"
+	UseContext           WsSubComponentType = "useContext"
+	GetConfig            WsSubComponentType = "getConfig"
 
 	// ctl document subcomponents
 	Plugin WsSubComponentType = "plugin"

@@ -12,26 +12,23 @@
 # limitations under the License.
 */
 
-export enum Icons {
-  account = 'account',
-  airplane = 'airplane',
-  doc = 'doc',
-  list = 'list',
-  server = 'server',
-  speed = 'speed',
-  launch = 'launch',
-  text_snippet = 'text_snippet',
-  error = 'error',
-  error_outline = 'error_outline',
-  open_in_new = 'open_in_new',
-  filter = 'filter',
-  security = 'security',
-  settings = 'settings',
-  camera = 'camera',
-  list_alt = 'list_alt',
-  devices = 'devices',
-  check_circle = 'check_circle',
-  close = 'close',
-  lock = 'lock',
-  lock_open = 'lock_open'
-}
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+
+
+@NgModule({
+    imports: [
+      FormsModule,
+      MatInputModule,
+      MatCardModule,
+      MatButtonModule,
+      ReactiveFormsModule,
+    ],
+    declarations: [
+    ],
+    providers: []
+  })
+  export class ConfigContextModule { }

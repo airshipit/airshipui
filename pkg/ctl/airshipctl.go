@@ -64,9 +64,12 @@ func Init() {
 }
 
 // NewDefaultClient initializes the airshipctl client for external usage with default logging.
-func NewDefaultClient(airshipConfigPath, kubeConfigPath *string) (*Client, error) {
-	cfgFactory := config.CreateFactory(airshipConfigPath, kubeConfigPath)
+func NewDefaultClient(airshipConfigPath *string) (*Client, error) {
+	cfgFactory := config.CreateFactory(airshipConfigPath)
 
+	// TODO(mfuller): Factory doesn't throw an error if there's no
+	// config file, it calls log.Fatal and kills the app. Not sure
+	// how to handle this yet
 	conf, err := cfgFactory()
 	if err != nil {
 		return nil, err
@@ -84,7 +87,7 @@ func NewDefaultClient(airshipConfigPath, kubeConfigPath *string) (*Client, error
 
 // NewClient initializes the airshipctl client for external usage with the logging overridden.
 func NewClient(airshipConfigPath, kubeConfigPath *string, request configs.WsMessage) (*Client, error) {
-	client, err := NewDefaultClient(airshipConfigPath, kubeConfigPath)
+	client, err := NewDefaultClient(airshipConfigPath)
 	if err != nil {
 		return nil, err
 	}
