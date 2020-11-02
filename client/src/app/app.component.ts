@@ -128,14 +128,15 @@ export class AppComponent implements OnInit, WSReceiver {
   updateDashboards(dashboards: Dashboard[]): void {
     if (this.menu[1].children === undefined) {
       this.menu[1].children = [];
+
+      dashboards.forEach((dashboard) => {
+        const navInterface = new Nav();
+        navInterface.displayName = dashboard.name;
+        navInterface.route = dashboard.baseURL;
+        navInterface.external = true;
+        this.menu[1].children.push(navInterface);
+      });
     }
-    dashboards.forEach((dashboard) => {
-      const navInterface = new Nav();
-      navInterface.displayName = dashboard.name;
-      navInterface.route = dashboard.baseURL;
-      navInterface.external = true;
-      this.menu[1].children.push(navInterface);
-    });
   }
 
   openLink(url: string): void {
