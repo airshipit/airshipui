@@ -56,7 +56,7 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 	var message *string
 	var valid bool
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e

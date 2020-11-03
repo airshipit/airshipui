@@ -38,10 +38,11 @@ var (
 
 // Config basic structure to hold configuration params for Airship UI
 type Config struct {
-	WebService *WebService       `json:"webservice,omitempty"`
-	AuthMethod *AuthMethod       `json:"authMethod,omitempty"`
-	Dashboards []Dashboard       `json:"dashboards,omitempty"`
-	Users      map[string]string `json:"users,omitempty"`
+	WebService        *WebService       `json:"webservice,omitempty"`
+	AuthMethod        *AuthMethod       `json:"authMethod,omitempty"`
+	Dashboards        []Dashboard       `json:"dashboards,omitempty"`
+	Users             map[string]string `json:"users,omitempty"`
+	AirshipConfigPath *string           `json:"airshipConfigPath,omitempty"`
 }
 
 // AuthMethod structure to hold authentication parameters
@@ -241,6 +242,28 @@ func SetUIConfig() error {
 	return checkConfigs()
 }
 
+// Persist saves the current UIConfig to the airshipui.json config file
+func (c *Config) Persist() error {
+	bytes, err := json.Marshal(UIConfig)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(UIConfigFile, bytes, 0600)
+}
+
+func createDefaultConfigPath() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join(home, ".airship", "config")
+	UIConfig.AirshipConfigPath = &path
+
+	return nil
+}
+
 // checkConfigs will work its way through the config file, if it exists, and creates defaults where needed
 func checkConfigs() error {
 	writeFile := false
@@ -274,6 +297,14 @@ func checkConfigs() error {
 	if UIConfig.Users == nil {
 		writeFile = true
 		err := createDefaultUser()
+		if err != nil {
+			return err
+		}
+	}
+
+	if UIConfig.AirshipConfigPath == nil {
+		writeFile = true
+		err := createDefaultConfigPath()
 		if err != nil {
 			return err
 		}
