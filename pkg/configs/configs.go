@@ -137,6 +137,8 @@ const (
 	Status WsSubComponentType = "status"
 
 	// ctl config subcomponets
+	SetAirshipConfig     WsSubComponentType = "setAirshipConfig"
+	GetAirshipConfigPath WsSubComponentType = "getAirshipConfigPath"
 	GetContexts          WsSubComponentType = "getContexts"
 	GetCurrentContext    WsSubComponentType = "getCurrentContext"
 	GetEncryptionConfigs WsSubComponentType = "getEncryptionConfigs"

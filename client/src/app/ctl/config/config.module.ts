@@ -25,6 +25,7 @@ import { ConfigContextComponent } from './config-context/config-context.componen
 import { ConfigEncryptionComponent } from './config-encryption/config-encryption.component';
 import { ConfigManagementComponent } from './config-management/config-management.component';
 import { ConfigManifestComponent } from './config-manifest/config-manifest.component';
+import { ConfigInitComponent } from './config-init/config-init.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 
@@ -46,7 +47,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     ConfigContextComponent,
     ConfigEncryptionComponent,
     ConfigManagementComponent,
-    ConfigManifestComponent
+    ConfigManifestComponent,
+    ConfigInitComponent
   ],
   providers: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

@@ -22,9 +22,11 @@ import { CtlRoutingModule } from './ctl-routing.module';
 import { PhaseModule } from './phase/phase.module';
 import { SecretModule } from './secret/secret.module';
 import { ConfigModule } from './config/config.module';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   imports: [
+    CommonModule,
     CtlRoutingModule,
     ClusterModule,
     ConfigModule,

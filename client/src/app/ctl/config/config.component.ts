@@ -30,6 +30,8 @@ export class ConfigComponent implements WSReceiver, OnInit {
   type = 'ctl';
   component = 'config';
 
+  airshipConfigPath: string;
+
   currentContext: string;
   contexts: Context[] = [];
   manifests: Manifest[] = [];
@@ -49,6 +51,17 @@ export class ConfigComponent implements WSReceiver, OnInit {
       this.websocketService.printIfToast(message);
     } else {
       switch (message.subComponent) {
+        case 'init':
+          this.websocketService.printIfToast(message);
+          this.getConfig();
+          break;
+        case 'setAirshipConfig':
+          this.websocketService.printIfToast(message);
+          this.getConfig();
+          break;
+        case 'getAirshipConfigPath':
+          this.airshipConfigPath = message.message;
+          break;
         case 'getCurrentContext':
           this.currentContext = message.message;
           break;
@@ -87,11 +100,18 @@ export class ConfigComponent implements WSReceiver, OnInit {
   }
 
   getConfig(): void {
+    this.getAirshipConfigPath();
     this.getCurrentContext();
     this.getContexts();
     this.getManifests();
     this.getManagementConfigs();
     this.getEncryptionConfigs();
+  }
+
+  getAirshipConfigPath(): void {
+    this.websocketService.sendMessage(new WebsocketMessage(
+      this.type, this.component, 'getAirshipConfigPath')
+    );
   }
 
   getCurrentContext(): void {

@@ -15,6 +15,9 @@
 package ctl
 
 import (
+	"fmt"
+	"os"
+
 	"opendev.org/airship/airshipctl/pkg/config"
 	"opendev.org/airship/airshipctl/pkg/log"
 	"opendev.org/airship/airshipui/pkg/configs"
@@ -30,6 +33,11 @@ var AirshipConfigPath *string
 
 // KubeConfigPath location of kubeconfig used by airshipctl (default $HOME/.airship/kubeconfig)
 var KubeConfigPath *string
+
+const (
+	AirshipConfigNotFoundErr = `No airship config file found.
+	Please visit the Config section to specify or initialize a config file.`
+)
 
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice
 var CTLFunctionMap = map[configs.WsComponentType]func(*string, configs.WsMessage) configs.WsMessage{
@@ -63,8 +71,25 @@ func Init() {
 	webservice.AppendToFunctionMap(configs.CTL, CTLFunctionMap)
 }
 
+func configFileExists(airshipConfigPath *string) bool {
+	if airshipConfigPath == nil {
+		return false
+	}
+
+	info, err := os.Stat(*airshipConfigPath)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return !info.IsDir()
+}
+
 // NewDefaultClient initializes the airshipctl client for external usage with default logging.
 func NewDefaultClient(airshipConfigPath *string) (*Client, error) {
+	if !configFileExists(airshipConfigPath) {
+		return nil, fmt.Errorf(AirshipConfigNotFoundErr)
+	}
+
 	cfgFactory := config.CreateFactory(airshipConfigPath)
 
 	// TODO(mfuller): Factory doesn't throw an error if there's no
