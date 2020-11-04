@@ -37,6 +37,7 @@ var CTLFunctionMap = map[configs.WsComponentType]func(*string, configs.WsMessage
 	configs.Cluster:   HandleClusterRequest,
 	configs.CTLConfig: HandleConfigRequest,
 	configs.Document:  HandleDocumentRequest,
+	configs.History:   HandleHistoryRequest,
 	configs.Image:     HandleImageRequest,
 	configs.Phase:     HandlePhaseRequest,
 	configs.Secret:    HandleSecretRequest,

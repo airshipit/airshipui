@@ -22,6 +22,7 @@ import { CtlRoutingModule } from './ctl-routing.module';
 import { PhaseModule } from './phase/phase.module';
 import { SecretModule } from './secret/secret.module';
 import { ConfigModule } from './config/config.module';
+import { HistoryModule } from './history/history.module';
 import { CommonModule } from '@angular/common';
 
 @NgModule({
@@ -34,7 +35,8 @@ import { CommonModule } from '@angular/common';
     DocumentModule,
     BaremetalModule,
     PhaseModule,
-    SecretModule
+    SecretModule,
+    HistoryModule
   ],
   declarations: [CtlComponent],
   providers: []

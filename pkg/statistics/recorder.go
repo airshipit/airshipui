@@ -42,8 +42,10 @@ var (
 	doNotRecordRegex = regexp.MustCompile(`(?i)^get|^init$`) // the default gets we don't care about
 
 	writeMutex sync.Mutex
-	db         *sql.DB
-	tables     = []string{"baremetal", "cluster", "config", "document", "image", "phase", "secret"}
+	// DB is public so other packages can do selects on it
+	DB *sql.DB
+	// Tables is public so other packages can range over it
+	Tables = []string{"baremetal", "cluster", "config", "document", "image", "phase", "secret"}
 )
 
 const (
@@ -54,9 +56,9 @@ const (
 		type text check(type in ('direct', 'phase')) null,
 		target text null,
 		success tinyint(1) default 0,
-		started timestamp,
+		started bigint,
 		elapsed bigint,
-		stopped timestamp)`
+		stopped bigint)`
 	// the prepared statement used for inserts
 	// TODO (aschiefe): determine if we need to batch inserts
 	insert = `INSERT INTO table(subcomponent,
@@ -81,7 +83,7 @@ func Init() {
 	var err error
 	// TODO (aschiefe): encrypt & password protect the database
 	// TODO (aschiefe): pull the db location out to the confing
-	db, err = sql.Open("sqlite3", "./sqlite/statistics.db")
+	DB, err = sql.Open("sqlite3", "./sqlite/statistics.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,8 +97,8 @@ func Init() {
 
 // createTables is only used when there is no database to write the correct structure for the records
 func createTables() error {
-	for _, table := range tables {
-		stmt, err := db.Prepare(strings.ReplaceAll(tableCreate, "table", table))
+	for _, table := range Tables {
+		stmt, err := DB.Prepare(strings.ReplaceAll(tableCreate, "table", table))
 
 		if err != nil {
 			return err
@@ -127,7 +129,7 @@ func NewTransaction(user *string, request configs.WsMessage) *Transaction {
 // Complete will put an entry into the statistics database for the transaction
 func (transaction *Transaction) Complete(errorMessageNotPresent bool) {
 	if transaction.User != nil && transaction.Recordable {
-		stmt, err := db.Prepare(strings.ReplaceAll(insert, "table", string(transaction.Table)))
+		stmt, err := DB.Prepare(strings.ReplaceAll(insert, "table", string(transaction.Table)))
 		if err != nil {
 			log.Error(err)
 			return

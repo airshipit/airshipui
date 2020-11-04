@@ -105,6 +105,7 @@ export class WsConstants {
   public static readonly AUTH = 'auth';
   public static readonly AUTHENTICATE = 'authenticate';
   public static readonly DENIED = 'denied';
+  public static readonly HISTORY = 'history';
   public static readonly INITIALIZE = 'initialize';
   public static readonly KEEPALIVE = 'keepalive';
   public static readonly LOG = 'log';

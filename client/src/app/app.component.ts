@@ -72,6 +72,10 @@ export class AppComponent implements OnInit, WsReceiver {
           displayName: 'Secret',
           route: 'ctl/secret',
           iconName: 'security'
+        }, {
+          displayName: 'History',
+          route: 'ctl/history',
+          iconName: 'history'
         }]
     }, {
       displayName: 'Dashboards',

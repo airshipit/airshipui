@@ -21,6 +21,7 @@ import { DocumentComponent } from './document/document.component';
 import { ImageComponent } from './image/image.component';
 import { PhaseComponent } from './phase/phase.component';
 import { SecretComponent } from './secret/secret.component';
+import { HistoryComponent } from './history/history.component';
 import { WsConstants } from 'src/services/ws/ws.models';
 import { AuthGuard } from 'src/services/auth-guard/auth-guard.service';
 
@@ -52,6 +53,10 @@ const routes: Routes = [{
   path: WsConstants.SECRET,
   canActivate: [AuthGuard],
   component: SecretComponent,
+}, {
+  path: WsConstants.HISTORY,
+  canActivate: [AuthGuard],
+  component: HistoryComponent,
 }];
 
 @NgModule({

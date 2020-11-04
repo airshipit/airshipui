@@ -109,6 +109,7 @@ const (
 	Cluster   WsComponentType = "cluster"
 	CTLConfig WsComponentType = "config"
 	Document  WsComponentType = "document"
+	History   WsComponentType = "history"
 	Image     WsComponentType = "image"
 	Phase     WsComponentType = "phase"
 	Secret    WsComponentType = "secret"
