@@ -33,7 +33,7 @@ func HandleDocumentRequest(user *string, request configs.WsMessage) configs.WsMe
 	var err error
 	var message *string
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -62,7 +62,7 @@ func HandleDocumentRequest(user *string, request configs.WsMessage) configs.WsMe
 
 func (c *Client) docPull() (*string, error) {
 	var message *string
-	cfgFactory := config.CreateFactory(AirshipConfigPath)
+	cfgFactory := config.CreateFactory(configs.UIConfig.AirshipConfigPath)
 	// 2nd arg is noCheckout, I assume we want to checkout the repo,
 	// so setting to false
 	err := pull.Pull(cfgFactory, false)

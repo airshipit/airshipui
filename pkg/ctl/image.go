@@ -34,7 +34,7 @@ func HandleImageRequest(user *string, request configs.WsMessage) configs.WsMessa
 	var err error
 	var message *string
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -66,7 +66,7 @@ func HandleImageRequest(user *string, request configs.WsMessage) configs.WsMessa
 
 // generate iso now just runs a phase and not an individual command
 func (c *Client) generateIso() (*string, error) {
-	cfgFactory := config.CreateFactory(AirshipConfigPath)
+	cfgFactory := config.CreateFactory(configs.UIConfig.AirshipConfigPath)
 	p := &phase.RunCommand{
 		Factory: cfgFactory,
 	}

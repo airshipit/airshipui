@@ -52,8 +52,8 @@ func newResponse(request configs.WsMessage) configs.WsMessage {
 	}
 }
 
-// HandleConfigRequest will flop between requests so we don't have to have them all mapped as function calls
-// This will wait for the sub component to complete before responding.  The assumption is this is an async request
+// HandleConfigRequest will find the appropriate subcomponent function in the function map
+// and wait for it to complete before returning the response message
 func HandleConfigRequest(user *string, request configs.WsMessage) configs.WsMessage {
 	var response configs.WsMessage
 
@@ -71,7 +71,12 @@ func HandleConfigRequest(user *string, request configs.WsMessage) configs.WsMess
 // GetAirshipConfigPath returns value stored in AirshipConfigPath
 func GetAirshipConfigPath(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
-	response.Message = AirshipConfigPath
+
+	// leave message empty if the file doesn't exist
+	if configFileExists(configs.UIConfig.AirshipConfigPath) {
+		response.Message = configs.UIConfig.AirshipConfigPath
+	}
+
 	return response
 }
 
@@ -80,9 +85,15 @@ func GetAirshipConfigPath(request configs.WsMessage) configs.WsMessage {
 func SetAirshipConfig(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	AirshipConfigPath = request.Message
+	configs.UIConfig.AirshipConfigPath = request.Message
+	err := configs.UIConfig.Persist()
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
 
-	msg := fmt.Sprintf("Config file set to '%s'", *AirshipConfigPath)
+	msg := fmt.Sprintf("Config file set to '%s'", *configs.UIConfig.AirshipConfigPath)
 	response.Message = &msg
 
 	return response
@@ -92,7 +103,7 @@ func SetAirshipConfig(request configs.WsMessage) configs.WsMessage {
 func GetCurrentContext(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -128,9 +139,16 @@ func InitAirshipConfig(request configs.WsMessage) configs.WsMessage {
 		return response
 	}
 
-	AirshipConfigPath = &confPath
+	configs.UIConfig.AirshipConfigPath = &confPath
+	// save this location back to airshipui config file so we'll remember it for next time
+	err = configs.UIConfig.Persist()
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
 
-	msg := fmt.Sprintf("Config file set to '%s'", *AirshipConfigPath)
+	msg := fmt.Sprintf("Config file set to '%s'", *configs.UIConfig.AirshipConfigPath)
 
 	response.Message = &msg
 
@@ -148,7 +166,7 @@ type Context struct {
 func GetContexts(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -184,7 +202,7 @@ type Manifest struct {
 func GetManifests(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -216,7 +234,7 @@ type ManagementConfig struct {
 func GetManagementConfigs(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -254,7 +272,7 @@ type EncryptionConfig struct {
 func GetEncryptionConfigs(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -281,7 +299,7 @@ func GetEncryptionConfigs(request configs.WsMessage) configs.WsMessage {
 func SetContext(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -327,7 +345,7 @@ func SetContext(request configs.WsMessage) configs.WsMessage {
 func SetEncryptionConfig(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -376,7 +394,7 @@ func SetEncryptionConfig(request configs.WsMessage) configs.WsMessage {
 func SetManagementConfig(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -420,7 +438,7 @@ func SetManagementConfig(request configs.WsMessage) configs.WsMessage {
 func SetManifest(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -466,7 +484,7 @@ func SetManifest(request configs.WsMessage) configs.WsMessage {
 func UseContext(request configs.WsMessage) configs.WsMessage {
 	response := newResponse(request)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e

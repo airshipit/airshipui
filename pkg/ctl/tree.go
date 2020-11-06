@@ -26,6 +26,7 @@ import (
 	"github.com/google/uuid"
 	"opendev.org/airship/airshipctl/pkg/phase"
 	"opendev.org/airship/airshipctl/pkg/phase/ifc"
+	"opendev.org/airship/airshipui/pkg/configs"
 	"opendev.org/airship/airshipui/pkg/log"
 	"sigs.k8s.io/kustomize/api/types"
 )
@@ -38,7 +39,7 @@ func getHelper() (ifc.Helper, error) {
 		return helper, nil
 	}
 
-	c, err := NewDefaultClient(AirshipConfigPath)
+	c, err := NewDefaultClient(configs.UIConfig.AirshipConfigPath)
 	if err != nil {
 		return nil, err
 	}

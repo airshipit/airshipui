@@ -26,14 +26,6 @@ import (
 	"opendev.org/airship/airshipui/pkg/webservice"
 )
 
-// AirshipConfigPath location of airship config (default $HOME/.airship.config)
-// TODO(mfuller): are we going to retrieve these from the environment / cli options?
-// leaving them both unset (nil) for now so that the default locations will be used
-var AirshipConfigPath *string
-
-// KubeConfigPath location of kubeconfig used by airshipctl (default $HOME/.airship/kubeconfig)
-var KubeConfigPath *string
-
 const (
 	AirshipConfigNotFoundErr = `No airship config file found.
 	Please visit the Config section to specify or initialize a config file.`
@@ -111,7 +103,7 @@ func NewDefaultClient(airshipConfigPath *string) (*Client, error) {
 }
 
 // NewClient initializes the airshipctl client for external usage with the logging overridden.
-func NewClient(airshipConfigPath, kubeConfigPath *string, request configs.WsMessage) (*Client, error) {
+func NewClient(airshipConfigPath *string, request configs.WsMessage) (*Client, error) {
 	client, err := NewDefaultClient(airshipConfigPath)
 	if err != nil {
 		return nil, err

@@ -111,7 +111,7 @@ func getBaremetalDefaults(request configs.WsMessage) (baremetalData, error) {
 
 // getNodeInfo gets and formats the default nodes as defined by the manifest(s)
 func getNodeInfo(request configs.WsMessage) ([]nodeInfo, error) {
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, request)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, request)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -198,7 +198,7 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 	// create a transaction for this singular request
 	transaction := statistics.NewTransaction(user, response)
 
-	client, err := NewClient(AirshipConfigPath, KubeConfigPath, response)
+	client, err := NewClient(configs.UIConfig.AirshipConfigPath, response)
 	if err != nil {
 		errorHelper(err, transaction, response)
 		return
