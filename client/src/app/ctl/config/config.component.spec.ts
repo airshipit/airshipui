@@ -30,6 +30,7 @@ import { ConfigEncryptionComponent } from './config-encryption/config-encryption
 import { ConfigContextComponent } from './config-context/config-context.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ConfigComponent', () => {
   let component: ConfigComponent;
@@ -49,7 +50,8 @@ describe('ConfigComponent', () => {
         ConfigEncryptionModule,
         ReactiveFormsModule,
         MatExpansionModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        MatDialogModule
       ],
       declarations: [
         ConfigComponent,

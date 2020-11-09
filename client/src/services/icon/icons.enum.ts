@@ -34,5 +34,6 @@ export enum Icons {
   close = 'close',
   lock = 'lock',
   lock_open = 'lock_open',
-  history = 'history'
+  history = 'history',
+  add = 'add'
 }

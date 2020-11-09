@@ -28,6 +28,7 @@ import { ConfigManifestComponent } from './config-manifest/config-manifest.compo
 import { ConfigInitComponent } from './config-init/config-init.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { ConfigNewComponent } from './config-new/config-new.component';
 
 @NgModule({
   imports: [
@@ -48,7 +49,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     ConfigEncryptionComponent,
     ConfigManagementComponent,
     ConfigManifestComponent,
-    ConfigInitComponent
+    ConfigInitComponent,
+    ConfigNewComponent
   ],
   providers: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

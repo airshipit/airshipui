@@ -226,7 +226,7 @@ func GetManifests(request configs.WsMessage) configs.WsMessage {
 // ManagementConfig wrapper struct for CTL's ManagementConfiguration that
 // includes a name
 type ManagementConfig struct {
-	Name string `json:"name"`
+	Name string `json:"Name"`
 	ctlconfig.ManagementConfiguration
 }
 
@@ -408,22 +408,20 @@ func SetManagementConfig(request configs.WsMessage) configs.WsMessage {
 		return response
 	}
 
-	if mCfg, found := client.Config.ManagementConfiguration[request.Name]; found {
-		err = json.Unmarshal(bytes, mCfg)
-		if err != nil {
-			e := err.Error()
-			response.Error = &e
-			return response
-		}
+	var mCfg ctlconfig.ManagementConfiguration
 
-		err = client.Config.PersistConfig()
-		if err != nil {
-			e := err.Error()
-			response.Error = &e
-			return response
-		}
-	} else {
-		e := fmt.Sprintf("Management configuration '%s' not found", request.Name)
+	err = json.Unmarshal(bytes, &mCfg)
+	if err != nil {
+		e := err.Error()
+		response.Error = &e
+		return response
+	}
+
+	client.Config.ManagementConfiguration[request.Name] = &mCfg
+
+	err = client.Config.PersistConfig()
+	if err != nil {
+		e := err.Error()
 		response.Error = &e
 		return response
 	}

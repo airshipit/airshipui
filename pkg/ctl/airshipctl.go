@@ -27,8 +27,8 @@ import (
 )
 
 const (
-	AirshipConfigNotFoundErr = `No airship config file found.
-	Please visit the Config section to specify or initialize a config file.`
+	// AirshipConfigNotFoundErr generic error for missing airship config file
+	AirshipConfigNotFoundErr = "No airship config file found."
 )
 
 // CTLFunctionMap is a function map for the CTL functions that is referenced in the webservice

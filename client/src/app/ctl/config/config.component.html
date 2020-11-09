@@ -14,7 +14,11 @@
         <mat-accordion *ngFor="let context of contexts">
             <app-config-context [context]="context"></app-config-context>
         </mat-accordion>
+        <button mat-icon-button (click)="newConfig('context')">
+            <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Context
+        </button>
     </mat-expansion-panel>
+    <br />
     <mat-expansion-panel>
         <mat-expansion-panel-header>
             <mat-panel-title class="title">
@@ -24,7 +28,11 @@
         <mat-accordion *ngFor="let manifest of manifests">
             <app-config-manifest [manifest]="manifest"></app-config-manifest>
         </mat-accordion>
+        <button mat-icon-button (click)="newConfig('manifest')">
+            <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Manifest
+        </button>
     </mat-expansion-panel>
+    <br />
     <mat-expansion-panel>
         <mat-expansion-panel-header>
             <mat-panel-title class="title">
@@ -34,7 +42,11 @@
         <mat-accordion *ngFor="let config of encryptionConfigs">
             <app-config-encryption [config]="config"></app-config-encryption>
         </mat-accordion>
+        <button mat-icon-button (click)="newConfig('encryption')">
+            <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Encryption Config
+        </button>
     </mat-expansion-panel>
+    <br />
     <mat-expansion-panel>
         <mat-expansion-panel-header>
             <mat-panel-title class="title">
@@ -44,6 +56,9 @@
         <mat-accordion *ngFor="let config of managementConfigs">
             <app-config-management [config]="config"></app-config-management>
         </mat-accordion>
+        <button mat-icon-button (click)="newConfig('management')">
+            <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Management Config
+        </button>
     </mat-expansion-panel>
 </div>
 <ng-template #initblock>

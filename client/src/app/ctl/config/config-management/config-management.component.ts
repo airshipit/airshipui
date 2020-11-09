@@ -42,7 +42,7 @@ export class ConfigManagementComponent implements OnInit {
   constructor(private websocketService: WsService) { }
 
   ngOnInit(): void {
-    this.name.setValue(this.config.name);
+    this.name.setValue(this.config.Name);
     this.insecure.setValue(this.config.insecure);
     this.systemActionRetries.setValue(this.config.systemActionRetries);
     this.systemRebootDelay.setValue(this.config.systemRebootDelay);
@@ -67,7 +67,7 @@ export class ConfigManagementComponent implements OnInit {
     msg.name = this.name.value;
 
     const cfg: ManagementConfig = {
-      name: this.name.value,
+      Name: this.name.value,
       insecure: this.insecure.value,
       // TODO(mfuller): need to validate these are numerical values in the form
       systemActionRetries: +this.systemActionRetries.value,

@@ -1,0 +1,18 @@
+<h1 mat-dialog-title>New {{data.formName}} configuration</h1>
+<div mat-dialog-content class="form-content">
+    <form [formGroup]="group">
+        <div *ngFor="let key of keys">
+            <mat-form-field *ngIf="!isBool(dataObj[key])" appearance="fill">
+                <mat-label>{{key}}</mat-label>
+                <input class="text-input" formControlName="{{key}}" matInput>
+            </mat-form-field>
+            <p *ngIf="isBool(dataObj[key])">
+                <mat-checkbox formControlName="{{key}}" labelPosition="before">{{key}} </mat-checkbox>
+            </p>
+        </div>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-raised-button (click)="closeDialog()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="setConfig(data.formName)">Save</button>
+</div>

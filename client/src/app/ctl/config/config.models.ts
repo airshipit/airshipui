@@ -29,19 +29,23 @@ export class Context {
 }
 
 export class ContextOptions {
-    Name: string;
-    Manifest: string;
-    ManagementConfiguration: string;
-    EncryptionConfig: string;
+    Name = '';
+    Manifest = '';
+    ManagementConfiguration = '';
+    EncryptionConfig = '';
 }
 
+// There's no corresponding ManagementConfigOptions in CTL, so the
+// Name property has been deliberately capitalized to make it consistent
+// with the other ConfigOptions structs and we can retrieve it without
+// special handling
 export class ManagementConfig {
-    name: string;
-    insecure: boolean;
-    systemActionRetries: number;
-    systemRebootDelay: number;
-    type: string;
-    useproxy: boolean;
+    Name = '';
+    insecure = false;
+    systemActionRetries = 0;
+    systemRebootDelay = 0;
+    type = '';
+    useproxy = false;
 }
 
 export class Manifest {
@@ -88,24 +92,24 @@ export class Permissions {
 }
 
 export class ManifestOptions {
-    Name: string;
-    RepoName: string;
-    URL: string;
-    Branch: string;
-    CommitHash: string;
-    Tag: string;
-    RemoteRef: string;
-    Force: boolean;
-    IsPhase: boolean;
-    SubPath: string;
-    TargetPath: string;
-    MetadataPath: string;
+    Name = '';
+    RepoName = '';
+    URL = '';
+    Branch = '';
+    CommitHash = '';
+    Tag = '';
+    RemoteRef = '';
+    Force = false;
+    IsPhase = false;
+    SubPath = '';
+    TargetPath = '';
+    MetadataPath = '';
 }
 
 export class EncryptionConfigOptions {
-    Name: string;
-    EncryptionKeyPath: string;
-    DecryptionKeyPath: string;
-    KeySecretName: string;
-    KeySecretNamespace: string;
+    Name = '';
+    EncryptionKeyPath = '';
+    DecryptionKeyPath = '';
+    KeySecretName = '';
+    KeySecretNamespace = '';
 }

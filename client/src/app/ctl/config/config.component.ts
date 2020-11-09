@@ -18,6 +18,8 @@ import { LogMessage } from 'src/services/log/log-message';
 import { Context, ManagementConfig, Manifest, EncryptionConfig } from './config.models';
 import { WsService } from 'src/services/ws/ws.service';
 import { WsMessage, WsReceiver, WsConstants } from 'src/services/ws/ws.models';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfigNewComponent } from './config-new/config-new.component';
 
 @Component({
   selector: 'app-bare-metal',
@@ -37,7 +39,8 @@ export class ConfigComponent implements WsReceiver, OnInit {
   managementConfigs: ManagementConfig[] = [];
   encryptionConfigs: EncryptionConfig[] = [];
 
-  constructor(private websocketService: WsService) {
+  constructor(private websocketService: WsService,
+              public dialog: MatDialog) {
     this.websocketService.registerFunctions(this);
   }
 
@@ -81,15 +84,19 @@ export class ConfigComponent implements WsReceiver, OnInit {
           break;
         case WsConstants.SET_CONTEXT:
           this.websocketService.printIfToast(message);
+          this.getContexts();
           break;
         case WsConstants.SET_ENCRYPTION_CONFIG:
           this.websocketService.printIfToast(message);
+          this.getEncryptionConfigs();
           break;
         case WsConstants.SET_MANIFEST:
           this.websocketService.printIfToast(message);
+          this.getManifests();
           break;
         case WsConstants.SET_MANAGEMENT_CONFIG:
           this.websocketService.printIfToast(message);
+          this.getManagementConfigs();
           break;
         default:
           Log.Error(new LogMessage('Config message sub component not handled', this.className, message));
@@ -109,7 +116,7 @@ export class ConfigComponent implements WsReceiver, OnInit {
 
   getAirshipConfigPath(): void {
     this.websocketService.sendMessage(new WsMessage(
-      this.type, this.component, 'getAirshipConfigPath')
+      this.type, this.component, WsConstants.GET_AIRSHIP_CONFIG_PATH)
     );
   }
 
@@ -141,5 +148,13 @@ export class ConfigComponent implements WsReceiver, OnInit {
     this.websocketService.sendMessage(new WsMessage(
       this.type, this.component, WsConstants.GET_MANAGEMENT_CONFIGS)
     );
+  }
+
+  newConfig(configType: string): void {
+    const dialogRef = this.dialog.open(ConfigNewComponent, {
+      width: '550px',
+      height: '650px',
+      data: { formName: configType}
+    });
   }
 }
