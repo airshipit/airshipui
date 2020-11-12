@@ -10,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
-	opendev.org/airship/airshipctl v0.0.0-20201021221027-46a0a79066d3
+	opendev.org/airship/airshipctl v0.0.0-20201111150845-f2e305a56df7
 	sigs.k8s.io/cli-utils v0.20.6
 	sigs.k8s.io/kustomize/api v0.5.1
 )

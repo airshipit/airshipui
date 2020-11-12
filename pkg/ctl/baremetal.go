@@ -15,6 +15,7 @@
 package ctl
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -230,15 +231,18 @@ func actionHelper(user *string, target string, phase string, request configs.WsM
 	}
 
 	host := m.Hosts[0]
+
+	ctx := context.Background()
+
 	switch action {
 	case configs.EjectMedia:
-		err = host.EjectVirtualMedia(host.Context)
+		err = host.EjectVirtualMedia(ctx)
 	case configs.PowerOff:
-		err = host.SystemPowerOff(host.Context)
+		err = host.SystemPowerOff(ctx)
 	case configs.PowerOn:
-		err = host.SystemPowerOn(host.Context)
+		err = host.SystemPowerOn(ctx)
 	case configs.Reboot:
-		err = host.RebootSystem(host.Context)
+		err = host.RebootSystem(ctx)
 	}
 
 	if err != nil {

@@ -43,7 +43,6 @@ export class PhaseComponent implements WsReceiver {
   component = WsConstants.PHASE;
   activeLink = 'overview';
 
-  targetPath: string;
   phaseTree: KustomNode[] = [];
 
   treeControl = new NestedTreeControl<KustomNode>(node => node.children);
@@ -56,7 +55,6 @@ export class PhaseComponent implements WsReceiver {
   editorOptions = {language: 'yaml', automaticLayout: true, value: '', theme: 'airshipTheme'};
   code: string;
   editorTitle: string;
-  editorSubtitle: string;
 
   hasChild = (_: number, node: KustomNode) => !!node.children && node.children.length > 0;
 
@@ -68,7 +66,6 @@ export class PhaseComponent implements WsReceiver {
 
   constructor(private websocketService: WsService, public dialog: MatDialog) {
     this.websocketService.registerFunctions(this);
-    this.getTarget();
     this.getPhaseTree(); // load the source first
   }
 
@@ -81,9 +78,6 @@ export class PhaseComponent implements WsReceiver {
       }
     } else {
       switch (message.subComponent) {
-        case WsConstants.GET_TARGET:
-          this.targetPath = message.message;
-          break;
         case WsConstants.GET_PHASE_TREE:
           this.handleGetPhaseTree(message.data);
           break;
@@ -152,7 +146,7 @@ export class PhaseComponent implements WsReceiver {
       this.phaseViewerRef.componentInstance.yaml = atob(message.yaml);
     } else {
       this.changeEditorContents((message.yaml));
-      this.setTitle(message.name);
+      this.editorTitle = message.name;
       this.showEditor = true;
       this.currentDocId = message.id;
     }
@@ -160,15 +154,9 @@ export class PhaseComponent implements WsReceiver {
 
   handleYamlWrite(message: WsMessage): void {
     this.changeEditorContents((message.yaml));
-    this.setTitle(message.name);
+    this.editorTitle = message.name;
     this.currentDocId = message.id;
     this.websocketService.printIfToast(message);
-  }
-
-  setTitle(name: string): void {
-    this.editorSubtitle = name;
-    const str = name.split('/');
-    this.editorTitle = str[str.length - 1];
   }
 
   changeEditorContents(yaml: string): void {
@@ -245,7 +233,7 @@ export class PhaseComponent implements WsReceiver {
   }
 
   getExecutorDoc(id: object): void {
-    const msg = this.newMessage(WsConstants.GET_DOCUMENT_BY_SELECTOR);
+    const msg = this.newMessage(WsConstants.GET_EXECUTOR_DOC);
     msg.id = JSON.stringify(id);
     this.websocketService.sendMessage(msg);
   }
@@ -253,11 +241,6 @@ export class PhaseComponent implements WsReceiver {
   closeEditor(): void {
     this.code = null;
     this.showEditor = false;
-  }
-
-  getTarget(): void {
-    const websocketMessage = this.newMessage(WsConstants.GET_TARGET);
-    this.websocketService.sendMessage(websocketMessage);
   }
 
   // TODO(mfuller): we'll probably want to run / check phase validation

@@ -85,8 +85,6 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 	case configs.GetDocumentsBySelector:
 		message = request.Message
 		response.Data, err = GetDocumentsBySelector(request.ID, *message)
-	case configs.GetTarget:
-		message = client.getTarget()
 	case configs.GetExecutorDoc:
 		s := "rendered"
 		message = &s
@@ -144,18 +142,6 @@ func (c *Client) GetExecutorDoc(id string) (string, string, error) {
 	return title, base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-func (c *Client) getTarget() *string {
-	var s string
-	m, err := c.Config.CurrentContextManifest()
-	if err != nil {
-		s = "unknown"
-		return &s
-	}
-
-	s = filepath.Join(m.TargetPath, m.SubPath)
-	return &s
-}
-
 func (c *Client) getPhaseDetails(id ifc.ID) (string, error) {
 	helper, err := getHelper()
 	if err != nil {
@@ -205,23 +191,7 @@ func (c *Client) getFileYaml(id string) (string, string, error) {
 		return "", "", fmt.Errorf("file with ID '%s' not found", id)
 	}
 
-	ccm, err := c.Config.CurrentContextManifest()
-	if err != nil {
-		return "", "", err
-	}
-
-	// this is making the assumption that the site definition
-	// will always found at: targetPath/subPath
-	sitePath := filepath.Join(ccm.TargetPath, ccm.SubPath)
-
-	// TODO(mfuller): will this be true in treasuremap or
-	// other external repos?
-	manifestsDir := filepath.Join(sitePath, "..", "..")
-
-	title, err := filepath.Rel(manifestsDir, path)
-	if err != nil {
-		return "", "", err
-	}
+	_, title := filepath.Split(path)
 
 	file, err := os.Open(path)
 	if err != nil {

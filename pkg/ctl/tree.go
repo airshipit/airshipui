@@ -317,43 +317,33 @@ func makeResMap(kfile string) (map[string][]string, error) {
 
 	basedir := filepath.Dir(kfile)
 
-	if len(k.Resources) > 0 {
-		for _, p := range k.Resources {
-			path := filepath.Join(basedir, p)
-			resMap["Resources"] = append(resMap["Resources"], path)
+	for _, p := range k.Resources {
+		path := filepath.Join(basedir, p)
+		resMap["Resources"] = append(resMap["Resources"], path)
+	}
+
+	for _, p := range k.ConfigMapGenerator {
+		for _, s := range p.FileSources {
+			path := filepath.Join(basedir, s)
+			resMap["ConfigMapGenerator"] = append(resMap["ConfigMapGenerator"], path)
 		}
 	}
 
-	if len(k.ConfigMapGenerator) > 0 {
-		for _, p := range k.ConfigMapGenerator {
-			for _, s := range p.FileSources {
-				path := filepath.Join(basedir, s)
-				resMap["ConfigMapGenerator"] = append(resMap["ConfigMapGenerator"], path)
-			}
+	for _, p := range k.SecretGenerator {
+		for _, s := range p.FileSources {
+			path := filepath.Join(basedir, s)
+			resMap["SecretGenerator"] = append(resMap["SecretGenerator"], path)
 		}
 	}
 
-	if len(k.SecretGenerator) > 0 {
-		for _, p := range k.SecretGenerator {
-			for _, s := range p.FileSources {
-				path := filepath.Join(basedir, s)
-				resMap["SecretGenerator"] = append(resMap["SecretGenerator"], path)
-			}
-		}
+	for _, p := range k.Generators {
+		path := filepath.Join(basedir, p)
+		resMap["Generators"] = append(resMap["Generators"], path)
 	}
 
-	if len(k.Generators) > 0 {
-		for _, p := range k.Generators {
-			path := filepath.Join(basedir, p)
-			resMap["Generators"] = append(resMap["Generators"], path)
-		}
-	}
-
-	if len(k.Transformers) > 0 {
-		for _, p := range k.Transformers {
-			path := filepath.Join(basedir, p)
-			resMap["Transformers"] = append(resMap["Transformers"], path)
-		}
+	for _, p := range k.Transformers {
+		path := filepath.Join(basedir, p)
+		resMap["Transformers"] = append(resMap["Transformers"], path)
 	}
 
 	return resMap, nil

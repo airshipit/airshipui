@@ -178,7 +178,6 @@ const (
 	GetYaml                WsSubComponentType = "getYaml"
 	GetRendered            WsSubComponentType = "getRendered"
 	GetPhaseTree           WsSubComponentType = "getPhaseTree"
-	GetTarget              WsSubComponentType = "getTarget"
 	GetPhaseSourceFiles    WsSubComponentType = "getPhaseSource"
 	GetDocumentsBySelector WsSubComponentType = "getDocumentsBySelector"
 	GetPhase               WsSubComponentType = "getPhase"
