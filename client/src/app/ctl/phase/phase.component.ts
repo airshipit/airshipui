@@ -44,6 +44,7 @@ export class PhaseComponent implements WsReceiver {
   activeLink = 'overview';
 
   phaseTree: KustomNode[] = [];
+  clickedNode: KustomNode;
 
   treeControl = new NestedTreeControl<KustomNode>(node => node.children);
   dataSource = new MatTreeNestedDataSource<KustomNode>();
@@ -84,6 +85,9 @@ export class PhaseComponent implements WsReceiver {
         case WsConstants.GET_PHASE:
           this.handleGetPhase(message);
           break;
+        case WsConstants.GET_PHASE_SOURCE_FILES:
+          this.handleGetPhaseSourceFiles(message);
+          break;
         case WsConstants.GET_YAML:
           this.handleGetYaml(message);
           break;
@@ -107,6 +111,13 @@ export class PhaseComponent implements WsReceiver {
           break;
       }
     }
+  }
+
+  handleGetPhaseSourceFiles(message: WsMessage): void {
+    this.clickedNode.running = false;
+    const data: KustomNode[] = [];
+    Object.assign(data, message.data);
+    this.updateTree(data);
   }
 
   handleValidatePhase(message: WsMessage): void {
@@ -286,6 +297,32 @@ export class PhaseComponent implements WsReceiver {
         node.running = false;
         return;
       }
+    }
+  }
+
+  getPhaseSourceFiles(node: KustomNode): void {
+    const msg = new WsMessage(this.type, this.component, WsConstants.GET_PHASE_SOURCE_FILES);
+    msg.id = JSON.stringify(node.phaseId);
+    this.websocketService.sendMessage(msg);
+  }
+
+  refreshTreeData(): void {
+    const tmpdata = this.dataSource.data;
+    this.dataSource.data = null;
+    this.dataSource.data = tmpdata;
+  }
+
+  loadPhase(node: KustomNode): void {
+    this.clickedNode = node;
+    this.clickedNode.running = true;
+    this.getPhaseSourceFiles(this.clickedNode);
+  }
+
+  updateTree(data: KustomNode[]): void {
+    if (this.clickedNode !== undefined) {
+      this.clickedNode.children = data;
+      this.clickedNode.hasDocuments = false;
+      this.refreshTreeData();
     }
   }
 }

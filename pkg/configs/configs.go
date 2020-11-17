@@ -178,7 +178,7 @@ const (
 	GetYaml                WsSubComponentType = "getYaml"
 	GetRendered            WsSubComponentType = "getRendered"
 	GetPhaseTree           WsSubComponentType = "getPhaseTree"
-	GetPhaseSourceFiles    WsSubComponentType = "getPhaseSource"
+	GetPhaseSourceFiles    WsSubComponentType = "getPhaseSourceFiles"
 	GetDocumentsBySelector WsSubComponentType = "getDocumentsBySelector"
 	GetPhase               WsSubComponentType = "getPhase"
 	GetExecutorDoc         WsSubComponentType = "getExecutorDoc"

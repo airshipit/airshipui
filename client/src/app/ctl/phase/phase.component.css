@@ -39,6 +39,11 @@
   flex-direction: row;
 }
 
+.unloaded-phase {
+  display: flex;
+  flex-direction: row;
+}
+
 .docless-phase-btn {
   padding-left: 20px;
   padding-right: 0px;

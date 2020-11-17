@@ -20,9 +20,31 @@
                       <button *ngIf="node.hasError" mat-icon-button>
                         <mat-icon class="error-icon" svgIcon="error"></mat-icon> {{node.name}}
                       </button>
-                      <div *ngIf="node.isPhaseNode && !node.hasError" class="docless-phase">
+                      <div *ngIf="node.isPhaseNode && !node.hasError && node.hasDocuments" class="unloaded-phase">
+                        <button mat-button (click)="loadPhase(node)">
+                          <mat-icon class="mat-icon-rtl-mirror">chevron_right</mat-icon>{{node.name}}
+                        </button>
+                        <button class="menu-button" *ngIf="!node.running" mat-icon-button [matMenuTriggerFor]="menu">
+                          <mat-icon class="grey-icon" svgIcon="settings"></mat-icon>
+                        </button>
+                        <mat-spinner *ngIf="node.running" class="spinner" [diameter]="20"></mat-spinner>
+                        <mat-menu #menu="matMenu">
+                          <button mat-menu-item (click)="getPhase(node.phaseId)">
+                            <mat-icon class="grey-icon" svgIcon="open_in_new"></mat-icon>
+                            <span>View</span>
+                          </button>
+                          <button mat-menu-item (click)="validatePhase(node.phaseId)">
+                            <mat-icon>check_circle_icon</mat-icon>
+                            <span>Validate</span>
+                          </button>
+                          <button mat-menu-item (click)="confirmRunPhase(node)">
+                            <mat-icon>play_circle_outline</mat-icon>
+                            <span>Run</span>
+                          </button>
+                        </mat-menu>
+                      </div>
+                      <div *ngIf="node.isPhaseNode && !node.hasError && !node.hasDocuments" class="docless-phase">
                         <button mat-button class="docless-phase-btn">{{node.name}}</button>
-                        <span class="spacer"></span>
                         <button class="menu-button" *ngIf="!node.running" mat-icon-button [matMenuTriggerFor]="menu">
                           <mat-icon class="grey-icon" svgIcon="settings"></mat-icon>
                         </button>

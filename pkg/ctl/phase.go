@@ -89,6 +89,8 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 		s := "rendered"
 		message = &s
 		response.Name, response.YAML, err = client.GetExecutorDoc(id)
+	case configs.GetPhaseSourceFiles:
+		response.Data, err = client.getPhaseSource(id)
 	default:
 		err = fmt.Errorf("Subcomponent %s not found", request.SubComponent)
 	}
@@ -101,6 +103,17 @@ func HandlePhaseRequest(user *string, request configs.WsMessage) configs.WsMessa
 	}
 
 	return response
+}
+
+func (c *Client) getPhaseSource(id string) ([]KustomNode, error) {
+	phaseID := ifc.ID{}
+
+	err := json.Unmarshal([]byte(id), &phaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.GetPhaseSourceFiles(phaseID)
 }
 
 // this helper function will likely disappear once a clear workflow for

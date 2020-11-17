@@ -16,7 +16,7 @@ export class KustomNode {
     id: string;
     phaseId: { Name: string, Namespace: string};
     name: string;
-    canLoadChildren: boolean;
+    hasDocuments: boolean;
     children: KustomNode[];
     isPhaseNode: boolean;
     running: boolean;

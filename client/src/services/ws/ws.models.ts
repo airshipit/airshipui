@@ -81,6 +81,7 @@ export class WsConstants {
   public static readonly GET_DOCUMENT_BY_SELECTOR = 'getDocumentsBySelector';
   public static readonly GET_EXECUTOR_DOC = 'getExecutorDoc';
   public static readonly GET_PHASE = 'getPhase';
+  public static readonly GET_PHASE_SOURCE_FILES = 'getPhaseSourceFiles';
   public static readonly GET_PHASE_TREE = 'getPhaseTree';
   public static readonly GET_TARGET = 'getTarget';
   public static readonly GET_YAML = 'getYaml';

@@ -70,26 +70,14 @@ func (client *Client) GetPhaseTree() ([]KustomNode, error) {
 
 	for _, p := range phases {
 		pNode := KustomNode{
-			ID:          uuid.New().String(),
-			PhaseID:     ifc.ID{Name: p.Name, Namespace: p.Namespace},
-			Name:        fmt.Sprintf("Phase: %s", p.Name),
-			IsPhaseNode: true,
-			Children:    []KustomNode{},
+			ID:           uuid.New().String(),
+			PhaseID:      ifc.ID{Name: p.Name, Namespace: p.Namespace},
+			Name:         fmt.Sprintf("Phase: %s", p.Name),
+			IsPhaseNode:  true,
+			HasDocuments: p.Config.DocumentEntryPoint != "",
+			Children:     []KustomNode{},
 		}
 
-		// some phases don't have any associated documents, so don't look
-		// for children unless a DocumentEntryPoint has been specified
-		if p.Config.DocumentEntryPoint != "" {
-			children, err := client.GetPhaseSourceFiles(pNode.PhaseID)
-			if err != nil {
-				// TODO(mfuller): push an error to UI so it can be handled by
-				// toastr service, pending refactor of webservice and configs pkgs
-				log.Errorf("Error building tree for phase '%s': %s", p.Name, err)
-				pNode.HasError = true
-			} else {
-				pNode.Children = children
-			}
-		}
 		nodes = append(nodes, pNode)
 	}
 
@@ -181,12 +169,13 @@ func (client *Client) GetPhaseSourceFiles(id ifc.ID) ([]KustomNode, error) {
 // KustomNode structure to represent the kustomization tree for a given phase
 // bundle to be consumed by the UI frontend
 type KustomNode struct {
-	ID          string       `json:"id"` // UUID for backend node index
-	PhaseID     ifc.ID       `json:"phaseId"`
-	Name        string       `json:"name"` // name used for display purposes (cli, ui)
-	IsPhaseNode bool         `json:"isPhaseNode"`
-	HasError    bool         `json:"hasError"`
-	Children    []KustomNode `json:"children"`
+	ID           string       `json:"id"`
+	PhaseID      ifc.ID       `json:"phaseId"`
+	Name         string       `json:"name"`
+	IsPhaseNode  bool         `json:"isPhaseNode"`
+	HasError     bool         `json:"hasError"`
+	HasDocuments bool         `json:"hasDocuments"`
+	Children     []KustomNode `json:"children"`
 }
 
 func contains(dirs []string, val string) bool {
