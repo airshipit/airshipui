@@ -17,7 +17,7 @@ package ctl
 import (
 	"fmt"
 
-	"opendev.org/airship/airshipctl/pkg/secret"
+	"opendev.org/airship/airshipctl/pkg/secret/generate"
 	"opendev.org/airship/airshipui/pkg/configs"
 )
 
@@ -53,7 +53,7 @@ func HandleSecretRequest(user *string, request configs.WsMessage) configs.WsMess
 
 // generatePassphrase will generate a master passphrase to be used for encryption / decryption
 func generatePassphrase() *string {
-	engine := secret.NewPassphraseEngine(nil)
-	masterPassphrase := engine.GeneratePassphrase()
+	engine := generate.NewEncryptionKeyEngine(nil)
+	masterPassphrase := engine.GenerateEncryptionKey()
 	return &masterPassphrase
 }

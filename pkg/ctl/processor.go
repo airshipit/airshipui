@@ -75,6 +75,11 @@ func (p *UIEventProcessor) Process(ch <-chan events.Event) error {
 	return p.checkErrors()
 }
 
+// Close implements EventProcessor interface
+func (p *UIEventProcessor) Close() {
+	close(p.eventsChan)
+}
+
 // TODO(mfuller): this function currently only adds errors if present,
 // otherwise it sends a task message with the entire applyevent.Event
 // object. At some point, we'll probably want to see how the printer

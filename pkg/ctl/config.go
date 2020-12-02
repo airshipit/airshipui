@@ -132,7 +132,13 @@ func InitAirshipConfig(request configs.WsMessage) configs.WsMessage {
 		confPath = filepath.Join(home, ".airship", "config")
 	}
 
-	err := ctlconfig.CreateConfig(confPath)
+	// TODO(mfuller): create a checkbox in frontend to allow setting of 'overwrite'
+	// This will probably require a InitOptions struct to capture the path and overwrite
+	// value, and it'll need to be sent in the Data message field. For now, we'll
+	// leave it set to a default of 'false'
+	overwrite := false
+
+	err := ctlconfig.CreateConfig(confPath, overwrite)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
@@ -419,7 +425,11 @@ func SetManagementConfig(request configs.WsMessage) configs.WsMessage {
 
 	client.Config.ManagementConfiguration[request.Name] = &mCfg
 
-	err = client.Config.PersistConfig()
+	// since we're either creating a new management config or modifying an existing
+	// one in a known airship config file, we'll assume 'overwrite' to be true
+	overwrite := true
+
+	err = client.Config.PersistConfig(overwrite)
 	if err != nil {
 		e := err.Error()
 		response.Error = &e
