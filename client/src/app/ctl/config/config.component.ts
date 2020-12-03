@@ -39,6 +39,8 @@ export class ConfigComponent implements WsReceiver, OnInit {
   managementConfigs: ManagementConfig[] = [];
   encryptionConfigs: EncryptionConfig[] = [];
 
+  configs = {};
+
   constructor(private websocketService: WsService,
               public dialog: MatDialog) {
     this.websocketService.registerFunctions(this);
@@ -71,13 +73,13 @@ export class ConfigComponent implements WsReceiver, OnInit {
           Object.assign(this.contexts, message.data);
           break;
         case WsConstants.GET_MANIFESTS:
-          Object.assign(this.manifests, message.data);
+          this.handleGetManifests(message);
           break;
         case WsConstants.GET_ENCRYPTION_CONFIGS:
-          Object.assign(this.encryptionConfigs, message.data);
+          this.handleGetEncryptionConfigs(message);
           break;
         case WsConstants.GET_MANAGEMENT_CONFIGS:
-          Object.assign(this.managementConfigs, message.data);
+          this.handleGetManagementConfigs(message);
           break;
         case WsConstants.USE_CONTEXT:
           this.getCurrentContext();
@@ -102,6 +104,33 @@ export class ConfigComponent implements WsReceiver, OnInit {
           Log.Error(new LogMessage('Config message sub component not handled', this.className, message));
           break;
       }
+    }
+  }
+
+  handleGetManifests(message: WsMessage): void {
+    Object.assign(this.manifests, message.data);
+    const manifests = 'manifests';
+    this.configs[manifests] = [];
+    for (const m of this.manifests) {
+      this.configs[manifests].push(m.name);
+    }
+  }
+
+  handleGetEncryptionConfigs(message: WsMessage): void {
+    Object.assign(this.encryptionConfigs, message.data);
+    const encryption = 'encryption';
+    this.configs[encryption] = [];
+    for (const e of this.encryptionConfigs) {
+      this.configs[encryption].push(e.name);
+    }
+  }
+
+  handleGetManagementConfigs(message: WsMessage): void {
+    Object.assign(this.managementConfigs, message.data);
+    const management = 'management';
+    this.configs[management] = [];
+    for (const m of this.managementConfigs) {
+      this.configs[management].push(m.Name);
     }
   }
 

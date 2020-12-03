@@ -12,6 +12,7 @@
 # limitations under the License.
 */
 
+import { CommonModule } from '@angular/common';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,6 +20,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { Context } from '../config.models';
@@ -42,6 +44,8 @@ describe('ConfigContextComponent', () => {
         ReactiveFormsModule,
         ToastrModule.forRoot(),
         MatExpansionModule,
+        MatSelectModule,
+        CommonModule
       ]
     })
     .compileComponents();
@@ -52,6 +56,11 @@ describe('ConfigContextComponent', () => {
     component = fixture.componentInstance;
 
     component.context = new Context();
+    component.configs = {
+      manifests: ['default'],
+      encryption: ['default'],
+      management: ['default']
+    };
 
     fixture.detectChanges();
   });

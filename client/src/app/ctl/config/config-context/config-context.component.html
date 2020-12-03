@@ -4,22 +4,32 @@
             <h4>{{context.name}}</h4>
         </mat-panel-title>
     </mat-expansion-panel-header>
-        ContextKubeconf:
+        <!-- Modifying the 'name' field makes Set treat it as a new context, which
+        is why it's omitted from this form. New configs are handled with the 'New' button-->
         <mat-form-field appearance="fill">
-            <input [formControl]="contextKubeconf" matInput>
-        </mat-form-field>
-        Manifest:
-        <mat-form-field appearance="fill">
-            <input [formControl]="manifest" matInput>
-        </mat-form-field>
-        EncryptionConfig:
-        <mat-form-field appearance="fill">
-            <input [formControl]="encryptionConfig" matInput>
-        </mat-form-field>
-        ManagementConfiguration:
-        <mat-form-field appearance="fill">
-            <input [formControl]="managementConfiguration" matInput>
-        </mat-form-field>
+            <mat-label>Kubeconfig Context</mat-label>
+            <input [formControl]="contextKubeconf" matInput readonly>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Manifest</mat-label>
+            <mat-select [formControl]="manifest" [(value)]="context.manifest">
+                <mat-option *ngFor="let m of configs.manifests" [value]="m">{{m}}</mat-option>
+            </mat-select>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Encryption Config</mat-label>
+            <mat-select [formControl]="encryptionConfig" [(value)]="context.encryptionConfig">
+                <!-- Encryption config isn't required, so allow a null option -->
+                <mat-option [value]="null">None</mat-option>
+                <mat-option *ngFor="let e of configs.encryption" [value]="e">{{e}}</mat-option>
+            </mat-select>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Management Config</mat-label>
+            <mat-select [formControl]="managementConfiguration" [(value)]="context.managementConfiguration">
+                <mat-option *ngFor="let m of configs.management" [value]="m">{{m}}</mat-option>
+            </mat-select>
+        </mat-form-field><br />
     <mat-action-row>
         <div class="edit-btn-container">
             <button mat-icon-button (click)="toggleLock()">

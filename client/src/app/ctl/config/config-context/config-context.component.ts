@@ -25,6 +25,12 @@ import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 })
 export class ConfigContextComponent implements OnInit {
   @Input() context: Context;
+  @Input() configs: {
+    manifests: string[],
+    encryption: string[],
+    management: string[]
+  };
+
   type = WsConstants.CTL;
   component = WsConstants.CONFIG;
 

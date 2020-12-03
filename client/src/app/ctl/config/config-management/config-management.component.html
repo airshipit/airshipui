@@ -4,24 +4,26 @@
             <h4>{{config.Name}}</h4>
         </mat-panel-title>
     </mat-expansion-panel-header>
+    <form [formGroup]="group">
         <p>
-            <mat-checkbox [formControl]="insecure" labelPosition="before">Insecure: </mat-checkbox>
+            <mat-checkbox formControlName="insecure" labelPosition="after">Insecure</mat-checkbox>
         </p>
-        SystemActionRetries:
             <mat-form-field appearance="fill">
-                <input matInput [formControl]="systemActionRetries" pattern="[0-9]*">
-            </mat-form-field>
-        SystemRebootDelay:
+                <mat-label>System Action Retries</mat-label>
+                <input matInput formControlName="systemActionRetries" placeholder="Value in seconds, e.g. 30">
+            </mat-form-field><br />
             <mat-form-field appearance="fill">
-                <input matInput [formControl]="systemRebootDelay" pattern="[0-9]*">
-            </mat-form-field>
-        Type:
+                <mat-label>System Reboot Delay</mat-label>
+                <input matInput formControlName="systemRebootDelay" placeholder="Value in seconds, e.g. 30">
+            </mat-form-field><br />
             <mat-form-field appearance="fill">
-                <input matInput [formControl]="type">
+                <mat-label>Type</mat-label>
+                <input matInput formControlName="type">
             </mat-form-field>
         <p>
-            <mat-checkbox [formControl]="useproxy" labelPosition="before">UseProxy: </mat-checkbox>
+            <mat-checkbox formControlName="useproxy" labelPosition="after">UseProxy</mat-checkbox>
         </p>
+    </form>
     <mat-action-row>
         <div class="edit-btn-container">
             <button mat-icon-button (click)="toggleLock()">
@@ -31,7 +33,7 @@
                 </ng-template>
             Edit</button>
         </div>
-        <button mat-raised-button class="set-button" [disabled]="locked" (click)="setManagementConfig()" color="primary">Set</button>
+        <button mat-raised-button class="set-button" [disabled]="locked || !group.valid" (click)="setManagementConfig()" color="primary">Set</button>
     </mat-action-row>
 </mat-expansion-panel>
 <br />

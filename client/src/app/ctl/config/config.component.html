@@ -12,7 +12,7 @@
             </mat-panel-description>
         </mat-expansion-panel-header>
         <mat-accordion *ngFor="let context of contexts">
-            <app-config-context [context]="context"></app-config-context>
+            <app-config-context [context]="context" [configs]="configs"></app-config-context>
         </mat-accordion>
         <button mat-icon-button (click)="newConfig('context')">
             <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Context

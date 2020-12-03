@@ -29,6 +29,7 @@ import { ConfigInitComponent } from './config-init/config-init.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ConfigNewComponent } from './config-new/config-new.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
   imports: [
@@ -41,7 +42,8 @@ import { ConfigNewComponent } from './config-new/config-new.component';
     MatButtonModule,
     MatIconModule,
     MatCheckboxModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatSelectModule
   ],
   declarations: [
     ConfigComponent,

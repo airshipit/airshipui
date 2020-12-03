@@ -4,26 +4,28 @@
             <h4>{{config.name}}</h4>
         </mat-panel-title>
     </mat-expansion-panel-header>
-        <div *ngIf="config.hasOwnProperty('encryptionKeyPath')">
-            EncryptionKeyPath:
+        <form [formGroup]="group">
+            <div *ngIf="config.hasOwnProperty('encryptionKeyPath')">
                 <mat-form-field appearance="fill">
-                    <input matInput [formControl]="encryptionKeyPath">
+                    <mat-label>EncryptionKeyPath</mat-label>
+                    <input matInput formControlName="encryptionKeyPath">
                 </mat-form-field>
-            DecryptionKeyPath:
                 <mat-form-field appearance="fill">
-                    <input matInput [formControl]="decryptionKeyPath">
+                    <mat-label>DecryptionKeyPath</mat-label>
+                    <input matInput formControlName="decryptionKeyPath">
                 </mat-form-field>
-        </div>
-        <div *ngIf="config.hasOwnProperty('keySecretName')">
-            KeySecretName:
+            </div>
+            <div *ngIf="config.hasOwnProperty('keySecretName')">
                 <mat-form-field appearance="fill">
-                    <input matInput [formControl]="keySecretName">
+                    <mat-label>KeySecretName</mat-label>
+                    <input matInput formControlName="keySecretName">
                 </mat-form-field>
-            KeySecretNamespace:
                 <mat-form-field appearance="fill">
-                    <input matInput [formControl]="keySecretNamespace">
+                    <mat-label>KeySecretNamespace</mat-label>
+                    <input matInput formControlName="keySecretNamespace">
                 </mat-form-field>
-        </div>
+            </div>
+        </form>
     <mat-action-row>
         <div class="edit-btn-container">
             <button mat-icon-button (click)="toggleLock()">
@@ -33,7 +35,7 @@
                 </ng-template>
             Edit</button>
         </div>
-        <button mat-raised-button class="set-button" [disabled]="locked" (click)="setEncryptionConfig()" color="primary">Set</button>
+        <button mat-raised-button class="set-button" [disabled]="locked || !group.valid" (click)="setEncryptionConfig()" color="primary">Set</button>
     </mat-action-row>
 </mat-expansion-panel>
 <br />

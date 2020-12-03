@@ -14,7 +14,7 @@
 
 import { Component, Input, OnInit } from '@angular/core';
 import { ManagementConfig } from '../config.models';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { WsService } from 'src/services/ws/ws.service';
 import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
 
@@ -30,50 +30,43 @@ export class ConfigManagementComponent implements OnInit {
 
   locked = true;
 
-  name = new FormControl({value: '', disabled: true});
-  insecure = new FormControl({value: false, disabled: true});
-  systemActionRetries = new FormControl({value: '', disabled: true}, Validators.pattern('[0-9]*'));
-  systemRebootDelay = new FormControl({value: '', disabled: true}, Validators.pattern('[0-9]*'));
-  type = new FormControl({value: '', disabled: true});
-  useproxy = new FormControl({value: false, disabled: true});
-
-  controlsArray = [this.name, this.insecure, this.systemRebootDelay, this.systemActionRetries, this.type, this.useproxy];
+  group: FormGroup;
 
   constructor(private websocketService: WsService) { }
 
   ngOnInit(): void {
-    this.name.setValue(this.config.Name);
-    this.insecure.setValue(this.config.insecure);
-    this.systemActionRetries.setValue(this.config.systemActionRetries);
-    this.systemRebootDelay.setValue(this.config.systemRebootDelay);
-    this.type.setValue(this.config.type);
-    this.useproxy.setValue(this.config.useproxy);
+    this.group = new FormGroup({
+      name: new FormControl({value: this.config.Name, disabled: true}),
+      insecure: new FormControl({value: this.config.insecure, disabled: true}),
+      systemActionRetries: new FormControl({value: this.config.systemActionRetries, disabled: true},
+        Validators.pattern('^[0-9]*$')),
+      systemRebootDelay: new FormControl({value: this.config.systemRebootDelay, disabled: true},
+        Validators.pattern('^[0-9]*$')),
+      type: new FormControl({value: this.config.type, disabled: true}),
+      useproxy: new FormControl({value: this.config.useproxy, disabled: true})
+    });
   }
 
   toggleLock(): void {
-    for (const control of this.controlsArray) {
-      if (this.locked) {
-        control.enable();
-      } else {
-        control.disable();
-      }
+    if (this.group.disabled) {
+      this.group.enable();
+    } else {
+      this.group.disable();
     }
-
     this.locked = !this.locked;
   }
 
   setManagementConfig(): void {
     const msg = new WsMessage(this.msgType, this.component, WsConstants.SET_MANAGEMENT_CONFIG);
-    msg.name = this.name.value;
+    msg.name = this.group.controls.name.value;
 
     const cfg: ManagementConfig = {
-      Name: this.name.value,
-      insecure: this.insecure.value,
-      // TODO(mfuller): need to validate these are numerical values in the form
-      systemActionRetries: +this.systemActionRetries.value,
-      systemRebootDelay: +this.systemRebootDelay.value,
-      type: this.type.value,
-      useproxy: this.useproxy.value
+      Name: this.group.controls.name.value,
+      insecure: this.group.controls.insecure.value,
+      systemActionRetries: +this.group.controls.systemActionRetries.value,
+      systemRebootDelay: +this.group.controls.systemRebootDelay.value,
+      type: this.group.controls.type.value,
+      useproxy: this.group.controls.useproxy.value
     };
 
     msg.data = JSON.parse(JSON.stringify(cfg));
