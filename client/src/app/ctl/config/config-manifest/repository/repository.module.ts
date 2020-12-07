@@ -15,24 +15,22 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { RepositoryModule } from './repository/repository.module';
+import { RepositoryComponent } from './repository.component';
 
 @NgModule({
     imports: [
-      FormsModule,
-      MatInputModule,
-      MatCardModule,
-      MatButtonModule,
-      ReactiveFormsModule,
-      MatCheckboxModule,
-      MatSelectModule,
-      RepositoryModule
+        FormsModule,
+        MatInputModule,
+        MatCheckboxModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatDialogModule
     ],
     declarations: [],
     providers: []
-  })
-  export class ConfigManifestModule { }
+})
+
+export class RepositoryModule { }

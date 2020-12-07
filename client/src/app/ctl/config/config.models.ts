@@ -12,6 +12,8 @@
 # limitations under the License.
 */
 
+import { FormControl } from '@angular/forms';
+
 export class EncryptionConfig {
     name: string;
     encryptionKeyPath: string;
@@ -101,7 +103,6 @@ export class ManifestOptions {
     RemoteRef = '';
     Force = false;
     IsPhase = false;
-    SubPath = '';
     TargetPath = '';
     MetadataPath = '';
 }

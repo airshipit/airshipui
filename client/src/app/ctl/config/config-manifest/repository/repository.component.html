@@ -1,0 +1,29 @@
+<h2>New Repository</h2>
+<div [formGroup]="group">
+    <mat-form-field appearance="fill">
+        <mat-label>Repository Name</mat-label>
+        <input matInput formControlName="repoName">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>URL</mat-label>
+        <input matInput formControlName="url">
+    </mat-form-field>
+    <mat-label>
+        <mat-select [(value)]="checkoutType">
+            <mat-option *ngFor="let type of checkoutTypes" [value]="type">{{type}}</mat-option>
+        </mat-select>
+    </mat-label>
+    <mat-form-field appearance="fill">
+        <input matInput formControlName="checkoutReference">
+    </mat-form-field>
+    <p>
+        <mat-checkbox formControlName="force" labelPosition="after">Force</mat-checkbox>
+    </p>
+    <p>
+        <mat-checkbox formControlName="isPhase" labelPosition="after">Is Phase</mat-checkbox>
+    </p>
+</div>
+<div class="action-buttons">
+    <button mat-raised-button (click)="cancel()">Cancel</button>
+    <button class="set-btn" mat-raised-button color="primary" [disabled]="!group.valid" (click)="setRepo()">Set</button>
+</div>

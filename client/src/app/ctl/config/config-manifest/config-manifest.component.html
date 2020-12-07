@@ -4,48 +4,43 @@
             <h4>{{manifest.name}}</h4>
         </mat-panel-title>
     </mat-expansion-panel-header>
-        RepoName:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="RepoName">
-            </mat-form-field>
-        URL:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="URL">
-            </mat-form-field>
-        Branch:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="Branch">
-            </mat-form-field>
-        CommitHash:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="CommitHash">
-            </mat-form-field>
-        Tag:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="Tag">
-            </mat-form-field>
-        RemoteRef:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="RemoteRef">
-            </mat-form-field>
-        <p>
-            <mat-checkbox [formControl]="Force" labelPosition="before">Force: </mat-checkbox>
-        </p>
-        <p>
-            <mat-checkbox [formControl]="IsPhase" labelPosition="before">IsPhase: </mat-checkbox>
-        </p>
-        SubPath:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="SubPath">
-            </mat-form-field>
-        TargetPath:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="TargetPath">
-            </mat-form-field>
-        MetadataPath:
-            <mat-form-field appearance="fill">
-                <input matInput [formControl]="MetadataPath">
-            </mat-form-field>
+    <div [formGroup]="group">
+        <mat-form-field appearance="fill">
+            <mat-label>Target Path</mat-label>
+            <input matInput formControlName="targetPath">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Metadata Path</mat-label>
+            <input matInput formControlName="metadataPath">
+        </mat-form-field>
+        <h5>Repositories</h5>
+        <mat-form-field appearance="fill">
+            <mat-select [(value)]="selectedIndex">
+                <mat-option *ngFor="let repoName of selectArray; let i = index" [value]="i">{{repoName}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <ng-container *ngFor="let repo of repoArray.controls; let i = index">
+            <div *ngIf="i === selectedIndex" [formGroup]="repo">
+                <mat-form-field appearance="fill">
+                    <mat-label>URL</mat-label>
+                    <input matInput formControlName="url">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{repo.controls.checkoutLabel.value}}</mat-label>
+                    <input matInput formControlName="checkoutReference">
+                </mat-form-field>
+                <p>
+                    <mat-checkbox formControlName="force" labelPosition="after">Force</mat-checkbox>
+                </p>
+                <p>
+                    <mat-checkbox formControlName="isPhase" labelPosition="after">Is Phase</mat-checkbox>
+                </p>
+            </div>
+        </ng-container>
+        <button mat-icon-button (click)="newRepoDialog()">
+            <mat-icon class="grey-icon" svgIcon="add"></mat-icon>New Repository
+        </button>
+    </div>
     <mat-action-row>
         <div class="edit-btn-container">
             <button mat-icon-button (click)="toggleLock()">
@@ -55,7 +50,7 @@
                 </ng-template>
             Edit</button>
         </div>
-        <button mat-raised-button class="set-button" [disabled]="locked" (click)="setManifest()" color="primary">Set</button>
+        <button mat-raised-button class="set-button" [disabled]="locked || !group.valid" (click)="setManifest(selectedIndex)" color="primary">Set</button>
     </mat-action-row>
 </mat-expansion-panel>
 <br />

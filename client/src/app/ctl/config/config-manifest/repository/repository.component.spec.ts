@@ -17,35 +17,30 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
-import { CtlManifest, Manifest, RepoCheckout, Repository } from '../config.models';
 
-import { ConfigManifestComponent } from './config-manifest.component';
+import { RepositoryComponent } from './repository.component';
 
-describe('ConfigManifestComponent', () => {
-  let component: ConfigManifestComponent;
-  let fixture: ComponentFixture<ConfigManifestComponent>;
+describe('RepositoryComponent', () => {
+  let component: RepositoryComponent;
+  let fixture: ComponentFixture<RepositoryComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ConfigManifestComponent ],
+      declarations: [ RepositoryComponent ],
       imports: [
         BrowserAnimationsModule,
         FormsModule,
-        MatInputModule,
-        MatIconModule,
-        MatCheckboxModule,
         MatButtonModule,
-        ReactiveFormsModule,
-        ToastrModule.forRoot(),
-        MatExpansionModule,
+        MatCheckboxModule,
+        MatInputModule,
         MatSelectModule,
-        MatDialogModule
+        ReactiveFormsModule,
+        MatDialogModule,
+        ToastrModule.forRoot()
       ],
       providers: [
         {provide: MAT_DIALOG_DATA, useValue: {name: 'default'}},
@@ -56,17 +51,8 @@ describe('ConfigManifestComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ConfigManifestComponent);
+    fixture = TestBed.createComponent(RepositoryComponent);
     component = fixture.componentInstance;
-
-    component.manifest = new Manifest();
-    component.manifest.manifest = new CtlManifest();
-    const repoName = 'fakerepo';
-    component.manifest.manifest.phaseRepositoryName = repoName;
-    component.manifest.manifest.repositories = {};
-    component.manifest.manifest.repositories[repoName] = new Repository();
-    component.manifest.manifest.repositories[repoName].checkout = new RepoCheckout();
-
     fixture.detectChanges();
   });
 

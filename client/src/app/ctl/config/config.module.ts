@@ -30,6 +30,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ConfigNewComponent } from './config-new/config-new.component';
 import { MatSelectModule } from '@angular/material/select';
+import { RepositoryComponent } from './config-manifest/repository/repository.component';
 
 @NgModule({
   imports: [
@@ -52,7 +53,8 @@ import { MatSelectModule } from '@angular/material/select';
     ConfigManagementComponent,
     ConfigManifestComponent,
     ConfigInitComponent,
-    ConfigNewComponent
+    ConfigNewComponent,
+    RepositoryComponent
   ],
   providers: [],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

@@ -14,9 +14,11 @@
 
 import { Component, Input, OnInit } from '@angular/core';
 import { Manifest, ManifestOptions, Repository } from '../config.models';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { WsService } from 'src/services/ws/ws.service';
 import { WsMessage, WsConstants } from 'src/services/ws/ws.models';
+import { RepositoryComponent } from './repository/repository.component';
+import { MatDialog } from '@angular/material/dialog';
 
 
 @Component({
@@ -31,97 +33,118 @@ export class ConfigManifestComponent implements OnInit {
   component = WsConstants.CONFIG;
 
   locked = true;
-  Name = new FormControl({value: '', disabled: true});
-  RepoName = new FormControl({value: '', disabled: true});
-  URL = new FormControl({value: '', disabled: true});
-  Branch = new FormControl({value: '', disabled: true});
-  CommitHash = new FormControl({value: '', disabled: true});
-  Tag = new FormControl({value: '', disabled: true});
-  RemoteRef = new FormControl({value: '', disabled: true});
-  Force = new FormControl({value: false, disabled: true});
-  IsPhase = new FormControl({value: false, disabled: true});
-  SubPath = new FormControl({value: '', disabled: true});
-  TargetPath = new FormControl({value: '', disabled: true});
-  MetadataPath = new FormControl({value: '', disabled: true});
+  group: FormGroup;
+  repoArray = new FormArray([]);
+  selectArray: string[] = [];
+  selectedIndex = 0;
+  checkoutTypes = ['Branch', 'CommitHash', 'Tag'];
 
-  controlsArray = [
-    this.Name,
-    this.RepoName,
-    this.URL,
-    this.Branch,
-    this.CommitHash,
-    this.Tag,
-    this.RemoteRef,
-    this.Force,
-    this.IsPhase,
-    this.SubPath,
-    this.TargetPath,
-    this.MetadataPath
-  ];
-
-  constructor(private websocketService: WsService) { }
-
-  ngOnInit(): void {
-    this.Name.setValue(this.manifest.name);
-
-    // TODO(mfuller): not sure yet how to handle multiple repositories,
-    // so for now, I'm just showing the phase repository (primary)
-    const repoName = this.manifest.manifest.phaseRepositoryName;
-    this.RepoName.setValue(repoName);
-    const primaryRepo: Repository = this.manifest.manifest.repositories[repoName];
-    this.URL.setValue(primaryRepo.url);
-    this.Branch.setValue(primaryRepo.checkout.branch);
-    this.CommitHash.setValue(primaryRepo.checkout.commitHash);
-    this.Tag.setValue(primaryRepo.checkout.tag);
-    this.RemoteRef.setValue(primaryRepo.checkout.remoteRef);
-    this.Force.setValue(primaryRepo.checkout.force);
-    // TODO(mfuller): this value doesn't come from the config file, but if set to true,
-    // it appears to set the phaseRepositoryName key, and since that's
-    // the only repo I'm showing, set to true for now
-    this.IsPhase.setValue(true);
-    this.SubPath.setValue(this.manifest.manifest.subPath);
-    this.TargetPath.setValue(this.manifest.manifest.targetPath);
-    this.MetadataPath.setValue(this.manifest.manifest.metadataPath);
+  constructor(private websocketService: WsService,
+              private fb: FormBuilder,
+              public dialog: MatDialog) {
+    this.group = this.fb.group({
+      name: new FormControl({value: '', disabled: true}),
+      repositories: this.repoArray,
+      targetPath: new FormControl({value: '', disabled: true}, Validators.required),
+      metadataPath: new FormControl({value: '', disabled: true}, Validators.required)
+    });
   }
 
-  toggleLock(): void {
-    for (const control of this.controlsArray) {
-      if (this.locked) {
-        control.enable();
-      } else {
-        control.disable();
+  addRepo(name: string, repo: Repository): void {
+    const repoArray = this.group.controls.repositories as FormArray;
+    const repoGroup = new FormGroup({
+      repoName: new FormControl({value: name, disabled: true}),
+      url: new FormControl({value: repo.url, disabled: true}, Validators.required),
+      checkoutLabel: new FormControl(''),
+      checkoutReference: new FormControl({value: '', disabled: true}, Validators.required),
+      force: new FormControl({value: repo.checkout.force, disabled: true}),
+      isPhase: new FormControl({value: this.manifest.manifest.phaseRepositoryName === name, disabled: true}),
+    });
+
+    const checkout = this.getCheckoutRef(repo);
+    repoGroup.controls.checkoutLabel.setValue(checkout[0]);
+    repoGroup.controls.checkoutReference.setValue(checkout[1]);
+    repoArray.push(repoGroup);
+    this.selectArray.push(name);
+  }
+
+  getCheckoutRef(repo: Repository): string[] {
+    for (const t of this.checkoutTypes) {
+      const key = t[0].toLowerCase() + t.substring(1);
+      if (repo.checkout[key] !== null && repo.checkout[key] !== '') {
+        return [t, repo.checkout[key]];
       }
     }
+    return null;
+  }
 
+  newRepoDialog(): void {
+    const dialogRef = this.dialog.open(RepositoryComponent, {
+      width: '400px',
+      height: '520px',
+      data: {
+        name: this.manifest.name,
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.group.controls.name.setValue(this.manifest.name);
+    this.group.controls.targetPath.setValue(this.manifest.manifest.targetPath);
+    this.group.controls.metadataPath.setValue(this.manifest.manifest.metadataPath);
+    for (const [name, repo] of Object.entries(this.manifest.manifest.repositories)) {
+      this.addRepo(name, repo);
+    }
+  }
+
+  // once set to true, 'isPhase' and 'force' cannot be set to false using airshipctl's
+  // setters, so those controls won't be enabled if true. 'isPhase' can only be
+  // set to false by setting it to true for another repo
+  toggleLock(): void {
+    this.toggleControl(this.group.controls.targetPath as FormControl);
+    this.toggleControl(this.group.controls.metadataPath as FormControl);
+    for (const grp of this.repoArray.controls as FormGroup[]) {
+      Object.keys(grp.controls).forEach(key => {
+        this.toggleControl(grp.controls[key] as FormControl);
+      });
+    }
     this.locked = !this.locked;
   }
 
-  setManifest(): void {
-    const msg = new WsMessage(this.type, this.component, WsConstants.SET_MANIFEST);
-    msg.name = this.manifest.name;
+  toggleControl(ctrl: FormControl): void {
+    if (ctrl.disabled && ctrl.value !== true) {
+      ctrl.enable();
+    } else {
+      ctrl.disable();
+    }
+  }
 
-    // TODO(mfuller): since "Force" and "IsPhase" can only be set by passing in
-    // CLI flags rather than passing in values, there doesn't appear to be a way
-    // to unset them once they're true without manually editing the config file.
-    // Open a bug for this? Or is this intentional? I may have to write a custom
-    // setter to set the value directly in the Config struct
-    const opts: ManifestOptions = {
-      Name: this.Name.value,
-      RepoName: this.RepoName.value,
-      URL: this.URL.value,
-      Branch: this.Branch.value,
-      CommitHash: this.CommitHash.value,
-      Tag: this.Tag.value,
-      RemoteRef: this.RemoteRef.value,
-      Force: this.Force.value,
-      IsPhase: this.IsPhase.value,
-      SubPath: this.SubPath.value,
-      TargetPath: this.TargetPath.value,
-      MetadataPath: this.MetadataPath.value
-    };
+  setManifest(index: number): void {
+    const m = this.repoArray.at(index) as FormGroup;
+    const controls = m.controls;
+    if (controls !== undefined) {
+      const msg = new WsMessage(this.type, this.component, WsConstants.SET_MANIFEST);
+      msg.name = this.manifest.name;
 
-    msg.data = JSON.parse(JSON.stringify(opts));
-    this.websocketService.sendMessage(msg);
-    this.toggleLock();
+      const opts: ManifestOptions = {
+        Name: this.manifest.name,
+        RepoName: controls.repoName.value,
+        URL: controls.url.value,
+        Branch: null,
+        CommitHash: null,
+        Tag: null,
+        RemoteRef: null,
+        Force: controls.force.value,
+        IsPhase: controls.isPhase.value,
+        TargetPath: this.group.controls.targetPath.value,
+        MetadataPath: this.group.controls.metadataPath.value
+      };
+
+      opts[controls.checkoutLabel.value] = controls.checkoutReference.value;
+
+      msg.data = JSON.parse(JSON.stringify(opts));
+      this.websocketService.sendMessage(msg);
+      this.toggleLock();
+    }
   }
 }
