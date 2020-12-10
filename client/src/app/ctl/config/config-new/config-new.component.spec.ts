@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { ConfigNewComponent } from './config-new.component';
@@ -36,6 +37,7 @@ describe('ConfigNewComponent', () => {
         MatInputModule,
         MatDialogModule,
         MatCheckboxModule,
+        MatSelectModule,
         ToastrModule.forRoot(),
       ],
       declarations: [ ConfigNewComponent ],
@@ -52,6 +54,11 @@ describe('ConfigNewComponent', () => {
     component = fixture.componentInstance;
 
     component.data.formName = 'context';
+    component.data.configs = {
+      manifests: ['default'],
+      encryption: ['default'],
+      management: ['default']
+    };
     fixture.detectChanges();
   });
 

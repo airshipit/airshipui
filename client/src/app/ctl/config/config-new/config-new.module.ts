@@ -19,8 +19,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
-import { ContextOptions, EncryptionConfigOptions, ManagementConfig, ManifestOptions } from '../config.models';
-
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
     imports: [
@@ -31,10 +30,7 @@ import { ContextOptions, EncryptionConfigOptions, ManagementConfig, ManifestOpti
       ReactiveFormsModule,
       MatCheckboxModule,
       MatDialogModule,
-      ContextOptions,
-      ManifestOptions,
-      ManagementConfig,
-      EncryptionConfigOptions
+      MatSelectModule
     ],
     declarations: [
     ],

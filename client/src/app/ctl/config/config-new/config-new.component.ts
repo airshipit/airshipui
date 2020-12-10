@@ -13,11 +13,10 @@
 */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WsService } from 'src/services/ws/ws.service';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ContextOptions, EncryptionConfigOptions, ManagementConfig, ManifestOptions } from '../config.models';
 import { WsConstants, WsMessage } from 'src/services/ws/ws.models';
 
 @Component({
@@ -27,77 +26,108 @@ import { WsConstants, WsMessage } from 'src/services/ws/ws.models';
 })
 export class ConfigNewComponent implements OnInit {
   group: FormGroup;
-
-  dataObj: any;
-  keys: string[] = [];
-
-  dataObjs = {
-    context: new ContextOptions(),
-    manifest: new ManifestOptions(),
-    encryption: new EncryptionConfigOptions(),
-    management: new ManagementConfig()
-  };
+  subComponent: string;
+  encryptionType: string;
+  checkoutTypes = ['Branch', 'Tag', 'CommitHash'];
+  checkoutType = 'Branch';
 
   constructor(private websocketService: WsService,
               private fb: FormBuilder,
-              @Inject(MAT_DIALOG_DATA) public data: {formName: string},
+              @Inject(MAT_DIALOG_DATA) public data: {
+                formName: string,
+                configs: {}
+              },
               public dialogRef: MatDialogRef<ConfigNewComponent>) { }
 
   ngOnInit(): void {
-    const grp = {};
-    this.dataObj = this.dataObjs[this.data.formName];
-
-    for (const [key, val] of Object.entries(this.dataObj)) {
-      this.keys.push(key);
-      grp[key] = new FormControl(val);
-    }
-
-    this.group = new FormGroup(grp);
-  }
-
-  setConfig(type: string): void {
-    let subComponent = '';
-
-    switch (type) {
+    switch (this.data.formName) {
       case 'context':
-        subComponent = WsConstants.SET_CONTEXT;
+        this.group = this.fb.group({
+          Name: new FormControl('', Validators.required),
+          Manifest: new FormControl(''),
+          EncryptionConfig: new FormControl(''),
+          ManagementConfiguration: new FormControl('')
+        });
+        this.subComponent = WsConstants.SET_CONTEXT;
         break;
       case 'manifest':
-        subComponent = WsConstants.SET_MANIFEST;
+        this.group = this.fb.group({
+          Name: new FormControl('', Validators.required),
+          TargetPath: new FormControl('', Validators.required),
+          MetadataPath: new FormControl('', Validators.required),
+          // new manifests seem to get an auto-generated repo named 'primary'
+          // that won't get configured properly unless it's done here, so
+          // don't let users modify this field
+          RepoName: new FormControl({value: 'primary', disabled: true}),
+          URL: new FormControl('', Validators.required),
+          Tag: new FormControl(''),
+          CommitHash: new FormControl(''),
+          Branch: new FormControl(''),
+          IsPhase: new FormControl(false),
+          Force: new FormControl(false)
+        });
+        this.subComponent = WsConstants.SET_MANIFEST;
         break;
       case 'encryption':
-        subComponent = WsConstants.SET_ENCRYPTION_CONFIG;
+        this.group = this.fb.group({
+          Name: new FormControl('', Validators.required),
+          EncryptionKeyPath: new FormControl('', Validators.required),
+          DecryptionKeyPath: new FormControl('', Validators.required),
+          KeySecretName: new FormControl('', Validators.required),
+          KeySecretNamespace: new FormControl('', Validators.required),
+        });
+        this.subComponent = WsConstants.SET_ENCRYPTION_CONFIG;
         break;
       case 'management':
-        subComponent = WsConstants.SET_MANAGEMENT_CONFIG;
+        // NOTE: capitalizations are different for management config due to
+        // inconsistent json definitions in airshipctl
+        this.group = this.fb.group({
+          Name: new FormControl('', Validators.required),
+          type: new FormControl(''),
+          insecure: new FormControl(false),
+          useproxy: new FormControl(false),
+          systemActionRetries: new FormControl(0, Validators.pattern('^[0-9]*$')),
+          systemRebootDelay: new FormControl(0, Validators.pattern('^[0-9]*$'))
+        });
+        this.subComponent = WsConstants.SET_MANAGEMENT_CONFIG;
         break;
     }
+  }
 
-    for (const [key, control] of Object.entries(this.group.controls)) {
-      // TODO(mfuller): need to validate this within the form
-      if (typeof this.dataObj[key] === 'number') {
-        this.dataObj[key] = +control.value;
+  setConfig(): void {
+    const msg = new WsMessage(WsConstants.CTL, WsConstants.CONFIG, this.subComponent);
+    const opts = {};
+    for (const [key, val] of Object.entries(this.group.controls)) {
+      if (key === 'systemActionRetries' || key === 'systemRebootDelay') {
+        opts[key] = +val.value;
       } else {
-        this.dataObj[key] = control.value;
+        opts[key] = val.value;
       }
     }
-
-    const msg = new WsMessage(WsConstants.CTL, WsConstants.CONFIG, subComponent);
-    msg.data = JSON.parse(JSON.stringify(this.dataObj));
-    msg.name = this.dataObj.Name;
+    const name = 'Name';
+    msg.name = opts[name];
+    msg.data = JSON.parse(JSON.stringify(opts));
 
     this.websocketService.sendMessage(msg);
-    this.dialogRef.close();
+    this.closeDialog();
   }
 
   closeDialog(): void {
     this.dialogRef.close();
   }
 
-  // annoying helper method because apparently I can't just test this natively
-  // inside an *ngIf
-  isBool(val: any): boolean {
-    return typeof val === 'boolean';
+  onEncryptionChange(event: any): void {
+    if (this.encryptionType === 'encryption') {
+      this.group.controls.EncryptionKeyPath.enable();
+      this.group.controls.DecryptionKeyPath.enable();
+      this.group.controls.KeySecretName.disable();
+      this.group.controls.KeySecretNamespace.disable();
+    } else {
+      this.group.controls.EncryptionKeyPath.disable();
+      this.group.controls.DecryptionKeyPath.disable();
+      this.group.controls.KeySecretName.enable();
+      this.group.controls.KeySecretNamespace.enable();
+    }
   }
 
 }

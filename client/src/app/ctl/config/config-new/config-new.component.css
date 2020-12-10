@@ -19,3 +19,7 @@
 .text-input {
     width: 80%;
 }
+
+mat-form-field {
+    width: 80%;
+}

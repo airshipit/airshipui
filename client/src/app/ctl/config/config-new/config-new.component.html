@@ -1,18 +1,171 @@
 <h1 mat-dialog-title>New {{data.formName}} configuration</h1>
-<div mat-dialog-content class="form-content">
-    <form [formGroup]="group">
-        <div *ngFor="let key of keys">
-            <mat-form-field *ngIf="!isBool(dataObj[key])" appearance="fill">
-                <mat-label>{{key}}</mat-label>
-                <input class="text-input" formControlName="{{key}}" matInput>
+<div mat-dialog-content class="form-content" [ngSwitch]="data.formName">
+    <div *ngSwitchCase="'management'" [formGroup]="group">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="Name">
+            <mat-error *ngIf="group.controls.Name.hasError('required')">
+                Name is required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Type</mat-label>
+            <input matInput formControlName="type">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>System Action Retries</mat-label>
+            <input matInput formControlName="systemActionRetries">
+            <mat-error *ngIf="group.controls.systemActionRetries.hasError('pattern')">
+                Value must be a number
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>System Reboot Delay</mat-label>
+            <input matInput formControlName="systemRebootDelay">
+            <mat-error *ngIf="group.controls.systemRebootDelay.hasError('pattern')">
+                Value must be a number
+            </mat-error>
+        </mat-form-field>
+        <p>
+            <mat-checkbox formControlName="useproxy" labelPosition="after">Use Proxy</mat-checkbox>
+        </p>
+        <p>
+            <mat-checkbox formControlName="insecure" labelPosition="after">Insecure</mat-checkbox>
+        </p>
+    </div>
+    <div *ngSwitchCase="'context'" [formGroup]="group">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input formControlName="Name" matInput>
+            <mat-error *ngIf="group.controls.Name.hasError('required')">
+                Name is required
+            </mat-error>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Manifest</mat-label>
+            <mat-select formControlName="Manifest">
+                <mat-option *ngFor="let m of data.configs['manifests']" [value]="m">{{m}}</mat-option>
+            </mat-select>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Encryption Config</mat-label>
+            <mat-select formControlName="EncryptionConfig">
+                <!-- Encryption config isn't required, so allow a null option -->
+                <mat-option [value]="null">None</mat-option>
+                <mat-option *ngFor="let e of data.configs['encryption']" [value]="e">{{e}}</mat-option>
+            </mat-select>
+        </mat-form-field><br />
+        <mat-form-field>
+            <mat-label>Management Config</mat-label>
+            <mat-select formControlName="ManagementConfiguration">
+                <mat-option *ngFor="let m of data.configs['management']" [value]="m">{{m}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div *ngSwitchCase="'encryption'" [formGroup]="group">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="Name">
+            <mat-error *ngIf="group.controls.Name.hasError('required')">
+                Name is required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Config Type</mat-label>
+            <mat-select [(value)]="encryptionType" (selectionChange)="onEncryptionChange($event)">
+                <mat-option value="encryption">Encrypt / Decrypt Key</mat-option>
+                <mat-option value="secret">Secret</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <div *ngIf="encryptionType === 'encryption'">
+            <mat-form-field appearance="fill">
+                <mat-label>EncryptionKeyPath</mat-label>
+                <input matInput formControlName="EncryptionKeyPath">
+                <mat-error *ngIf="group.controls.EncryptionKeyPath.hasError('required')">
+                    EncryptionKeyPath is required
+                </mat-error>
             </mat-form-field>
-            <p *ngIf="isBool(dataObj[key])">
-                <mat-checkbox formControlName="{{key}}" labelPosition="before">{{key}} </mat-checkbox>
-            </p>
+            <mat-form-field appearance="fill">
+                <mat-label>DecryptionKeyPath</mat-label>
+                <input matInput formControlName="DecryptionKeyPath">
+                <mat-error *ngIf="group.controls.DecryptionKeyPath.hasError('required')">
+                    DecryptionKeyPath is required
+                </mat-error>
+            </mat-form-field>
         </div>
-    </form>
+        <div *ngIf="encryptionType === 'secret'">
+            <mat-form-field appearance="fill">
+                <mat-label>KeySecretName</mat-label>
+                <input matInput formControlName="KeySecretName">
+                <mat-error *ngIf="group.controls.KeySecretName.hasError('required')">
+                    KeySecretName is required
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>KeySecretNamespace</mat-label>
+                <input matInput formControlName="KeySecretNamespace">
+                <mat-error *ngIf="group.controls.KeySecretNamespace.hasError('required')">
+                    KeySecretNamespace is required
+                </mat-error>
+            </mat-form-field>
+        </div>
+    </div>
+    <div *ngSwitchCase="'manifest'" [formGroup]="group">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="Name">
+            <mat-error *ngIf="group.controls.Name.hasError('required')">
+                Name is required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Target Path</mat-label>
+            <input matInput formControlName="TargetPath">
+            <mat-error *ngIf="group.controls.TargetPath.hasError('required')">
+                TargetPath is required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Metadata Path</mat-label>
+            <input matInput formControlName="MetadataPath">
+            <mat-error *ngIf="group.controls.MetadataPath.hasError('required')">
+                MetadataPath is required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Repository Name</mat-label>
+            <input matInput formControlName="RepoName" readonly>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>URL</mat-label>
+            <input matInput formControlName="URL">
+            <mat-error *ngIf="group.controls.URL.hasError('required')">
+                URL is required
+            </mat-error>
+        </mat-form-field>
+        <mat-label>
+            <mat-select [(value)]="checkoutType">
+                <mat-option *ngFor="let type of checkoutTypes" [value]="type">{{type}}</mat-option>
+            </mat-select>
+        </mat-label>
+        <mat-form-field appearance="fill" *ngIf="checkoutType === 'Branch'">
+            <input matInput formControlName="Branch">
+        </mat-form-field>
+        <mat-form-field appearance="fill" *ngIf="checkoutType === 'Tag'">
+            <input matInput formControlName="Tag">
+        </mat-form-field>
+        <mat-form-field appearance="fill" *ngIf="checkoutType === 'CommitHash'">
+            <input matInput formControlName="CommitHash">
+        </mat-form-field>
+        <p>
+            <mat-checkbox formControlName="Force" labelPosition="after">Force</mat-checkbox>
+        </p>
+        <p>
+            <mat-checkbox formControlName="IsPhase" labelPosition="after">Is Phase</mat-checkbox>
+        </p>
+    </div>
 </div>
 <div mat-dialog-actions>
     <button mat-raised-button (click)="closeDialog()">Cancel</button>
-    <button mat-raised-button color="primary" (click)="setConfig(data.formName)">Save</button>
+    <button mat-raised-button color="primary" [disabled]="!group.valid" (click)="setConfig()">Save</button>
 </div>

@@ -183,7 +183,10 @@ export class ConfigComponent implements WsReceiver, OnInit {
     const dialogRef = this.dialog.open(ConfigNewComponent, {
       width: '550px',
       height: '650px',
-      data: { formName: configType}
+      data: {
+        formName: configType,
+        configs: this.configs
+      }
     });
   }
 }

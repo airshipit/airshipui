@@ -62,8 +62,10 @@ export class ConfigManifestComponent implements OnInit {
     });
 
     const checkout = this.getCheckoutRef(repo);
-    repoGroup.controls.checkoutLabel.setValue(checkout[0]);
-    repoGroup.controls.checkoutReference.setValue(checkout[1]);
+    if (checkout !== null) {
+      repoGroup.controls.checkoutLabel.setValue(checkout[0]);
+      repoGroup.controls.checkoutReference.setValue(checkout[1]);
+    }
     repoArray.push(repoGroup);
     this.selectArray.push(name);
   }
