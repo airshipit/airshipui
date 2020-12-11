@@ -3,10 +3,16 @@
     <mat-form-field appearance="fill">
         <mat-label>Repository Name</mat-label>
         <input matInput formControlName="repoName">
+        <mat-error *ngIf="group.controls.repoName.hasError('required')">
+            Repository Name is required
+        </mat-error>
     </mat-form-field>
     <mat-form-field appearance="fill">
         <mat-label>URL</mat-label>
         <input matInput formControlName="url">
+        <mat-error *ngIf="group.controls.url.hasError('required')">
+            URL is required
+        </mat-error>
     </mat-form-field>
     <mat-label>
         <mat-select [(value)]="checkoutType">
@@ -15,6 +21,9 @@
     </mat-label>
     <mat-form-field appearance="fill">
         <input matInput formControlName="checkoutReference">
+        <mat-error *ngIf="group.controls.checkoutReference.hasError('required')">
+            {{checkoutType}} is required
+        </mat-error>
     </mat-form-field>
     <p>
         <mat-checkbox formControlName="force" labelPosition="after">Force</mat-checkbox>
