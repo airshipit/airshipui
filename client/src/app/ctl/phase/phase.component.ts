@@ -77,6 +77,9 @@ export class PhaseComponent implements WsReceiver {
       if (message.subComponent === WsConstants.RUN) {
         this.toggleNode(message.id);
       }
+      if (message.subComponent === WsConstants.GET_PHASE_SOURCE_FILES) {
+        this.clickedNode.running = false;
+      }
     } else {
       switch (message.subComponent) {
         case WsConstants.GET_PHASE_TREE:

@@ -35,7 +35,11 @@ export class ConfigNewComponent implements OnInit {
               private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: {
                 formName: string,
-                configs: {}
+                configs: {
+                  manifests: string[],
+                  encryption: string[],
+                  management: string[]
+                }
               },
               public dialogRef: MatDialogRef<ConfigNewComponent>) { }
 

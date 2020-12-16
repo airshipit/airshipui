@@ -335,5 +335,10 @@ func makeResMap(kfile string) (map[string][]string, error) {
 		resMap["Transformers"] = append(resMap["Transformers"], path)
 	}
 
+	for _, p := range k.PatchesStrategicMerge {
+		path := filepath.Join(basedir, string(p))
+		resMap["PatchesStrategicMerge"] = append(resMap["PatchesStrategicMerge"], path)
+	}
+
 	return resMap, nil
 }
