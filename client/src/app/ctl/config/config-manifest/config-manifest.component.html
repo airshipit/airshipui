@@ -8,10 +8,16 @@
         <mat-form-field appearance="fill">
             <mat-label>Target Path</mat-label>
             <input matInput formControlName="targetPath">
+            <mat-error *ngIf="group.controls.targetPath.hasError('required')">
+                Target Path is required
+            </mat-error>
         </mat-form-field>
         <mat-form-field appearance="fill">
             <mat-label>Metadata Path</mat-label>
             <input matInput formControlName="metadataPath">
+            <mat-error *ngIf="group.controls.metadataPath.hasError('required')">
+                Metadata Path is required
+            </mat-error>
         </mat-form-field>
         <h5>Repositories</h5>
         <mat-form-field appearance="fill">
@@ -24,10 +30,16 @@
                 <mat-form-field appearance="fill">
                     <mat-label>URL</mat-label>
                     <input matInput formControlName="url">
+                    <mat-error *ngIf="repo.controls.url.hasError('required')">
+                        URL is required
+                    </mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{repo.controls.checkoutLabel.value}}</mat-label>
                     <input matInput formControlName="checkoutReference">
+                    <mat-error *ngIf="repo.controls.checkoutReference.hasError('required')">
+                        {{repo.controls.checkoutLabel.value}} is required
+                    </mat-error>
                 </mat-form-field>
                 <p>
                     <mat-checkbox formControlName="force" labelPosition="after">Force</mat-checkbox>

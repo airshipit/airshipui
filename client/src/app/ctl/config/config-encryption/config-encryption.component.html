@@ -9,20 +9,32 @@
                 <mat-form-field appearance="fill">
                     <mat-label>EncryptionKeyPath</mat-label>
                     <input matInput formControlName="encryptionKeyPath">
+                    <mat-error *ngIf="group.controls.encryptionKeyPath.hasError('required')">
+                        EncryptionKeyPath path is required
+                    </mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>DecryptionKeyPath</mat-label>
                     <input matInput formControlName="decryptionKeyPath">
+                    <mat-error *ngIf="group.controls.decryptionKeyPath.hasError('required')">
+                        DecryptionKeyPath is required
+                    </mat-error>
                 </mat-form-field>
             </div>
             <div *ngIf="config.hasOwnProperty('keySecretName')">
                 <mat-form-field appearance="fill">
                     <mat-label>KeySecretName</mat-label>
                     <input matInput formControlName="keySecretName">
+                    <mat-error *ngIf="group.controls.keySecretName.hasError('required')">
+                        KeySecretName is required
+                    </mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>KeySecretNamespace</mat-label>
                     <input matInput formControlName="keySecretNamespace">
+                    <mat-error *ngIf="group.controls.keySecretNamespace.hasError('required')">
+                        KeySecretNamespace is required
+                    </mat-error>
                 </mat-form-field>
             </div>
         </form>

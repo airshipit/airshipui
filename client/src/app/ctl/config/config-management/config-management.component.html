@@ -11,10 +11,16 @@
             <mat-form-field appearance="fill">
                 <mat-label>System Action Retries</mat-label>
                 <input matInput formControlName="systemActionRetries" placeholder="Value in seconds, e.g. 30">
+                <mat-error *ngIf="group.controls.systemActionRetries.hasError('pattern')">
+                    Value must be a number
+                </mat-error>
             </mat-form-field><br />
             <mat-form-field appearance="fill">
                 <mat-label>System Reboot Delay</mat-label>
                 <input matInput formControlName="systemRebootDelay" placeholder="Value in seconds, e.g. 30">
+                <mat-error *ngIf="group.controls.systemRebootDelay.hasError('pattern')">
+                    Value must be a number
+                </mat-error>
             </mat-form-field><br />
             <mat-form-field appearance="fill">
                 <mat-label>Type</mat-label>
