@@ -92,6 +92,7 @@ func WebServer() {
 			InsecureSkipVerify: false,
 			ServerName:         configs.UIConfig.WebService.Host,
 			Certificates:       getCertificates(),
+			MinVersion:         tls.VersionTLS13,
 		},
 		Handler:  webServerMux,
 		ErrorLog: log.Logger(),
